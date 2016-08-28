@@ -2,6 +2,7 @@
 /*Author: Mookel, all rights reversed.*/
 
 #include <stack.h>
+  
 int __stack_test__()
 {
   return 0;
