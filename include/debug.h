@@ -14,7 +14,7 @@
 #else
 #define PRIVATE static
 #define D(x)
-#deine  ND(x)   x
+#define  ND(x)   x
 #endif
 
 #define PUBLIC
