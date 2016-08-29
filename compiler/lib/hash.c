@@ -17,9 +17,6 @@
 /*macro definitions*/
 #define HASH_TABLE_MAX_SYM 1024;
 
-/*local static function*/
-PRIVATE fp_cmp_t _f_user_cmp = NULL;
-
 /*global interface*/
 PUBLIC unsigned hash_add(unsigned char *name)
 {
@@ -222,15 +219,15 @@ PUBLIC void hash_dump(HASH_TAB_S *p_tab)
     BUCKET_S **p, *buck;
     int i = 0;
 
-    fprintf(stdout, "HASH_TABLE at 0x%08p (%d element table, %d symbol)\n", p_tab,
+    fprintf(stdout, "HASH_TABLE at 0x%p (%d element table, %d symbol)\n", p_tab,
             p_tab->max_size, p_tab->curr_num);
 
     for(p = p_tab->table, i = 0; i < p_tab->max_size; ++p, ++i){
         if(!*p)continue;
 
-        fprintf(stdout, "Htab[%3d] @ 0x%08p:\n", i, p);
+        fprintf(stdout, "Htab[%3d] @ 0x%p:\n", i, p);
         for(buck = *p; buck; buck = buck->next){
-            fprintf(stdout, "\t0x%08p, prev = 0x%08p, next = 0x%08p user = 0x%08p",
+            fprintf(stdout, "\t0x%p, prev = 0x%p, next = 0x%p user = 0x%p",
                 buck, buck->prev, buck->next, buck + 1);
             fprintf(stdout, "  (%s)\n", (char *)(buck + 1)); /*must ensure the name is the first field.*/
         }

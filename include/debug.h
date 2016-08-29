@@ -21,7 +21,7 @@
 
 #define FARPTR   *
 #define VA_LIST  ...
-#define 0_BINARY 0
+#define O_BINARY 0
 
 #define PHYS(p)  p
 

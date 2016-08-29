@@ -38,6 +38,7 @@ int main()
     
     ADD_TEST("stack", stack);
     ADD_TEST("yystack", yystack);
+    ADD_TEST("hash", hash);
     TEST_ADD_FLAG(TRUE);
     for(int i = 0;i < g_TestCount; ++i) {
         printf("----------%s testing begin-------\n", TestSuit[i].name);
