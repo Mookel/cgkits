@@ -10,8 +10,8 @@
 
 typedef struct BUCKET_
 {
-    struct _BUCKET *next;
-    struct _BUCKET **prev;
+    struct BUCKET_ *next;
+    struct BUCKET_ **prev;
 }BUCKET_S;
 
 typedef unsigned (*fp_hash_t)(void *);
@@ -28,15 +28,19 @@ typedef struct HASH_TAB_
 
 }HASH_TAB_S;
 
-extern HASH_TAB_S *hash_make_tab(unsigned max_size, fp_hash_t fp_hash, fp_cmp_t fp_cmp);
-extern void        *hash_new_sym(int size);
+/*global interface*/
+extern HASH_TAB_S *hash_make_tab(unsigned max_sym, fp_hash_t fp_hash, fp_cmp_t fp_cmp);
+extern void        *hash_new_sym(int sym_size);
 extern void        hash_free_sym(void *sym);
 extern void        *hash_add_sym(HASH_TAB_S *hash_tab, void *sym);
+extern void        hash_del_sym(HASH_TAB_S *hash_tab, void *sym);
 extern void        *hash_find_sym(HASH_TAB_S *hash_tab, void *sym);
 extern void        *hash_next_sym(HASH_TAB_S *hash_tab, void *last);
-extern void        hash_delsym(HASH_TAB_S *hash_tab, void *sym);
+extern void        hash_free_tab(HASH_TAB_S *hash_tab);
 extern int         hash_print_tab(HASH_TAB_S *hash_tab, fp_tab_t fp_print, void *par, int srt);
+extern void        hash_dump(HASH_TAB_S *hash_tab);
 
+/*hash function, just provided two methods.*/
 extern unsigned    hash_add(unsigned char *name);
 extern unsigned    hasn_pjw(unsigned char *name);
 
