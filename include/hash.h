@@ -16,7 +16,7 @@ typedef struct BUCKET_
 
 typedef unsigned (*fp_hash_t)(void *);
 typedef int(*fp_cmp_t)(void *, void *);
-typedef void (*fp_tab_t) (void *, ...);
+typedef void (*fp_tab_print_t) (void *, ...);
 
 typedef struct HASH_TAB_
 {
@@ -37,11 +37,11 @@ extern void        hash_del_sym(HASH_TAB_S *hash_tab, void *sym);
 extern void        *hash_find_sym(HASH_TAB_S *hash_tab, void *sym);
 extern void        *hash_next_sym(HASH_TAB_S *hash_tab, void *last);
 extern void        hash_free_tab(HASH_TAB_S *hash_tab);
-extern int         hash_print_tab(HASH_TAB_S *hash_tab, fp_tab_t fp_print, void *par, int srt);
+extern int         hash_print_tab(HASH_TAB_S *hash_tab, fp_tab_print_t fp_print, void *par, int srt);
 extern void        hash_dump(HASH_TAB_S *hash_tab);
 
 /*hash function, just provided two methods.*/
 extern unsigned    hash_add(unsigned char *name);
-extern unsigned    hasn_pjw(unsigned char *name);
+extern unsigned    hash_pjw(unsigned char *name);
 
 #endif //CGKITS_HASH_H

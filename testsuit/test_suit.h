@@ -8,6 +8,10 @@
 #ifndef CGKITS_TEST_SUIT_H
 #define CGKITS_TEST_SUIT_H
 
+#include <stdio.h>
+#include <ctype.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define TEST_SUCCESS  1

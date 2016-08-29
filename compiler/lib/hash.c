@@ -168,7 +168,7 @@ PRIVATE int _bucket_cmp_func(BUCKET_S **p1, BUCKET_S **p2)
  * @sort   : sort table if true;
  * return 1 if printed success, or return 0.
  */
-PUBLIC int hash_print_tab(HASH_TAB_S *p_tab, fp_tab_t fp_pnt, void *para, int sort)
+PUBLIC int hash_print_tab(HASH_TAB_S *p_tab, fp_tab_print_t fp_pnt, void *para, int sort)
 {
     BUCKET_S **pp_out, **p_out, *sym, **symtab;
 
