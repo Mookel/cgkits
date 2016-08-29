@@ -37,6 +37,7 @@ int main()
     int failTestNum = 0;
     
     ADD_TEST("stack", stack);
+    ADD_TEST("yystack", yystack);
     TEST_ADD_FLAG(TRUE);
     for(int i = 0;i < g_TestCount; ++i) {
         printf("----------%s testing begin-------\n", TestSuit[i].name);
