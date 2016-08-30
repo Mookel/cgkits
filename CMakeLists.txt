@@ -23,7 +23,7 @@ set(SOURCE_FILES
 include_directories(.)
 include_directories(compiler)
 include_directories(compiler/C)
-include_directories(compiler/lex)
+include_directories(compiler/cglex)
 include_directories(compiler/lib)
 include_directories(compiler/parser)
 include_directories(include)

@@ -17,7 +17,12 @@
 #define TEST_SUCCESS  1
 #define TEST_FAILED   0
 
-#define TEST_ASSERT_INT(a, b) {if((a) != (b)) return 0;}
-#define TEST_ASSERT_STR(a, b) {if(strcmp((a), (b)) != 0) return 0;}
+#define PRINT_LINE fprintf(stderr, "Test failed :%s, %d", __FILE__, __LINE__)
+
+#define TEST_ASSERT_INT(a, b) {if((a) != (b)) {PRINT_LINE;return 0;}}
+
+#define TEST_ASSERT_STR(a, b) {if(strcmp((a), (b)) != 0) {PRINT_LINE; return 0;}}
+
+#define TEST_ASSERT_LOGIC(logic) {if(!(logic)) {PRINT_LINE; return 0;}}
 
 #endif //CGKITS_TEST_SUIT_H

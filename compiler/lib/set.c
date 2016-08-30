@@ -91,7 +91,7 @@ PUBLIC int set_add(SET_S *set, int bit)
     if(!set) return 0;
 
     enlarge(set, _ROUND(bit));
-    return _SET_GBIT(set, bit, _SET_BIT_ADD_);
+    return _SET_GBIT(set, bit, |=);
 }
 
 PUBLIC int set_num_ele(SET_S *set)
@@ -128,7 +128,7 @@ PUBLIC int set_num_ele(SET_S *set)
     return count;
 }
 
-PUBLIC int _set_test(SET_S *set1, SET_S *set2)
+PUBLIC int set_test(SET_S *set1, SET_S *set2)
 {
     int i = 0;
     int rval = _SET_EQUIV;
@@ -244,7 +244,7 @@ PUBLIC int set_subset(SET_S *set, SET_S *cmpset)
  *  _DIFFERENCE_OP: dest = symmetric difference of src and dest.
  *  _ASSIGN_OP    : dest = src.
  */
-PUBLIC void _set_op(int op, SET_S *src, SET_S *dst)
+PUBLIC void set_op(int op, SET_S *dst, SET_S *src)
 {
     if(!src || !dst){
         fprintf(stderr, "_set_op: NULL sets are not allowed for this function.\n");
@@ -354,7 +354,7 @@ PUBLIC void set_print(SET_S *set, fp_set_prnt fp_pnt, void *para)
     int i = 0;
     int is_empty = 1;
 
-    if(!set) (*fp_pnt)(para, "NULL", -1);
+    if(!set) (*fp_pnt)(para, "NULL\n", -1);
     else{
         set_next_member(NULL);
         while((i = set_next_member(set)) >= 0) {
@@ -364,5 +364,27 @@ PUBLIC void set_print(SET_S *set, fp_set_prnt fp_pnt, void *para)
         set_next_member(NULL);
     }
 
-    if(is_empty) (*fp_pnt)(para, "empty", -2);
+    if(is_empty) (*fp_pnt)(para, "empty\n", -2);
+}
+
+PUBLIC void set_dump(SET_S* set)
+{
+    if(!set) return;
+
+    _SETTYPE  *p = set->map;
+    fprintf(stdout, "\n-----------------Dump set status----------------\n");
+    fprintf(stdout, "\t set nwords : %u\n", set->nwords);
+    fprintf(stdout, "\t set nbits  : %u\n", set->nbits);
+    fprintf(stdout, "\t compl      : %d\n", set->compl);
+    fprintf(stdout, "\t map addr   : %p\n", set->map);
+    fprintf(stdout, "\t defmap addr: %p\n", set->defmap);
+    fprintf(stdout, "\t sets number: ");
+    set_print(set, (fp_set_prnt)fprintf, stdout);
+    printf("\n");
+    fprintf(stdout, "\t bit words  :\n");
+    for(int i = 0;i < set->nwords; ++i){
+        if((i != 0) && (!(i & 0x7))) printf("\n");
+        printf("0x%x\t", *p++);
+    }
+    fprintf(stdout, "\n-----------------set value end-----------------\n");
 }
