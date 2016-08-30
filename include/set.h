@@ -79,9 +79,9 @@ extern void      set_truncate(SET_S *set);
 
 #define _SET_GBIT(s, x, op)        (((s)->map)[_DIV_WSIZE(x)] op (1 << _MOD_WSIZE(x)))
 
-#define SET_REMOVE(s, x)           (((x) >= (x)->nbits) ? 0 : _SET_GBIT(s, x , _SET_BIT_DEL_))
-#define SET_ADD(s, x)              (((x) >= (x)->nbits) ? _set_add(s, x) : _SET_GBIT(s, x, _SET_BIT_ADD_))
-#define SET_MEMBER(s, x)           (((x) >= (x)->nbits) ? 0 : _SET_GBIT(s, x, _SET_BIT_MEM_))
-#define SET_TEST(s, x)             ((MEMEBR(s, x))      ? !(s)->compl  : (s)->compl)
+#define SET_REMOVE(s, x)           (((s) >= (s)->nbits) ? 0 : _SET_GBIT(s, x , _SET_BIT_DEL_))
+#define SET_ADD(s, x)              (((s) >= (s)->nbits) ? _set_add(s, x) : _SET_GBIT(s, x, _SET_BIT_ADD_))
+#define SET_MEMBER(s, x)           (((s) >= (s)->nbits) ? 0 : _SET_GBIT(s, x, _SET_BIT_MEM_))
+#define SET_TEST(s, x)             ((SET_MEMBER(s, x))      ? !(s)->compl  : (s)->compl)
 
 #endif //CGKITS_SET_H

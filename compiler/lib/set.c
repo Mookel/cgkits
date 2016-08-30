@@ -284,3 +284,85 @@ PUBLIC void _set_op(int op, SET_S *src, SET_S *dst)
     }
 }
 
+PUBLIC void set_invert(SET_S *set)
+{
+    if(!set) return;
+
+    _SETTYPE  *p, *end;
+    for(p = set->map, end = p + set->nwords; p < end; ++p){
+        *p = ~*p;
+    }
+}
+
+/*
+ * clear the set and make it back to the original.
+ * */
+PUBLIC void set_truncate(SET_S *set)
+{
+    if(!set) return;
+
+    if(set->map != set->defmap){
+        free(set->map);
+        set->map = set->defmap;
+    }
+
+    set->nwords = _DEFWORDS;
+    set->nbits  = _DEFBITS;
+    memset(set->defmap, 0, sizeof(set->defmap));
+}
+
+/**
+ *  Attention : no reentrant function.
+ *  if set == NULL : Reset
+ *  if currset != lastset, then Reset and return first element of the current set.
+ *  otherwise return next element or -1 if none.
+ */
+PUBLIC int set_next_member(SET_S *set)
+{
+    static SET_S *lastSet = NULL;
+    static int current_member = 0;
+    _SETTYPE  *map;
+
+    if(!set) return (int)(lastSet = NULL);
+
+    if(set != lastSet){
+        lastSet = set;
+        current_member = 0;
+        for(map = set->map; *map == 0 && current_member < set->nbits; ++map){
+            current_member += _BITS_IN_WORD;
+        }
+    }
+
+    while(current_member++ < set->nbits){
+        if(SET_TEST(set, current_member - 1)) {
+            return (current_member - 1);
+        }
+    }
+
+    return -1;
+
+}
+
+/**
+ * fp_pnt function is called for each element of the set with following arguments:
+ * (*fp_pnt)(param, "null", -1);   Null set
+ * (*fp_pnt)(param,  "empty", -2); Empty set
+ * (*fp_pnt)(param,  "%d ", N);    N is an element of the set.
+ */
+PUBLIC void set_print(SET_S *set, fp_set_prnt fp_pnt, void *para)
+{
+    int i = 0;
+    int is_empty = 1;
+
+    if(!set) (*fp_pnt)(para, "NULL", -1);
+    else{
+        set_next_member(NULL);
+        while((i = set_next_member(set)) >= 0) {
+            is_empty = 0;
+            (*fp_pnt)(para, "%d ", i);
+        }
+        set_next_member(NULL);
+    }
+
+    if(is_empty) (*fp_pnt)(para, "empty", -2);
+}
