@@ -15,8 +15,8 @@ typedef int (*fp_set_prnt) (void *para, char *fmt, int val);
 
 #define _BITS_IN_WORD            4
 #define _BYTES_IN_ARRAY(words)   ((words) << 2)
-#define _DIV_WSIZE(bitpos)       (unsigned(bitpos) >> 5)
-#define _MOD_WSIZE(bitpos)       (unsigned(bitpos) & 0x1f)
+#define _DIV_WSIZE(bitpos)       ((unsigned)(bitpos) >> 5)
+#define _MOD_WSIZE(bitpos)       ((unsigned)(bitpos) & 0x1f)
 #define _DEFWORDS                16                             /*words in default set.*/
 #define _DEFBITS                 (_DEFWORDS * _BITS_IN_WORD)    /*bits  in default set.*/
 #define _ROUND(bit)              (((_DIV_WSIZE(bit) + 16) >> 4) << 4)
@@ -47,15 +47,15 @@ extern int       set_subset(SET_S *set, SET_S *subset);
 extern void      set_truncate(SET_S *set);
 
 /*operations opcode definitions passed to _set_op */
-#define _OP_UNION               0
-#define _OP_INTERSECT           1
-#define _OP_DIFFERENCE          2   /*(x in s1) && (x not in s2)*/
-#define _OP_ASSIGN              4
+#define _UNION_OP               0
+#define _INTERSECT_OP           1
+#define _DIFFERENCE_OP          2   /*(x in s1) && (x not in s2)*/
+#define _ASSIGN_OP              4
 
-#define SET_UNIOIN(d, s)        _set_op(_OP_UNION, d, s)
-#define SET_INTERSECT(d, s)     _set_op(_OP_INTERSECT, d, s)
-#define SET_DIFFERENCE(d, s)    _set_op(_OP_DIFFERENCE, d, s)
-#define SET_ASSIGN(d, s)        _set_op(_OP_ASSIGN, d, s)
+#define SET_UNIOIN(d, s)        _set_op(_UNION_OP, d, s)
+#define SET_INTERSECT(d, s)     _set_op(_INTERSECT_OP, d, s)
+#define SET_DIFFERENCE(d, s)    _set_op(_DIFFERENCE_OP, d, s)
+#define SET_ASSIGN(d, s)        _set_op(_ASSIGN_OP, d, s)
 
 #define SET_CLEAR(s)            memset((s)->map, 0, (s)->nwords *sizeof(_SETTYPE))
 #define SET_FILL(s)             memset((s)->map, ~0, (s)->nwords, *sizeof(_SETTYPE))
@@ -63,9 +63,9 @@ extern void      set_truncate(SET_S *set);
 #define SET_INVERT(s)           set_invert(s)
 
 /*value returned from _set_test*/
-#define _SET_EQUIV             0
-#define _SET_DISJ              1
-#define _SET_INTER             2
+#define _SET_EQUIV              0
+#define _SET_DISJ               1
+#define _SET_INTER              2
 
 #define SET_IS_DISJOINT(s1, s2)    (_set_test(s1, s2) == _SET_DISJ)
 #define SET_IS_INTERSECT(s1, s2)   (_set_test(s1, s2) == _SET_INTER)
@@ -73,11 +73,15 @@ extern void      set_truncate(SET_S *set);
 #define SET_IS_EMPTY(s)            (set_num_ele(s) == 0)
 
 /*following macros has side-effects, be carefully.*/
-#define _SET_BITOP(s, x, op)       (((s)->map)[_DIV_WSIZE(x)] op (1 << _MOD_WSIZE(x)))
+#define _SET_BIT_DEL_              &= ~
+#define _SET_BIT_ADD_              |=
+#define _SET_BIT_MEM_              &
 
-#define SET_REMOVE(s, x)           (((x) >= (x)->nbits) ? 0 : _SET_BITOP(s, x , &= ~))
-#define SET_ADD(s, x)              (((x) >= (x)->nbits) ? _set_add(s, x) : _SET_BITOP(s, x, |=))
-#define SET_MEMBER(s, x)           (((x) >= (x)->nbits) ? 0 : _SET_BITOP(s, x, &))
+#define _SET_GBIT(s, x, op)        (((s)->map)[_DIV_WSIZE(x)] op (1 << _MOD_WSIZE(x)))
+
+#define SET_REMOVE(s, x)           (((x) >= (x)->nbits) ? 0 : _SET_GBIT(s, x , _SET_BIT_DEL_))
+#define SET_ADD(s, x)              (((x) >= (x)->nbits) ? _set_add(s, x) : _SET_GBIT(s, x, _SET_BIT_ADD_))
+#define SET_MEMBER(s, x)           (((x) >= (x)->nbits) ? 0 : _SET_GBIT(s, x, _SET_BIT_MEM_))
 #define SET_TEST(s, x)             ((MEMEBR(s, x))      ? !(s)->compl  : (s)->compl)
 
 #endif //CGKITS_SET_H
