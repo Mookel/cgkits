@@ -26,11 +26,11 @@ extern  int      sys_esc(char **s);
 extern  int      sys_copyfile(char *dst, char *src, char *mode);
 extern  int      sys_movefile(char *dst, char *src, char *mode);
 
-extern  void     sys_defnext(FILE *fp, char *name);
-
 /*driver1 and driver2 work together to transfer a template file to a lex or parser
  *file. driver1 must be called first.
  * */
+extern  int      sys_concat(int size, char *dst, ...);
+extern  int      sys_searchenv(char *filename, char *envname, char *pathname);
 extern  FILE*    sys_driver_1(FILE *output, int lines, char *file_name);
 extern  int      sys_driver_2(FILE *output, int lines);
 
@@ -40,9 +40,7 @@ extern  int      sys_driver_2(FILE *output, int lines);
 extern  double   sys_mean(int reset, double sample, double *dev);
 extern  long     sys_stol (char **instr);
 extern  unsigned long sys_stoul(char **instr);
-
 extern  int*     sys_memiset(int *dst, int value, int count);
-extern  int      sys_searchenv(char *filename, char *envname, char *pathname);
 
 /*For char/mext pairs, mainly used for compress a table.*/
 typedef int ATYPE;   /*type of input tables*/
@@ -62,12 +60,11 @@ extern  void     sys_pchar(int c, FILE *stream);
 extern  void     sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols);
 extern  void     sys_printv(FILE* fp, char **argv);
 extern  void     sys_comment(FILE* fp, char **argv);
+extern  void     sys_defnext(FILE *fp, char *name);
 extern  void     sys_fputstr(char *str, int maxlen, FILE *stream);
-extern  int      sys_concat(int size, char *dst, ...);
 
 /*error output*/
 extern  int      sys_ferr(char *format, ...);
-
 extern  int      sys_on_ferr(void);
 
 

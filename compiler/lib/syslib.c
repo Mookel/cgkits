@@ -7,13 +7,36 @@
 
 #include <debug.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <syslib.h>
 
-#define _IS_HEXDIGIT(x) (isdigit(x) || ('a' <= (x) && (x) <= 'f') || ('A' <= (x) && (x) <= 'F'))
+/*private macro definitions.*/
+#define _IS_HEXDIGIT(x) (isdigit(x) || ('a' <= (x) && (x) <= 'f') \
+                                    || ('A' <= (x) && (x) <= 'F'))
+
 #define _IS_OCTDIGIT(x) ('0' <= (x) && (x) <= '7')
+#define _MAX_PATH_NAME_LEN  (128+1)
+
+/*staic or global variable definitions.*/
+PRIVATE FILE *_input_file = NULL;   /*current input file.*/
+PRIVATE int   _input_line = 0;      /*line number of most-recently read line.*/
+PRIVATE char  _file_name[128];      /*template-file name.*/
+
+/*private functions definitions*/
+PRIVATE int hex2bin(int c)
+{
+    return isdigit(c) ? (c - '0') : (toupper(c) - 'A' + 10) & 0xf;
+}
+
+PRIVATE int oct2bin(int c)
+{
+    return (c - '0') & 0x7;
+}
 
 /*
  * Return a pointer to a string that represents c.
@@ -45,16 +68,6 @@ PUBLIC char *sys_bin_to_ascii(int c, int use_hex)
     }
 
     return buf;
-}
-
-PRIVATE int hex2bin(int c)
-{
-    return isdigit(c) ? (c - '0') : (toupper(c) - 'A' + 10) & 0xf;
-}
-
-PRIVATE int oct2bin(int c)
-{
-    return (c - '0') & 0x7;
 }
 
 /*Map escape sequences into their equivalent symbols
@@ -127,42 +140,146 @@ PUBLIC int sys_esc(char **s)
     return rval;
 }
 
-#if 0
 /*
  * Copy the src to the destination file, opening the destination in
  * the indicated mode. buffsize used on the first call will be used
  * on subsequent calls as well. errno will hold the appropriate error
  * code  if return value is 0.
+ * mode : 'w' or 'a'
  * */
 PUBLIC int sys_copyfile(char *dst, char *src, char *mode)
 {
-    int fd_dst, fd_src;
-    char *buf;
-    int got;
+    int fd_dst = -1;
+    int fd_src = -1;
+    char *buf = NULL;
+    char local_buf[256];
+    ssize_t got;
     int ret_val = FILE_ERR_NONE;
     static long buf_size = 31 * 1024;
 
-    while(buf_size > 0 && !(buf = malloc((int) buf_size)))
+    while(buf_size > 0 && !(buf = malloc((size_t) buf_size)))
         buf_size -= 1024L;
 
+    if(!buf_size){
+        buf_size = 256;
+        buf = &local_buf[0];
+    }
 
+    fd_src = open(src, O_RDONLY | O_BINARY);
+    fd_dst = open(dst, O_WRONLY | O_BINARY | O_CREAT |
+            ((*mode == 'w')  ? O_TRUNC : O_APPEND), S_IRUSR | S_IWUSR);
 
+    if(fd_src == -1) { ret_val = FILE_ERR_DST_OPEN;}
+    else if(fd_dst == -1) {ret_val = FILE_ERR_DST_OPEN;}
+    else {
+        while((got = read(fd_src, buf, (size_t)buf_size)) > 0) {
+            if (write(fd_dst, buf, got) == -1) {
+                ret_val = FILE_ERR_WRITE;
+                break;
+            }
+        }
+
+        if(got == -1) ret_val = FILE_ERR_READ;
+    }
+
+    if(fd_dst != -1) close(fd_dst);
+    if(fd_src != -1) close(fd_src);
+    if(buf_size > 256) free(buf);
+
+    return ret_val;
 }
 
+/*works just like copyfile ,but deletes src if copy is successful.*/
 PUBLIC int sys_movefile(char *dst, char *src, char *mode)
 {
+    int ret_val;
+    if((ret_val = sys_copyfile(dst, src, mode)) == FILE_ERR_NONE){
+        unlink(src);
+    }
+    return ret_val;
+}
 
+/*Concatenates an arbitrary number of strings into a single destination
+ * array of size "size" .At most size-1 characters are copied.
+ * use example: char target[SIZE];
+ * concat(SIZE, target, "first", "second", ..., "last", NULL);
+ * Return condition:
+ * (1) size <= 1 , return -1;
+ * (2) size > 1 but ... is NULL, return size;
+ * (3) size > 1 but ... len is longer than size, return -1;
+ * (4) size > 1 and ... len is smaller than size, return size - length;
+ * */
+PUBLIC int sys_concat(int size, char *dst, ...)
+{
+    char *src;
+    va_list args;
+    va_start(args, dst);
+
+    while((src = va_arg(args, char *)) && size > 1){
+        while(*src && (size-- > 1)) {
+            *dst++ = *src++;
+        }
+    }
+
+    *dst++ = '\0';
+    va_end(args);
+
+    return (size <= 1 && src && *src)  ? -1 : size;
+}
+
+/*
+ * Search for files by looking in the directories listed in the envname
+ * environment.Put the full path name(if found) into the pathname, or
+ * set it to 0.
+ * Note : The pathname array must be at least 128 characters.If
+ * the pathname is in the current dirctory, the pathname of the current
+ * directory is appended to the front of the name.
+ * Return 1 if success or 0 on failed.
+ * */
+PUBLIC int sys_searchenv(char *filename, char *envname, char *pathname)
+{
+    char pbuf[_MAX_PATH_NAME_LEN];
+    char *p;
+
+    getcwd(pathname, _MAX_PATH_NAME_LEN);
+    sys_concat(_MAX_PATH_NAME_LEN, pathname, pathname, "/", filename, NULL);
+
+    /*first check current directory*/
+    if(access(pathname, 0) != -1){
+        return 1;
+    }
+
+    /*continue to serach in other directory*/
+    if(strpbrk(filename, "/") || !(p = getenv(envname))){
+        return (*pathname == '\0');
+    }
+
+    strncpy(pbuf, p, _MAX_PATH_NAME_LEN);
+    if(p  = strtok(pbuf, ": ")) {
+        do{
+            sprintf(pathname, "%.90s/%.90s", p, filename);
+            if(access(pathname, 0) != -1) {
+                return 1;
+            }
+        }while(p = strtok(NULL, ": "));
+    }
+
+    return (*pathname = '\0');
 }
 
 #if 0
-PUBLIC void sys_defnext(FILE *fp, char *name)
-
 /*driver1 and driver2 work together to transfer a template file to a lex or parser
  *file. driver1 must be called first.
  * */
 PUBLIC FILE *sys_driver_1(FILE *output, int lines, char *file_name)
+{
+
+}
 
 PUBLIC int sys_driver_2(FILE *output, int lines)
+{
+    return 0;
+}
 
 /*Compute the mean of a bunch of samples. reset must be set true the first time and
  * after set reset to false. *dev is modified to hold the standard deviation.
@@ -175,7 +292,7 @@ PUBLIC unsigned long sys_stoul(char **instr)
 
 PUBLIC int *sys_memiset(int *dst, int value, int count)
 
-PUBLIC int sys_searchenv(char *filename, char *envname, char *pathname)
+
 
 PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
                      char *name, int threshold, int numbers)
@@ -194,9 +311,11 @@ PUBLIC void sys_printv(FILE *fp, char **argv)
 
 PUBLIC void sys_comment(FILE *fp, char **argv)
 
+PUBLIC void sys_defnext(FILE *fp, char *name)
+
 PUBLIC void sys_fputstr(char *str, int maxlen, FILE *stream)
 
-PUBLIC int sys_concat(int size, char *dst, ...)
+
 
 PUBLIC int sys_ferr(char *format, ...)
 
