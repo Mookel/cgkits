@@ -394,19 +394,169 @@ PUBLIC unsigned long sys_stoul(char **instr)
 
 PUBLIC int *sys_memiset(int *dst, int value, int count)
 {
-    return 0;
+    int *targ;
+    for(targ = dst; --count >= 0; *targ++ = value)
+        ;
+
+    return dst;
 }
 
-
+/*
+ * This pairs/pnext compress a table horizontally (using char/next pairs) and then
+ * print the compressed table. The compressed array looks like this:
+ * Yy_nxt:        Yy_nxtDD:
+ * +-------+    +------------------------------------------------+
+ * |   *---|--->|  0 |  Next state array, indexed by character   |
+ * +-------+    +------------------------------------------------+
+ * |       |
+ * +-------+    +------+-----+------+-----+------+------+
+ * |   *---|--->| count| c1  |  s1  | c2  |  s2  | .... |
+ * +-------+    +------+-----+------+-----+------+------+
+ * | NULL  |
+ * +-------+
+ *
+ * Sys_pairs generate the C source code for a pair-compressed DTRAN.
+ * Returns the number of cells used for the YysDD arrays. The "numbers"
+ * argument determines the output format of the character part of a
+ * character/next-state pair. If numbers is true, then normal numbers
+ * are used, otherwise ascii characters are used, for example:
+ * 'a',100 as compared to 97,100
+ *
+ * fp : output file.
+ * array: DFA transition table.
+ * name : used for output array.
+ * threshold: Array vs. pairs threshold.
+ * numbers  : Use numbers for char.
+ * */
 PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
                      char *name, int threshold, int numbers)
 {
-    return 0;
+    int i, j, ntransitions, nprinted, ncommas;
+    int num_cells = 0;
+    ATYPE  *p;
+
+    for(i = 0;i < nrows; ++i){
+        ntransitions = 0;
+        for(p = array + (i * ncols), j = ncols; --j >= 0; ++p) {
+            if (*p != -1) {
+                ++ntransitions;
+            }
+        }
+
+        if(ntransitions) {
+            fprintf(fp, "%s %s %s%-2d[] = {", SCLASS, TYPE, name, i);
+            ++num_cells;
+            if(ntransitions > threshold){    /*array*/
+                fprintf(fp, "0,\n                   ");
+            } else {                         /*pairs*/
+                fprintf(fp, "%2d, ", ntransitions);
+                if(threshold > 5){
+                    fprintf(fp, "\n                ");
+                }
+            }
+
+            nprinted = NCOLS;
+            ncommas = ntransitions;
+
+            for(p = array+ (i * ncols), j = 0; j < ncols; j++,++p){
+                if(ntransitions > threshold) { /*array*/
+                    ++num_cells;
+                    --nprinted;
+                    fprintf(fp, "%3d", *p);
+                    if(j < ncols - 1){
+                        fprintf(fp, ", ");
+                    }
+                }else if(*p != -1){  /*pairs*/
+                    num_cells += 2;
+
+                    if(numbers){
+                        fprintf(fp, "%d,%d", j, *p);
+                    }else{
+                        fprintf(fp, "'%s',%d", sys_bin_to_ascii(j, 0), *p);
+                        nprinted -= 2;
+                        if(--ncommas > 0) {
+                            fprintf(fp, ", ");
+                        }
+                    }
+
+                }
+
+                if(nprinted <= 0){
+                    fprintf(fp, "\n                 ");
+                    nprinted = NCOLS;
+                }
+            }
+
+            fprintf(fp, "};\n");
+        }
+    }
+
+    fprintf(fp, "\n%s %s *%s[ %d ] =\n{\n      ", SCLASS, TYPE, name, nrows);
+    nprinted = 10;
+    for(--nrows, i = 0; i < nrows;i++){
+        ntransitions = 0;
+        for(p = array + (i * ncols), j = ncols; --j >= 0; ++p){
+            if(*p != -1){
+                ++ntransitions;
+            }
+        }
+
+        if(ntransitions) {
+            fprintf(fp, "%s%-2d,    ", name , i);
+        } else {
+            fprintf(fp, "NULL,    ");
+        }
+
+        if(--nprinted <= 0) {
+            fprintf(fp, "\n    ");
+            nprinted = 10;
+        }
+    }
+
+    fprintf(fp, "%s%-2d\n};\n\n", name, i);
+
+    return num_cells;
 }
 
+/**
+ * Print out a next(state, c) subroutine for a table compressed
+ * into char/next-state pairs.
+ */
 PUBLIC int sys_pnext(FILE *fp, char *name)
 {
-    return 0;
+    static char *toptext[] = {
+        "unsigned int c;",
+        "int      cur_state;",
+        "{",
+        "    /* Given the current state and the current input character, return",
+        "     * the next state.",
+        "     */",
+        "",
+        NULL,
+    };
+
+    static char *boptext[] = {
+      "    int i;",
+      "",
+      "    if(p)",
+      "    {",
+      "        if((i = *p++) == 0)",
+      "            return p[ c ];",
+      "",
+      "        for(; --i >= 0; p += 2)",
+      "            if(c == p[0])",
+      "                return p[1];",
+      "    }",
+      "    return YYF;",
+      "}",
+      NULL,
+    };
+
+    fprintf(fp, "\n/*-------------------------------------------------------*/\n");
+    fprintf(fp, "%s %s yy_next( cur_state, c )\n", D_SCLASS, TYPE);
+    sys_printv(fp, toptext);
+    fprintf(fp, "    %s    *p = %s[ cur_state ] ;\n", TYPE, name);
+    sys_printv(fp, boptext);
 }
 
 PUBLIC void sys_prnt(fp_print_t fp_prnt, void *fun_arg, char *format, va_list args)
@@ -424,32 +574,87 @@ PUBLIC void sys_stop_prnt(void)
 
 PUBLIC void sys_pchar(int c, FILE *stream)
 {
-
+    fputs(sys_bin_to_ascii(c, 1), stream);
 }
 
+/*
+ * Print the C source code to initialize the two-dimensional array pointed
+ * to by "array". Print only the initialization part of the declaration.
+ * array: DFA transition table
+ * nrows: number of  rows in array[];
+ * ncols: number of columns in array[];
+ * */
 PUBLIC void sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols)
 {
+    int i;
+    int col;
 
+    fprintf(fp, "{\n");
+
+    for(int i = 0;i < nrows; ++i){
+
+        fprintf(fp, "/* %02d */ { ", i);
+
+        for(col = 0; col < ncols; ++col){
+            fprintf(fp, "%3d", *array++);
+            if(col < ncols - 1) {
+                fprintf(fp, ", ");
+            }
+
+            if(((col % NCOLS) == (NCOLS - 1)) && (col != (ncols - 1))) {
+                fprintf(fp, "\n              ");
+            }
+        }
+
+        if(col > NCOLS) {
+            fprintf(fp, "\n            ");
+        }
+
+        fprintf(fp, " }%c\n", i < nrows - 1 ? ',' : ' ');
+    }
+
+    fprintf(fp, "};\n");
 }
 
 PUBLIC void sys_printv(FILE *fp, char **argv)
 {
-
+    while(*argv) fprintf(fp, "%s\n", *argv++);
 }
 
 PUBLIC void sys_comment(FILE *fp, char **argv)
 {
-
+    fprintf(fp, "\n/*--------------------------------------------------------------\n");
+    while(*argv) fprintf(fp, " * %s\n", *argv++);
+    fprintf(fp, " */\n\n");
 }
 
-PUBLIC void sys_defnext(FILE *fp, char *name)
+/*
+ * print the default yy_next(s, c) subroutine for an uncompressed table.
+ * */
+PUBLIC void sys_print_defnext(FILE *fp, char *name)
 {
+    static char *comment_text[] = {
+            "yy_next(state, c) is given the current state and input character and evaluates to the next state.",
+            NULL
+    };
 
+    sys_comment(fp, comment_text);
+    fprintf(fp, "#define yy_next(state, c) %s[ state ][ c ]\n", name);
 }
 
+/*
+ * Print a string with control characters mapped to readable string.
+ * */
 PUBLIC void sys_fputstr(char *str, int maxlen, FILE *stream)
 {
+    char *s;
 
+    while(*str && maxlen >= 0){
+        s = sys_bin_to_ascii(*str++, 1);
+        while(*s && (--maxlen >= 0)) {
+            putc(*s++, stream);
+        }
+    }
 }
 
 

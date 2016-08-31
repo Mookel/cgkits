@@ -60,7 +60,7 @@ extern  void     sys_pchar(int c, FILE *stream);
 extern  void     sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols);
 extern  void     sys_printv(FILE* fp, char **argv);
 extern  void     sys_comment(FILE* fp, char **argv);
-extern  void     sys_defnext(FILE *fp, char *name);
+extern  void     sys_print_defnext(FILE *fp, char *name);
 extern  void     sys_fputstr(char *str, int maxlen, FILE *stream);
 
 /*error output*/
