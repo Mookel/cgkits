@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -267,57 +268,165 @@ PUBLIC int sys_searchenv(char *filename, char *envname, char *pathname)
     return (*pathname = '\0');
 }
 
-#if 0
 /*driver1 and driver2 work together to transfer a template file to a lex or parser
  *file. driver1 must be called first.
  * */
 PUBLIC FILE *sys_driver_1(FILE *output, int lines, char *file_name)
 {
+    char path[80];
 
+    if(!(_input_file = fopen(file_name, "r"))){
+        sys_searchenv(file_name, "CGKLIB", path);   /*Library to be modified....*/
+        if(!*path) {
+            errno = ENOENT;
+            return NULL;
+        }
+
+        if(!(_input_file = fopen(path, "r"))){
+            return NULL;
+        }
+    }
+
+    strncpy(_file_name, file_name, sizeof(_file_name));
+    _input_line = 0;
+    sys_driver_2(output, lines);
+
+    return _input_file;
 }
 
 PUBLIC int sys_driver_2(FILE *output, int lines)
 {
-    return 0;
+    static char buf[256];
+    char *p;
+    int process_comment = 0;
+
+    if(!_input_file){
+        sys_ferr("INTERNAL ERROR [driver_2], Tempalte file not open.\n");
+    }
+
+    if(lines)
+        fprintf(output, "\n#line %d \"%s\"\n", _input_line + 1, _file_name);
+
+    while(fgets(buf, sizeof(buf), _input_file)) {
+        ++_input_line;
+        if(*buf == '\f') break;
+        for(p = buf; isspace(*p); ++p)
+            ;
+        if(*p == '@') {
+            process_comment = 1;
+            continue;
+        }
+        else if(process_comment) {
+            process_comment = 0;
+            if(lines)
+                fprintf(output, "\n#line %d \"%s\"\n", _input_line + 1, _file_name);
+        }
+
+        if(fputs(buf, output) == -1){
+            sys_ferr("WRITE OUTPUT ERROR [driver_2].\n");
+        }
+    }
+
+    return (feof(_input_file));
 }
 
 /*Compute the mean of a bunch of samples. reset must be set true the first time and
  * after set reset to false. *dev is modified to hold the standard deviation.
  * */
 PUBLIC double sys_mean(int reset, double sample, double *dev)
+{
+    return 0.0;
+}
 
 PUBLIC long sys_stol(char **instr)
+{
+    return 0;
+}
 
 PUBLIC unsigned long sys_stoul(char **instr)
+{
+    return 0ul;
+}
 
 PUBLIC int *sys_memiset(int *dst, int value, int count)
-
+{
+    return 0;
+}
 
 
 PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
                      char *name, int threshold, int numbers)
+{
+    return 0;
+}
 
 PUBLIC int sys_pnext(FILE *fp, char *name)
+{
+    return 0;
+}
 
 PUBLIC void sys_prnt(fp_print_t fp_prnt, void *fun_arg, char *format, va_list args)
+{
+    char buf[256], *p;
+    vsprintf(buf, format, args);
+    for(p = buf; *p; ++p)
+        (*fp_prnt)(*p,  fun_arg);
+}
 
 PUBLIC void sys_stop_prnt(void)
+{
+
+}
 
 PUBLIC void sys_pchar(int c, FILE *stream)
+{
+
+}
 
 PUBLIC void sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols)
+{
+
+}
 
 PUBLIC void sys_printv(FILE *fp, char **argv)
+{
+
+}
 
 PUBLIC void sys_comment(FILE *fp, char **argv)
+{
+
+}
 
 PUBLIC void sys_defnext(FILE *fp, char *name)
+{
+
+}
 
 PUBLIC void sys_fputstr(char *str, int maxlen, FILE *stream)
+{
 
+}
 
 
 PUBLIC int sys_ferr(char *format, ...)
+{
+    D(void (**ret_addr_p)(); )
+    va_list args;
+
+    va_start(args, format);
+    if(format) sys_prnt((fp_print_t)fputc, stderr, format, args);
+    else perror(va_arg(args, char *));
+    va_end(args);
+
+    D(ret_addr_p = (void(**)()) &fmt;)
+    /*Attention : Be carefully in 64bit PC mac os, this is not reliable.*/
+    D(fprintf(stderr, "\n\t--ferr() called from %p\n", ret_addr_p[-1]);)
+
+    exit(sys_on_ferr());
+}
 
 PUBLIC int sys_on_ferr(void)
-#endif
+{
+    return errno;
+}

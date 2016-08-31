@@ -59,14 +59,29 @@ PRIVATE int test4()
     return 1;
 }
 
+PRIVATE int test5()
+{
+    FILE *output = fopen("dst.txt", "w+");
+    if(!output) {
+        fprintf(stdout, "Open dst.txt failed.\n");
+    }
+
+    FILE *fp = sys_driver_1(output, 1, "src.txt");
+    printf("addr of fp : %p\n", fp);
+
+    return 1;
+
+}
+
 int __syslib_test__()
 {
     int rval = 1;
 
     rval &= test1();
-    rval &= test2();
+    //rval &= test2();
     rval &= test3();
     rval &= test4();
+    //rval &= test5();
 
     return rval;
 }
