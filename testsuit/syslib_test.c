@@ -73,6 +73,84 @@ PRIVATE int test5()
 
 }
 
+PRIVATE int test6()
+{
+    double x, m, dev;
+    sys_mean(1, 0, &dev);
+    for(x = 1.0; x <= 20.0; x++)
+    {
+        m = sys_mean(0, x, &dev);
+        printf("mean of 1...%-10g = %-10g, dev = %-10g\n", x, m, dev);
+    }
+
+    return 1;
+}
+
+PRIVATE int test7()
+{
+    char *str1;
+    char *str2;
+    char *str3;
+    char *str4;
+    char *str5;
+    char *str6;
+
+    char *ptr1 = str1 = (char *)malloc(20);
+    char *ptr2 = str2 = (char *)malloc(20);
+    char *ptr3 = str3 = (char *)malloc(20);
+    char *ptr4 = str4 = (char *)malloc(20);
+    char *ptr5 = str5 = (char *)malloc(20);
+    char *ptr6 = str6 = (char *)malloc(20);
+
+    strcpy(str1, " 0x100c");
+    strcpy(str2, "    100xx");
+    strcpy(str3, "  033f");
+    strcpy(str4, "-0x10f0z");
+    strcpy(str5, " -100");
+    strcpy(str6, "  -0033fd");
+
+    char **p1, **p2;
+
+    p1 = &str1;
+    printf("%u\n", sys_stoul(p1));
+    str1 = ptr1;
+    p1 = &str1;
+    printf("%d\n", sys_stol(p1));
+
+    p1 = &str2;
+    printf("%u\n", sys_stoul(p1));
+    str2 = ptr2;
+    p1 = &str2;
+    printf("%d\n", sys_stol(p1));
+
+    p1 = &str3;
+    printf("%u\n", sys_stoul(p1));
+    str3 = ptr3;
+    p1 = &str3;
+    printf("%d\n", sys_stol(p1));
+
+    p1 = &str4;
+    printf("%d\n", sys_stol(p1));
+
+    p1 = &str5;
+    printf("%d\n", sys_stol(p1));
+
+    p1 = &str6;
+    printf("%d\n", sys_stol(p1));
+
+
+    free(ptr1);
+    free(ptr2);
+    free(ptr3);
+    free(ptr4);
+    free(ptr5);
+    free(ptr6);
+
+    return 1;
+
+}
+
+
 int __syslib_test__()
 {
     int rval = 1;
@@ -82,6 +160,8 @@ int __syslib_test__()
     rval &= test3();
     rval &= test4();
     //rval &= test5();
+    rval &= test6();
+    rval &= test7();
 
     return rval;
 }

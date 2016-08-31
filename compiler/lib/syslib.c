@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <math.h>
 #include <syslib.h>
 
 /*private macro definitions.*/
@@ -335,17 +336,60 @@ PUBLIC int sys_driver_2(FILE *output, int lines)
  * */
 PUBLIC double sys_mean(int reset, double sample, double *dev)
 {
-    return 0.0;
+    static double m_xhat, m_ki, d_xhat, d_ki;
+    double mean;
+
+    if(reset)
+        return (m_ki = m_xhat = d_ki = d_xhat = 0.0);
+
+    m_xhat += (sample - m_xhat) / ++m_ki;
+    mean = m_xhat;
+    *dev = sqrt(d_xhat += (pow(fabs(mean - sample), 2.0) - d_xhat)/++d_ki);
+
+    return mean;
 }
 
+/**
+ * This function will stops on encountering the first character which is
+ * not a digit.*instr will be updated to point past the end of the number.
+ * */
 PUBLIC long sys_stol(char **instr)
 {
-    return 0;
+    while(isspace(**instr)) ++*instr;
+
+    if(**instr != '-') return (long)(sys_stoul(instr));
+
+    ++*instr;
+    return -(long)(sys_stoul(instr));
 }
 
 PUBLIC unsigned long sys_stoul(char **instr)
 {
-    return 0ul;
+    unsigned long num = 0;
+    char *str = *instr;
+
+    while(isspace(*str)) ++str;
+
+    if(*str != '0'){                            /*decimal */
+        while(isdigit(*str)) {
+            num = (num * 10) + (*str++ - '0');
+        }
+    } else {
+        if(*++str == 'X' || *str == 'x') {       /*hex*/
+            for(++str; isxdigit(*str); ++str){
+                num = (num * 16)  + (isdigit(*str) ? (*str - '0') :
+                                     toupper(*str) - 'A' + 10);
+            }
+        } else {
+            while('0' <= *str && *str <= '7') { /*octal*/
+                num = (num * 8) + *str++ - '0';
+            }
+        }
+    }
+
+    *instr = str;
+
+    return num;
 }
 
 PUBLIC int *sys_memiset(int *dst, int value, int count)
