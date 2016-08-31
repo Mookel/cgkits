@@ -2,17 +2,24 @@ INC_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/include
 TARGET  = test_suit
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/libary
 CC      = gcc
-OBJS    = hash.o set.o
+COMPLIB_OBJS    = hash.o set.o syslib.o
+#LLIB_OBJS       = 
 COMPILING_FLAGS = -I$(INC_DIR) 
 AR = ar
-LIB_OBJ = llib.a
+#LLIB = llib.a
+COMPLIB = complib.a
 
-all:$(LIB_OBJ)
+all:$(COMPLIB)
 
-$(LIB_OBJ): $(OBJS)
-	rm -rf $(LIB_DIR)/$(LIB_OBJ)
-	$(AR) -r $(LIB_DIR)/$(LIB_OBJ) $(OBJS)
-	rm -rf $(OBJS)
+$(COMPLIB): $(COMPLIB_OBJS)
+	rm -rf $(LIB_DIR)/$(COMPLIB)
+	$(AR) -r $(LIB_DIR)/$(COMPLIB) $(COMPLIB_OBJS)
+	rm -rf $(COMPLIB_OBJS)
+
+#$(LLIB): $(LLIB_OBJS)
+#	rm -rf $(LIB_DIR)/$(LLIB)
+#	$(AR) -r $(LIB_DIR)/$(LLIB) $(LLIB_OBJS)
+#	rm -rf $(LLIB_OBJS)
 
 hash.o: hash.c $(INC_DIR)/hash.h $(INC_DIR)/debug.h
 	$(CC) -c $(COMPILING_FLAGS) hash.c
@@ -20,9 +27,13 @@ hash.o: hash.c $(INC_DIR)/hash.h $(INC_DIR)/debug.h
 set.o: set.c $(INC_DIR)/set.h $(INC_DIR)/debug.h
 	$(CC) -c $(COMPILING_FLAGS) set.c
 
+syslib.o: syslib.c $(INC_DIR)/syslib.h
+	$(CC) -c $(COMPILING_FLAGS) syslib.c
 
 clean:
-	rm -rf $(OBJS)
-	rm -rf $(LIB_DIR)/$(LIB_OBJ)
+	rm -rf $(COMPLIB_OBJS)
+#	rm -rf $(LLIB_OBJS)
+	rm -rf $(LIB_DIR)/$(COMPLIB)
+#	rm -rf $(LIB_DIR)/$(LLIB)
 
 

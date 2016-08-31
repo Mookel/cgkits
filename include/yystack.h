@@ -33,7 +33,7 @@
 #define yypopn_(stack, amt)            ((yyp_##stack += amt)[-amt])
 #define yypopn(stack, amt)             (((yystk_ele(stack)) < amt) ? ((yyt_##stack)(long)(yystk_err(0))) : yypopn_(stack,amt))
 
-#define yystk_err(o)                 ((o) ? ferr("Stack overflow.\n") : ferr("Stack underflow.\n"))
+#define yystk_err(o)                 ((o) ? sys_ferr("Stack overflow.\n") : ferr("Stack underflow.\n"))
 
 
 #endif //CGKITS_YYSTACK_H

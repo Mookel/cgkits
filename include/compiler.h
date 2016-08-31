@@ -8,6 +8,10 @@
 #ifndef CGKITS_COMPILER_H
 #define CGKITS_COMPILER_H
 
-
+#include <debug.h>
+#include <stack.h>
+#include <hash.h>
+#include <set.h>
+#include <syslib.h>
 
 #endif //CGKITS_COMPILER_H
