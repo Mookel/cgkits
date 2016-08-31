@@ -13,5 +13,6 @@
 #include <hash.h>
 #include <set.h>
 #include <syslib.h>
+#include <input.h>
 
 #endif //CGKITS_COMPILER_H
