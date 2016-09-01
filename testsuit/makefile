@@ -4,7 +4,7 @@ TARGET  = test_suit
 CC      = gcc
 OBJ     = test_suit.o stack_test.o yystack_test.o hash_test.o set_test.o syslib_test.o
 COMMON_HEADER = test_suit.h
-LIBCONFIG = $(LIB_DIR)/complib.a -lncurses
+LIBCONFIG = $(LIB_DIR)/complib.a $(LIB_DIR)/llib.a -lncurses
 COMPILING_CFLAGS = -I$(INC_DIR)
 
 all:$(TARGET)

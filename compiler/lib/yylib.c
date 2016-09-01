@@ -10,6 +10,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <debug.h>
 #include <win.h>
 #include <ncurses.h>
@@ -58,7 +59,7 @@ PRIVATE int  _vsize;       /*size of one element of value stack*/
 PRIVATE char **_dstack;    /*Base address of debug(symbol) stack.*/
 PRIVATE char ***_p_dsp;    /*pointer to debug-stack pointer*/
 PRIVATE int  *_sstack;     /*Base address of state stack.*/
-PRIVATE int  **p_sp;       /*Pointer to state-stack pointer*/
+PRIVATE int  **_p_sp;       /*Pointer to state-stack pointer*/
 PRIVATE int  _depth;       /*Stack depth*/
 
 PRIVATE WINDOW   *_stack_window;
@@ -67,6 +68,7 @@ PRIVATE WINDOW   *_code_window;
 PRIVATE WINDOW   *_comment_window;
 PRIVATE WINDOW   *_token_window;
 
+PRIVATE int      _numelestk  = 0;              /*number of elements on stack.*/
 PRIVATE int      _stack_size = _WIN_DEFSTACK;  /*number of active lines in the stack window.*/
 PRIVATE int      _interactive = 1;             /*interactive mode*/
 PRIVATE int      _single_step = 1;             /*single step through parse if true*/
@@ -88,18 +90,24 @@ PRIVATE int        _char_avail = 0;
 
 /*private functions prototypes.*/
 PRIVATE WINDOW *boxwin(int lines, int cols, int y_start, int x_start, char *title);
-PRIVATE void horriable_death(void);
-PRIVATE int win_putc_func(int c, WINDOW *win);
-PRIVATE int get_char_from_promtw(void);
-PRIVATE void presskey(void);
-PRIVATE int refresh_win(WINDOW *win);
-PRIVATE void display_file(char *name, int buf_size, int print_lines);
-PRIVATE void screen_snapshot(char *filename);
-PRIVATE void delay(void);
-PRIVATE void cmd_list(void);
-PRIVATE int  breakpoint(void);
-PRIVATE int new_input_file(char *buf);
-PRIVATE FILE *to_log(char *buf);
+PRIVATE void   horriable_death(void);
+PRIVATE int    win_putc_func(int c, WINDOW *win);
+PRIVATE int    get_char_from_promtw(void);
+PRIVATE void   presskey(void);
+PRIVATE int    refresh_win(WINDOW *win);
+PRIVATE void   display_file(char *name, int buf_size, int print_lines);
+PRIVATE void   screen_snapshot(char *filename);
+PRIVATE void   delay(void);
+PRIVATE void   cmd_list(void);
+PRIVATE int    breakpoint(void);
+PRIVATE int    new_input_file(char *buf);
+PRIVATE FILE   *to_log(char *buf);
+PRIVATE void   kbready();
+
+PRIVATE void kbready()
+{
+    _char_avail = 1;
+}
 
 /*private functions.*/
 PRIVATE WINDOW *boxwin(int lines, int cols, int y_start, int x_start, char *title)
@@ -331,7 +339,7 @@ PRIVATE void delay(void)
                     break;
                 }
 
-                werase(_stack_size);
+                werase(_stack_window);
                 display_file(buf, sizeof(buf), print_lines);
                 yy_redraw_stack();
                 break;
@@ -433,7 +441,6 @@ PRIVATE void cmd_list(void)
  * Return true if we have to redraw the stack window because a help screen
  * was printed there.
  */
-
 PRIVATE int breakpoint(void)
 {
     int type;
@@ -463,7 +470,7 @@ PRIVATE int breakpoint(void)
         werase(_stack_window);
         wmove(_stack_window, 0, 0);
 
-        for (p = text; *p; p) {
+        for (p = text; *p; p++) {
             wprintw(_stack_window, "%s\n", *p++);
         }
 
@@ -582,7 +589,7 @@ PRIVATE FILE *to_log(char *buf)
     }
 
     if(!(_no_stack_pix = (*buf == 'n'))) {
-        
+
         if(!yy_prompt("Print SYMBOL stack (y/n, CR = y): ", buf, 0)){
             return NULL;
         }else {
@@ -606,38 +613,260 @@ PRIVATE FILE *to_log(char *buf)
     return _log;
 }
 
-#endif
-
-
-#if 0
 extern int   yy_init_debug(int *sstack, int **p_sp, char **dstack, char ***p_dsp,
                            void *vstack, int v_ele_size, int depth)
+{
+    char buf[80];
+
+    int flags;
+    signal(SIGIO, kbready);
+    flags = fcntl(fileno(stdin), F_GETFL, 0);
+    fcntl(fileno(stdin), F_SETFL, flags | FASYNC);
+
+    _sstack = sstack;
+    _dstack = dstack;
+    _vstack = (char *) vstack;
+    _vsize  = v_ele_size;
+    _p_sp   = p_sp;
+    _p_dsp  = p_dsp;
+    _depth  = depth;
+    _abort  = 0;
+
+    initscr();
+    signal(SIGINT, (horriable_death));
+
+    noecho();
+    crmode();
+
+    _stack_window   = boxwin(_WIN_STACK_WINSIZE, 80, _WIN_STACK_TOP, 0, "[stack]");
+    _comment_window = boxwin(_WIN_IO_WINSIZE,    40, _WIN_IO_TOP,    0, "[comments]");
+    _code_window    = boxwin(_WIN_IO_WINSIZE,    41, _WIN_IO_TOP,   39, "[output]");
+
+    _token_window   = boxwin(_WIN_PROMPT_WINSIZE, _WIN_TOKEN_WIDTH, _WIN_PROMPT_TOP,
+                        80 - _WIN_TOKEN_WIDTH, "[lookahead]");
+
+    _prompt_window  = boxwin(_WIN_PROMPT_WINSIZE, (80 - _WIN_TOKEN_WIDTH) + 1, _WIN_PROMPT_TOP, 0, "[prompts]");
+
+    scrollok(_stack_window, TRUE);
+    scrollok(_comment_window, TRUE);
+    scrollok(_code_window, TRUE);
+    scrollok(_prompt_window, TRUE);
+    scrollok(_token_window, TRUE);
+
+    _numelestk = 0;
+
+    while(!_inp_fm_file) {
+        if(!yy_prompt("Input file name or ESC to exit:", buf, 1)) {
+            yy_quit_debug();
+            return 0;
+        }
+
+        new_input_file(buf);
+    }
+
+    delay();
+    return 1;
+}
+
+
+extern int   yy_quit_debug(void)
+{
+    echo();
+    nocrmode();
+    move(24,0);
+    refresh();
+    endwin();
+
+    if(_log){ fclose(_log);}
+
+    signal(SIGINT, SIG_DFL);
+}
+
+/**
+ * Scan argv arguments for the debugging options and remove the argument
+ * from argv. Arguments are:
+ * -sN Set stack-winodw size to N lines.The size of other windows scale
+ * accordingly. The stack window is not permitted to get so large that
+ * the other windws will disapper however.
+ *
+ * The first argument that doesn't begin with a minus sign is taken to be
+ * the input file name. That name is not removed from argv.All other
+ * arguments are ignore and are not removed from argv, so you can process
+ * them in your own program.This routine prints an error message and
+ * terminates the program if it can't open the specified input file.
+ * Command-line processing stops immediately after the file name is
+ * processing. So, given the line:
+ *      program -x -s15 -y foo -s1 bar
+ *
+ * Argv is modified to:
+ *      program -x -y foo -s1 bar
+ */
+extern int   yy_get_args(int argc, char **argv)
+{
+    char **newargv;
+    char **oldargv = argv;
+    char *filename = NULL;
+    int   ssize    = _WIN_DEFSTACK;
+    newargv = ++argv;
+    for(--argc; --argc >= 0; ++argv) {
+        if(argv[0][0] != '-') {          /*filename*/
+            if(filename) {
+                *newargv++ = *argv;
+            } else {
+                filename = *newargv++ = *argv;
+            }
+        }
+        else if(argv[0][1] == 's') {     /*-s*/
+            ssize = atoi(&argv[0][2]);
+        } else {
+            *newargv++ = *argv;          /*-?*/
+        }
+    }
+
+    _stack_size = (ssize < 1) ? _WIN_DEFSTACK : (ssize > (WIN_SCRNSIZE - 6) ?
+                                                 WIN_SCRNSIZE - 6 : ssize);
+
+    if(filename) {
+        if(ii_newfile(filename) != -1) {
+            _inp_fm_file = 1;
+        } else {
+            perror(filename);
+            exit(1);
+        }
+    }
+
+    return (int)(newargv - oldargv);
+}
+
+extern void  yy_output(int where, char *fmt, va_list args)
 {
 
 }
 
+/*
+ * Works like printf .Writes into the comment window, and outputs
+ * a message to log file if loggig is enabled.
+ * */
+extern void  yy_comment(char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    if(_log && !_no_comment_pix) {
+        sys_prnt((fp_print_t)fputc, _log, fmt, args);
+    }
 
-extern int   yy_quite_debug(void);
-extern int   yy_get_args(int argc, char **argv);
+    _NEWLINE(_comment_window);
+    sys_prnt((fp_print_t) win_putc_func, _comment_window, fmt, args);
+    refresh_win(_comment_window);
+}
 
-extern void  yy_output(int where, char *fmt, va_list args);
-extern void  yy_comment(char *fmt, ...);
-extern void  yy_error(char *fmt, ...);
+extern void  yy_error(char *fmt, ...)
+{
+    int old_interactive;
+    va_list args;
+    va_start(args, fmt);
+
+    old_interactive = _interactive;
+    _interactive = 1;
+
+    yy_comment("ERROR, line %d near <%s>\n", yylineno, yytext);
+
+    if(_log){
+        sys_prnt((fp_print_t)fputc, _log, fmt, args);
+    }
+
+    _NEWLINE(_comment_window);
+    sys_prnt((fp_print_t)win_putc_func, _comment_window, fmt, args);
+    refresh_win(_comment_window);
+
+    _interactive = old_interactive;
+    _single_step = 1;
+    yy_pstack(0, 1);
+
+}
+
 extern void  yy_input(char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    sys_prnt((fp_print_t) win_prnt_putc, _prompt_window, fmt, args);
+    sys_prnt((fp_print_t) win_putc_func, _prompt_window, fmt, args);
     refresh_win(_prompt_window);
 }
 
-extern int   yy_prompt(char *prompt, char *buf, int getstring);
+extern int   yy_prompt(char *prompt, char *buf, int getstring)
+{
 
-extern void  yy_pstack(int do_refresh, int print_it);
-extern void  yy_redraw_stack(void);
-extern void  yy_next_token(void);
-extern void  yy_break(int production_number);
+}
 
-extern void yy_hook_a();
-extern void yy_hook_b();
-#endif
+/*
+ * print the state debug and value stacks.
+ * */
+extern void  yy_pstack(int do_refresh, int print_it)
+{
+    
+}
+
+extern void  yy_redraw_stack(void)
+{
+
+}
+
+extern void  yy_next_token(void)
+{
+
+}
+
+extern void  yy_break(int production_number)
+{
+
+}
+
+extern void yy_hook_a()
+{
+
+}
+
+extern void yy_hook_b()
+{
+
+}
+
+extern int   yy_wrap()
+{
+    return 1;
+}
+
+extern char* yy_pstk(void *val, char *sym)
+{
+    static char buf[32];
+    sprintf(buf, "%d", *(int *)val);
+    return buf;
+}
+
+extern void  yy_init_cgllama(void *tos)
+{
+
+}
+
+extern void  yy_init_cglex()
+{
+
+}
+
+extern void  yy_init_cgoccs(void *tos)
+{
+
+}
+
+extern int  main(int argc, char **argv)
+{
+    int yy_lex(void);
+    if(argc == 2) {
+        ii_newfile(argv[1]);
+    }
+
+    while(yy_lex())
+        ;
+
+    exit(0);
+}
