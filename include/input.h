@@ -35,8 +35,9 @@ extern int            ii_flush(int force);
 extern int            ii_fillbuf(unsigned char *starting_at);
 extern int            ii_look(int n);
 extern int            ii_pushback(int n);
-extern int            ii_term(void);
-extern int            ii_unterm(void);
+extern void           ii_term(void);
+extern void           ii_unterm(void);
+
 extern int            ii_input(void);
 extern void           ii_unput(int c);
 extern int            ii_lookahead(int n);

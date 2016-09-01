@@ -9,16 +9,20 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <input.h>
+#include <string.h>
+#include <syslib.h>
 
 /*private macro definitions. */
 #define _STDIN             0
-#define _MAXLOOK          16    /*maximum amount of lookahead*/
-#define _MAXLEN           1024  /*maximum lexeme sizes.*/
-#define _BUFSIZE          ((_MAXLEN * 3) + (2 *_MAXLOOK))
+#define _MAX_LOOKAHEAD    16    /*maximum amount of lookahead*/
+#define _MAX_LEXEME_LEN   1024  /*maximum lexeme sizes.*/
+#define _BUFSIZE          ((_MAX_LEXEME_LEN * 3) + (2 *_MAX_LOOKAHEAD))
 
-#define _DANGER           (_end_buf - _MAXLOOK)
+#define _DANGER           (_end_buf - _MAX_LOOKAHEAD)
 #define _END              (&_start_buf[_BUFSIZE])
 #define _NO_MORE_CHARS()  (_eof_read && (_next >= _end_buf))
+
+#define _MCOPY(d, s, len) memmove((d), (s), (len))
 
 /*static variables definitions*/
 typedef unsigned char uchar;
@@ -129,32 +133,6 @@ PUBLIC unsigned char *ii_mark_prev(void)
     return _pmark = _smark;
 }
 
-/* Flush the input buffer. Do nothing if the current input character isn't
-     * in the danger zone, otherwise move all unread characters to the left end
-     * of the buffer and fill the remainder of the buffer. Note that input()
-     * flushes the buffer willy-nilly if you read past the end of buffer.
-     * Similarly, input_line() flushes the buffer at the beginning of each line.
-     *
-     *				       pMark	DANGER
-     *				        |   	   |
-     *	    Start_buf		       sMark eMark |Next  End_buf
-     *		|			||     |   ||	  |
-     *		V			VV     V   VV	  V
-     *		+-----------------------+----------------+-------+
-     *		| this is already read  | to be done yet | waste |
-     *		+-----------------------+----------------+-------+
-     *		|			|		 |       |
-     *		|<----- shift_amt ----->|<-- copy_amt -->|       |
-     *		|			 		         |
-     *		|<------------------ BUFSIZE ------------------->|
-     *
-     * Either the pMark or sMark (whichever is smaller) is used as the leftmost
-     * edge of the buffer. None of the text to the right of the mark will be
-     * lost. Return 1 if everything's ok, -1 if the buffer is so full that it
-     * can't be flushed. 0 if we're at end of file. If "force" is true, a buffer
-     * flush is forced and the characters already in it are discarded. Don't
-     * call this function on a buffer that's been terminated by ii_term().
-     */
 PUBLIC int ii_advance(void)
 {
     static int been_called = 0;
@@ -176,52 +154,169 @@ PUBLIC int ii_advance(void)
     return (*_next++);
 }
 
+/* Flush the input buffer. Do nothing if the current input character isn't
+ * in the danger zone, otherwise move all unread characters to the left end
+ * of the buffer and fill the remainder of the buffer. Note that input()
+ * flushes the buffer willy-nilly if you read past the end of buffer.
+ * Similarly, input_line() flushes the buffer at the beginning of each line.
+ *
+ *				       pMark	DANGER
+ *				        |   	   |
+ *	    Start_buf		       sMark eMark |Next  End_buf
+ *		|			||     |   ||	  |
+ *		V			VV     V   VV	  V
+ *		+-----------------------+----------------+-------+
+ *		| this is already read  | to be done yet | waste |
+ *		+-----------------------+----------------+-------+
+ *		|			|		 |       |
+ *		|<----- shift_amt ----->|<-- copy_amt -->|       |
+ *		|			 		         |
+ *		|<------------------ BUFSIZE ------------------->|
+ *
+ * Either the pMark or sMark (whichever is smaller) is used as the leftmost
+ * edge of the buffer. None of the text to the right of the mark will be
+ * lost. Return 1 if everything's ok, -1 if the buffer is so full that it
+ * can't be flushed. 0 if we're at end of file. If "force" is true, a buffer
+ * flush is forced and the characters already in it are discarded. Don't
+ * call this function on a buffer that's been terminated by ii_term().
+ */
 PUBLIC int ii_flush(int force)
 {
+    int copy_amt, shift_amt;
+    uchar *left_edge;
 
+    if(_NO_MORE_CHARS()) { return 0; }
+
+    if(_eof_read) { return 1; }
+
+    if(_next >= _DANGER || force) {
+        left_edge = _pmark  ? min(_smark, _pmark) : _smark;
+        shift_amt = (int)(left_edge - _start_buf);
+
+        if(shift_amt < _MAX_LEXEME_LEN) { /*not enough room.*/
+            if(!force) { return -1;}
+
+            left_edge = ii_mark_start(); /*reset start to current character*/
+            ii_mark_prev();
+
+            shift_amt = (int)(left_edge - _start_buf);
+        }
+
+        copy_amt = (int)(_end_buf - left_edge);
+        _MCOPY(_start_buf, left_edge, copy_amt);
+
+        if(!ii_fillbuf(_start_buf + copy_amt)) {
+            sys_ferr("INTERNAL_ERROR, ii_flush: Buffer full, can't read.\n");
+        }
+
+        if(_pmark){_pmark -= shift_amt;}
+
+        _smark -= shift_amt;
+        _emark -= shift_amt;
+        _next  -= shift_amt;
+    }
+
+    return 1;
 }
 
 PUBLIC int ii_fillbuf(unsigned char *starting_at)
 {
+    int need, got;
 
+    need = ((int)(_END - starting_at) / _MAX_LEXEME_LEN) *_MAX_LEXEME_LEN;
+    D(printf("Reading %d bytes.\n", need);)
+
+    if(need < 0){
+        sys_ferr("INTER ERROR ii_fillbuf: Bad read request starting addr.\n");
+    }
+
+    if(need == 0) {return 0;}
+
+    if((got = (*_fp_read)(_input_file, starting_at, need)) == -1){
+        sys_ferr("INTER ERROR ii_fillbuf: can not read input file.");
+    }
+
+    _end_buf = starting_at + got;
+    if(got < need) _eof_read = 1;
+
+    return got;
 }
 
 PUBLIC int ii_look(int n)
 {
-
+    if(n > (_end_buf - _next)) { return _eof_read ? EOF : 0; }
+    if((--n) <  -(int)(_next - _start_buf)) {return 0;}
+    return _next[n];
 }
 
 PUBLIC int ii_pushback(int n)
 {
+    while(--n >= 0 && _next > _smark){
+        if(*--_next == '\n' || !*_next)
+            --_lineno;
+    }
 
+    if(_next < _emark) {
+        _emark = _next;
+        _mline = _lineno;
+    }
+
+    return (_next > _smark);
 }
 
-PUBLIC int ii_term(void)
+/*'\0' terminated support. */
+PUBLIC void ii_term(void)
 {
-
+    _termchar = *_next;
+    *_next = '\0';
 }
 
-PUBLIC int ii_unterm(void)
+PUBLIC void ii_unterm(void)
 {
-
+    *_next = _termchar;
+    _termchar = 0;
 }
 
 PUBLIC int ii_input(void)
 {
+    int rval;
 
+    if(_termchar) {
+        ii_unterm();
+        rval = ii_advance();
+        ii_mark_end();
+        ii_term();
+    } else {
+        rval = ii_advance();
+        ii_mark_end();
+    }
+
+    return rval;
 }
 
 PUBLIC void ii_unput(int c)
 {
-
+    if(_termchar){
+        ii_unterm();
+        if(ii_pushback(1)) {
+            *_next = c;
+        }
+        ii_term();
+    }
+    else {
+        if(ii_pushback(1)){
+            *_next = c;
+        }
+    }
 }
 
 PUBLIC int ii_lookahead(int n)
 {
-
+    return (n == 1 && _termchar) ? _termchar : ii_look(n);
 }
 
 PUBLIC int ii_flushbuf(void)
 {
-
+    if(_termchar) {ii_unterm();}
+    return ii_flush(1);
 }
