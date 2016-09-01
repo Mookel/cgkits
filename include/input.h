@@ -27,7 +27,7 @@ extern int            ii_plineno(void);
 extern unsigned char* ii_mark_start(void);
 extern unsigned char* ii_mark_end(void);
 extern unsigned char* ii_move_start(void);
-extern unsigned char* ii_to_mark(void);
+extern unsigned char* ii_move_back(void);
 extern unsigned char* ii_mark_prev(void);
 
 extern int            ii_advance(void);

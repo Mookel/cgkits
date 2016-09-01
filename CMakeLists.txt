@@ -14,7 +14,7 @@ set(SOURCE_FILES
     testsuit/stack_test.c
     testsuit/test_suit.c
     testsuit/test_suit.h
-    testsuit/yystack_test.c compiler/lib/set.c include/set.h include/syslib.h compiler/lib/syslib.c compiler/lib/yylib.c include/yylib.h compiler/lib/input.c include/input.h)
+    testsuit/yystack_test.c compiler/lib/set.c include/set.h include/syslib.h compiler/lib/syslib.c compiler/lib/yylib.c include/yylib.h compiler/lib/input.c include/input.h include/l.h)
 
 include_directories(.)
 include_directories(compiler)

@@ -8,4 +8,25 @@
 #ifndef CGKITS_YYLIB_H
 #define CGKITS_YYLIB_H
 
+#include <stdarg.h>
+
+extern int   yy_init_debug(int *sstack, int **p_sp, char **dstack, char ***p_dsp,
+                         void *vstack, int v_ele_size, int depth);
+extern int   yy_quit_debug(void);
+extern int   yy_get_args(int argc, char **argv);
+
+extern void  yy_output(int where, char *fmt, va_list args);
+extern void  yy_comment(char *fmt, ...);
+extern void  yy_error(char *fmt, ...);
+extern void  yy_input(char *fmt, ...);
+extern int   yy_prompt(char *prompt, char *buf, int getstring);
+
+extern void  yy_pstack(int do_refresh, int print_it);
+extern void  yy_redraw_stack(void);
+extern void  yy_next_token(void);
+extern void  yy_break(int production_number);
+
+extern void  yy_hook_a();
+extern void  yy_hook_b();
+
 #endif //CGKITS_YYLIB_H

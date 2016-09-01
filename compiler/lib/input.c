@@ -120,7 +120,7 @@ PUBLIC unsigned char *ii_move_start(void)
     else {return ++_smark;}
 }
 
-PUBLIC unsigned char *ii_to_mark(void)
+PUBLIC unsigned char *ii_move_back(void)
 {
     _lineno = _mline;
     return _next = _emark;
