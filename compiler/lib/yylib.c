@@ -94,7 +94,7 @@ PRIVATE void   horriable_death(void);
 PRIVATE int    win_putc_func(int c, WINDOW *win);
 PRIVATE int    get_char_from_promtw(void);
 PRIVATE void   presskey(void);
-PRIVATE int    refresh_win(WINDOW *win);
+PRIVATE void   refresh_win(WINDOW *win);
 PRIVATE void   display_file(char *name, int buf_size, int print_lines);
 PRIVATE void   screen_snapshot(char *filename);
 PRIVATE void   delay(void);
@@ -148,6 +148,8 @@ PRIVATE int win_putc_func(int c, WINDOW *win)
         last_win = win;
         last_c   = test_c;
     }
+
+    return c;
 }
 
 /**
@@ -175,7 +177,7 @@ PRIVATE void presskey(void)
     get_char_from_promtw();
 }
 
-PRIVATE int refresh_win(WINDOW *win)
+PRIVATE void refresh_win(WINDOW *win)
 {
     if(_interactive) { wrefresh(win); }
 }
@@ -633,7 +635,7 @@ extern int   yy_init_debug(int *sstack, int **p_sp, char **dstack, char ***p_dsp
     _abort  = 0;
 
     initscr();
-    signal(SIGINT, (horriable_death));
+    signal(SIGINT, horriable_death);
 
     noecho();
     crmode();
@@ -669,7 +671,7 @@ extern int   yy_init_debug(int *sstack, int **p_sp, char **dstack, char ***p_dsp
 }
 
 
-extern int   yy_quit_debug(void)
+extern void   yy_quit_debug(void)
 {
     echo();
     nocrmode();
@@ -680,6 +682,8 @@ extern int   yy_quit_debug(void)
     if(_log){ fclose(_log);}
 
     signal(SIGINT, SIG_DFL);
+
+
 }
 
 /**
@@ -738,9 +742,45 @@ extern int   yy_get_args(int argc, char **argv)
     return (int)(newargv - oldargv);
 }
 
+/**
+ *  All code sent to yy_code(), yy_data(), and yy_bss() is  funneled here.
+ *  where : 0-code 1-data 2-bss.
+ */
 extern void  yy_output(int where, char *fmt, va_list args)
 {
+    extern FILE *yycodeout, *yydataout, *yybssout;
 
+     const char *wherestr[] = {
+        "CODE->",
+        "DATA->",
+        "BSS-->",
+    };
+
+    if(_log){
+        fprintf(_log, wherestr[where]);
+        sys_prnt((fp_print_t) fputc, _log, fmt, args);
+        fputc('\n', _log);
+    }
+
+    _NEWLINE(_code_window);
+
+    win_putc_func(wherestr[where][0], _code_window);
+    win_putc_func(WIN_VERT, _code_window);
+
+    sys_prnt((fp_print_t) win_putc_func, _code_window, fmt, args);
+    refresh_win(_code_window);
+
+    if(where == 0 && yycodeout != stdout) {
+        vfprintf(yycodeout, fmt, args);
+    }
+
+    if(where == 0 && yycodeout != stdout) {
+        vfprintf(yydataout, fmt, args);
+    }
+
+    if(where == 0 && yycodeout != stdout) {
+        vfprintf(yybssout, fmt, args);
+    }
 }
 
 /*
@@ -795,7 +835,45 @@ extern void  yy_input(char *fmt, ...)
 
 extern int   yy_prompt(char *prompt, char *buf, int getstring)
 {
+    register int c;
+    int y,x;
+    char *startbuf = buf;
 
+    _NEWLINE(_prompt_window);
+    wprintw(_prompt_window, "%s", prompt);
+    wrefresh(_prompt_window);
+
+    if(!getstring) {
+        c = *buf++ = get_char_from_promtw();
+    } else {
+        while((c = get_char_from_promtw()) != '\n' && c != _ESC) {
+            if(isspace(c) && buf == startbuf){
+                continue;
+            }
+
+            if( c != '\b'){
+                *buf++ = c;
+            }
+            else {
+                getyx(_prompt_window, y, x);
+                if(buf <= startbuf) {
+                    wmove(_prompt_window, y, x+1);
+                } else {
+                    waddch(_prompt_window, ' ');
+                    wmove(_prompt_window, y, x);
+                    --buf;
+                }
+            }
+            wrefresh(_prompt_window);
+        }
+
+        while(buf > startbuf && isspace(buf[-1]))
+            --buf;
+    }
+
+    *buf = 0;
+
+    return (c != _ESC);
 }
 
 /*
@@ -803,22 +881,210 @@ extern int   yy_prompt(char *prompt, char *buf, int getstring)
  * */
 extern void  yy_pstack(int do_refresh, int print_it)
 {
-    
+    int numele;
+    int  *toss;   /*top of state stack*/
+    char **tods;  /*top fo debug stack*/
+    char *tovs;   /*top of value stack*/
+    int  *state;  /*current state-stack pointer*/
+    char **debug; /*current debug-stack pointer*/
+    char *value;  /*current value-stack pointer*/
+    int  width;   /*width of column in horiz stack*/
+    static int  times_called = -1;
+    char *p;
+    int i ;
+
+    state = *_p_sp;
+    debug = *_p_dsp;
+    numele = _depth - (int)(state - _sstack);
+    value  = (_vstack + (int)(_depth - numele) *_vsize);
+
+    if(_log && !_no_stack_pix && print_it) {
+        if(!_horiz_stack_pix){
+            fprintf(_log, "    +----+------------------------+\n");
+            if(numele <= 0){
+                fprintf(_log, "  *  |     *************      |   Stack is empty.\n");
+            } else {
+                toss = state;
+                tods = debug;
+                tovs = value;
+                for(i = numele; --i >= 0; ++toss, ++tods, tovs += _vsize){
+                    fprintf(_log, "%4d|%4d| %20.20s | %1.52s\n", (int)(toss-state), *toss, *tods, yy_pstk(tovs, *tods));
+                }
+            }
+            fprintf(_log, "    +----+-----------------------+\n");
+        }else {
+            if(state < _sstack) {
+                fprintf(_log, "*** Stack empty ***\n");
+            } else {
+                for(i = 0;i <= 2; ++i){
+                    if(!_parse_pix && i == 0) continue;
+                    if(!_sym_pix   && i == 1) continue;
+                    if(!_attr_pix  && i == 2) continue;
+
+                    switch(i) {
+                        case 0: fprintf(_log, "   PARSE   ");break;
+                        case 1: fprintf(_log, "   SYMBOL  ");break;
+                        case 2: fprintf(_log, "   ATTRIB  ");break;
+                        default: break;
+                    }
+
+                    toss = _sstack + (_depth + 1);
+                    tods = _dstack + (_depth + 1);
+                    tovs = _vstack + (_depth + 1)*_vsize;
+
+                    for(; toss >= state; --toss, --tods, tovs -= _vsize){
+                        p = yy_pstk(tovs, *tods);
+                        width = 3;
+
+                        if(_sym_pix)  width = max(width, (int)strlen(*tods));
+                        if(_attr_pix) width = max(width, (int)strlen(p));
+
+                        switch(i) {
+                            case 0: fprintf(_log, "%-*d ", width, *toss); break;
+                            case 1: fprintf(_log, "%-*s ", width, *tods); break;
+                            case 2: fprintf(_log, "%-*s ", width, p);     break;
+                            default: break;
+                        }
+                    }
+
+                    fputc('\n', _log);
+                }
+            }
+        }
+    }
+
+    if(!_interactive){
+        if(++times_called % 25 == 0) {
+            wprintw(_stack_window, "working: %d\r", times_called);
+            wrefresh(_stack_window);
+        }
+        return;
+    }
+
+    /*break if conditions meet, why handled here ?? this function just prints stack.*/
+    if(*_s_breakpoint && (state < _sstack + _depth)) {
+        if(isdigit(*_s_breakpoint)){
+            if(atoi(_s_breakpoint) == *state)
+                _single_step = 1;
+        } else if(!strcmp(_s_breakpoint, *debug)) {
+            _single_step = 1;
+        }
+    }
+
+    if(do_refresh) {
+        yy_redraw_stack();
+    } else if(numele > _numelestk) {  /*stack growing*/
+        if(numele > _stack_size) {
+            yy_redraw_stack();
+            wmove(_stack_window, 0, 0);
+        } else  {
+            wmove(_stack_window, _stack_size - numele, 0);
+        }
+
+        wprintw(_stack_window, "%4d%c %20.20s %c %1.52s", *state, WIN_VERT, *debug, WIN_VERT, yy_pstk(value, *debug));
+        wrefresh(_stack_window);
+    } else {   /*shrinking */
+        for(i = _numelestk; i > numele; --i){
+            if(i > _stack_size) {
+                wmove(_stack_window, _stack_size - 1, 77);
+                _NEWLINE(_stack_window);
+                wprintw(_stack_window, "%4d%c %20.20s %c %1.52s", (_sstack + _depth)[-i + _stack_size], WIN_VERT,
+                        (_dstack + _depth)[-i + _stack_size], WIN_VERT,
+                        yy_pstk((_vstack + (_depth * _vsize)) + ((-i + _stack_size)*_vsize),
+                        (_dstack + _depth)[-i + _stack_size]));
+            } else {
+                wmove(_stack_window, _stack_size - i, 0);
+                wclrtoeol(_stack_window);
+            }
+            wrefresh(_stack_window);
+        }
+
+    }
+
+    delay();
+    wrefresh(_stack_window);
+    _numelestk = numele;
 }
 
+/*
+ * Redraw the entire screen.
+ * */
 extern void  yy_redraw_stack(void)
 {
+    int i ;
+    int numele;
+    int *state = *_p_sp;
+    char **debug = *_p_dsp;
+    char *value;
 
+    werase(_stack_window);
+    scrollok(_stack_window, FALSE);
+
+    numele = _depth - (int)(state - _sstack);
+    value  = _vstack + (_depth - numele) * _vsize;
+
+    wmove(_stack_window, numele <= _stack_size ? _stack_size - numele : 0, 0);
+
+    for(i = min(_stack_size, numele); --i >= 0; ++state, ++debug, value += _vsize){
+        wprintw(_stack_window, "%4d%c %20.20s %c %1.52s", *state, WIN_VERT, *debug, WIN_VERT, yy_pstk(value, *debug));
+    }
+
+    is_scrollok(_stack_window);
 }
 
-extern void  yy_next_token(void)
+/*Input a token from yy_lex() and echo to both the token and comment windows.*/
+extern int  yy_next_token(void)
 {
+    static int tok = -1;
+    char *str;
+    char *lexeme;
+    char buf[_WIN_TOKEN_WIDTH];
+    extern char *Yy_stok[]; /*Generated by cgoccs and cgllama*/
+    extern int  yy_lex(void);
+    extern int  yy_lex(void);
 
+    if(tok >= 0 && (_interactive || _log)) {
+        yy_comment("Advance past %s\n", Yy_stok[tok]);
+    }
+
+    lexeme = ((tok = (_abort ? 0 : yy_lex()) == 0) ? "" : yytext);
+
+    if(_interactive || _log) {
+        yy_comment("Read %s <%s>\n", str = Yy_stok[tok], lexeme);
+    }
+
+    if(_interactive) {
+        sys_concat(_WIN_TOKEN_WIDTH, buf, str, " ", lexeme, NULL);
+        scrollok(_token_window, TRUE);
+        _NEWLINE(_token_window);
+        scrollok(_token_window, FALSE);
+        wprintw(_token_window, "%0.*s", _WIN_TOKEN_WIDTH - 2, buf);
+        wrefresh(_token_window);
+
+        if(_l_breakpoint != -1 && _l_breakpoint <= yylineno) {
+            _l_breakpoint = -1;
+            _single_step = 1;
+            yy_pstack(0, 1);
+        } else if((*_i_breakpoint
+                   && (isdigit(*_i_breakpoint) && (tok == atoi(_i_breakpoint))))
+                || (!strcmp(lexeme, _i_breakpoint))
+                || (!strcmp(Yy_stok[tok], _i_breakpoint))) {
+            _single_step = 1;
+            yy_pstack(0, 1);
+        }
+
+    }
+
+    delay();
+    return tok;
 }
 
 extern void  yy_break(int production_number)
 {
-
+    if((production_number == _p_breakpoint) || (production_number == -1)) {
+        _single_step = 1;
+        yy_pstack(0, 1);
+    }
 }
 
 extern void yy_hook_a()

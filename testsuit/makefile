@@ -2,7 +2,7 @@ INC_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/include
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/libary
 TARGET  = test_suit
 CC      = gcc
-OBJ     = test_suit.o stack_test.o yystack_test.o hash_test.o set_test.o syslib_test.o
+OBJ     = test_suit.o stack_test.o yystack_test.o hash_test.o set_test.o syslib_test.o yylib_test.o
 COMMON_HEADER = test_suit.h
 LIBCONFIG = $(LIB_DIR)/complib.a $(LIB_DIR)/llib.a -lncurses
 COMPILING_CFLAGS = -I$(INC_DIR)
@@ -31,6 +31,9 @@ set_test.o: set_test.c $(COMMON_HEADER)
 
 syslib_test.o: syslib_test.c $(COMMON_HEADER) $(INC_DIR)/syslib.h
 	$(CC) -c $(COMPILING_CFLAGS) syslib_test.c
+
+yylib_test.o : yylib_test.c $(COMMON_HEADER) $(INC_DIR)/yylib.h
+	$(CC) -c $(COMPILING_CFLAGS) yylib_test.c
 
 clean:
 	rm -rf $(OBJ)

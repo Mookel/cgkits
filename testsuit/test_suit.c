@@ -51,6 +51,7 @@ int main(int argc, char **argv)
     ADD_TEST("hash", hash);
     ADD_TEST("set", set);
     ADD_TEST("syslib", syslib);
+    ADD_TEST("yylib", yylib);
     TEST_ADD_FLAG(TRUE);
 
     if(argc != 1){ //run one test.
