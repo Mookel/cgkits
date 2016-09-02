@@ -10,7 +10,7 @@ COMPILING_CFLAGS = -I$(INC_DIR)
 all:$(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) -o $@ $(COMPILING_CFLAGS) $(OBJ) $(LIBCONFIG)
+	$(CC) -o $@ $(COMPILING_CFLAGS) $(OBJ) $(LIBCONFIG) -DDEBUG
 	@rm -rf $(OBJ)
 	@echo "\033[31m OK, test_suit is ready, just input ./test_suit to run all test suits....\033[0m"
 

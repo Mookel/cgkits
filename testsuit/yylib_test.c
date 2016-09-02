@@ -5,8 +5,22 @@
 #include <compiler.h>
 #include "test_suit.h"
 
+char *yytext;
+int  yyleng;
+int  yylineno;
+char *Yy_stok[1024];
+FILE *yycodeout, *yydataout, *yybssout;
+
+int  yy_lex()
+{
+    return 0;
+}
+
 int __yylib_test__()
 {
-
-    return 0;
+    yytext = "hello";
+    yyleng = 5;
+    yy_init_debug(NULL, NULL, NULL, NULL, NULL, 0, 0);
+    yy_quit_debug();
+    return 1;
 }

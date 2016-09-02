@@ -34,7 +34,7 @@
 #define _WIN_PRINTWIDTH     79
 
 #define _ESC                0x1b
-#define _BRKLEN             33
+#define _BRKLEN             79
 
 /*extern global variables */
 extern char *yytext;
@@ -86,28 +86,24 @@ PRIVATE int      _attr_pix;                    /*if(_horiz_stack_pix) print atti
 
 PRIVATE int        _char_avail = 0;
 #define _kbhit()   _char_avail
-#define _kbready() { _char_avail = 1;}
 
 /*private functions prototypes.*/
 PRIVATE WINDOW *boxwin(int lines, int cols, int y_start, int x_start, char *title);
 PRIVATE void   horriable_death(void);
 PRIVATE int    win_putc_func(int c, WINDOW *win);
-PRIVATE int    get_char_from_promtw(void);
-PRIVATE void   presskey(void);
+PRIVATE int    read_char_from_promtw(void);
+PRIVATE void   wait_keypress_continue(void);
 PRIVATE void   refresh_win(WINDOW *win);
-PRIVATE void   display_file(char *name, int buf_size, int print_lines);
-PRIVATE void   screen_snapshot(char *filename);
+PRIVATE void   display_file_cmd(char *name, int buf_size, int print_lines);
+PRIVATE void   screen_snapshot_cmd(char *filename);
 PRIVATE void   delay(void);
 PRIVATE void   cmd_list(void);
 PRIVATE int    breakpoint(void);
-PRIVATE int    new_input_file(char *buf);
-PRIVATE FILE   *to_log(char *buf);
+PRIVATE int    new_file_cmd(char *buf);
+PRIVATE FILE   *enable_log_cmd(char *buf);
 PRIVATE void   kbready();
 
-PRIVATE void kbready()
-{
-    _char_avail = 1;
-}
+PRIVATE void kbready() { _char_avail = 1; }
 
 /*private functions.*/
 PRIVATE WINDOW *boxwin(int lines, int cols, int y_start, int x_start, char *title)
@@ -155,14 +151,14 @@ PRIVATE int win_putc_func(int c, WINDOW *win)
 /**
  * Get a character from the input window and echo it explicitly.
  */
-PRIVATE int get_char_from_promtw(void)
+PRIVATE int read_char_from_promtw(void)
 {
     int c;
     if((c = wgetch(_prompt_window) & 0x7f) != _ESC) {
         waddch(_prompt_window, c);
     }
 
-    _char_avail = 0;
+    _char_avail = 0; /*read it and reset it waiting for next char.*/
     return c;
 }
 
@@ -170,13 +166,16 @@ PRIVATE int get_char_from_promtw(void)
  * Ask for a key to be pressed and wait for it. Note that this command
  * does a refresh.
  * */
-PRIVATE void presskey(void)
+PRIVATE void wait_keypress_continue(void)
 {
     wprintw(_prompt_window, " Press any key: ");
     wrefresh(_prompt_window);
-    get_char_from_promtw();
+    read_char_from_promtw();   /*read any char, ignore it and keep going.*/
 }
 
+/**
+ *  refresh window when needed.
+ */
 PRIVATE void refresh_win(WINDOW *win)
 {
     if(_interactive) { wrefresh(win); }
@@ -186,7 +185,7 @@ PRIVATE void refresh_win(WINDOW *win)
  *  Display an arbitrary file in the stack window, one page at a time.
  *  The stack window is not refreshed by this routine.
  */
-PRIVATE void display_file(char *name, int buf_size, int print_lines)
+PRIVATE void display_file_cmd(char *name, int buf_size, int print_lines)
 {
     FILE *fd;
     int  i;
@@ -196,7 +195,7 @@ PRIVATE void display_file(char *name, int buf_size, int print_lines)
         _NEWLINE(_prompt_window);
         wprintw(_prompt_window, "Can't open %s", name);
         wrefresh(_prompt_window);
-        presskey(); /*wait for next command.*/
+        wait_keypress_continue(); /*wait for next command.*/
     } else {
         for(i = _stack_size - 1;; i = (*name == ' ') ? 1 : _stack_size - 2){  /*name = ' ' when we enter space.*/
             while(--i >= 0 && fgets(name, buf_size, fd)){
@@ -222,7 +221,7 @@ PRIVATE void display_file(char *name, int buf_size, int print_lines)
  * is not printed in order to let us have 79 lines.Otherwise,the saved screen shows up as double
  * -spaced on most printers. The screen image is appended to the end of the file.
  * */
-PRIVATE void screen_snapshot(char *filename)
+PRIVATE void screen_snapshot_cmd(char *filename)
 {
     char buf[2];
     char *mode = "a";
@@ -233,7 +232,7 @@ PRIVATE void screen_snapshot(char *filename)
         if(!yy_prompt("File exists, overwirte or append ? (o/a) :", buf, 0)){
             _NEWLINE(_prompt_window);
             yy_input("Aborting command.");
-            presskey();
+            wait_keypress_continue();
             return;
         } else {
             if(toupper(*buf) == 'o') { mode = "w";}
@@ -244,7 +243,7 @@ PRIVATE void screen_snapshot(char *filename)
         yy_input("...%s %s...", *mode == 'w' ? "overwriting" : "appending to", filename);
     } else {
         yy_input("Can't open %s.", filename);
-        presskey();
+        wait_keypress_continue();
         return;
     }
 
@@ -277,7 +276,7 @@ PRIVATE void delay(void)
     if(!_interactive) return;
 
     if(!_single_step && _kbhit()) {
-        get_char_from_promtw();
+        read_char_from_promtw();
         _single_step = 1;
     }
 
@@ -291,17 +290,17 @@ PRIVATE void delay(void)
             if(current - start >= _delay) { break; }
 
             if(_kbhit()) {
-                get_char_from_promtw();
+                read_char_from_promtw();
                 _single_step = 1;
                 break;
             }
         }
 
-        if(!_single_step) { return ;}
+        if(!_single_step) return ;
     }
 
     while(1) {
-        yy_prompt("Enter command (Space to continue, ? for list: )", buf, 0);
+        yy_prompt("Enter command (Space to continue, ? for list) :", buf, 0);
 
         switch(*buf) {
             case '\0':
@@ -311,7 +310,7 @@ PRIVATE void delay(void)
             case '?':  /*help list*/
                 cmd_list();
                 _NEWLINE(_prompt_window);
-                presskey();
+                wait_keypress_continue();
                 yy_redraw_stack();
                 break;
 
@@ -332,7 +331,7 @@ PRIVATE void delay(void)
                 break;
 
             case 'f': /*read file*/
-                if(!yy_prompt("Print line numbers ? (y/n, CR= y, ESC cancels" , buf, 0)){
+                if(!yy_prompt("Print line numbers ? (y/n, CR= y, ESC cancels): " , buf, 0)){
                     break;
                 }
 
@@ -342,7 +341,7 @@ PRIVATE void delay(void)
                 }
 
                 werase(_stack_window);
-                display_file(buf, sizeof(buf), print_lines);
+                display_file_cmd(buf, sizeof(buf), print_lines);
                 yy_redraw_stack();
                 break;
 
@@ -352,12 +351,12 @@ PRIVATE void delay(void)
 
             case 'i':
                 if(yy_prompt("Input file name or ESC to cancel: ", buf, 1)){
-                    new_input_file(buf);
+                    new_file_cmd(buf);
                 }
                 break;
 
             case 'l': /*enable logging*/
-                to_log(buf);
+                enable_log_cmd(buf);
                 break;
 
             case 'N': /*noninteractive w/o logging*/
@@ -370,7 +369,7 @@ PRIVATE void delay(void)
                 goto outside;
 
             case 'n': /*noninteractive w/ logging */
-                if(!_log && !to_log(buf)) { break; }
+                if(!_log && !enable_log_cmd(buf)) { break; }
                 _interactive = 0;
                 _single_step = 0;
                 _delay = 0L;
@@ -387,7 +386,7 @@ PRIVATE void delay(void)
 
             case 'w': /*screen shot*/
                 if(yy_prompt("Output file name or ESC to cancel: ", buf, 1)){
-                    screen_snapshot(buf);
+                    screen_snapshot_cmd(buf);
                 }
                 break;
 
@@ -432,7 +431,7 @@ PRIVATE void cmd_list(void)
     wmove(_stack_window, 4, 39);
     wprintw(_stack_window, "w (w)rite screen to file or device\n");
     wmove(_stack_window, 5, 39);
-    wprintw(_stack_window, "x show current and pre. le(x)eme\n");
+    wprintw(_stack_window, "x show current and pre le(x)eme\n");
     wmove(_stack_window, 7, (78-29)/2);
     wprintw(_stack_window, "Space or Enter to single step");
     wrefresh(_stack_window);
@@ -532,7 +531,7 @@ PRIVATE int breakpoint(void)
                                             :"Input line = %d\n", _l_breakpoint);
                 wrefresh(_stack_window);
                 _NEWLINE(_prompt_window);
-                presskey();
+                wait_keypress_continue();
                 break;
 
             default:
@@ -549,7 +548,7 @@ PRIVATE int breakpoint(void)
  * Open up a new input file. Input must come from a file because the keyboard is used to get commands.
  * In theory, you can use both standard input and the keyboard, but i hate it, hehe...
  * */
-PRIVATE int new_input_file(char *buf)
+PRIVATE int new_file_cmd(char *buf)
 {
     _NEWLINE(_prompt_window);
     wrefresh(_prompt_window);
@@ -558,14 +557,14 @@ PRIVATE int new_input_file(char *buf)
         _inp_fm_file = 1;
     } else {
         wprintw(_prompt_window, "Can't open %s.", buf);
-        presskey();
+        wait_keypress_continue();
     }
 
     return _inp_fm_file;
 }
 
 /*set up everything to log output to a file*/
-PRIVATE FILE *to_log(char *buf)
+PRIVATE FILE *enable_log_cmd(char *buf)
 {
     if(!yy_prompt("Log-file name (CR for \"log\", ESC cancles): ", buf, 1)){
         return NULL;
@@ -576,7 +575,7 @@ PRIVATE FILE *to_log(char *buf)
     if(!(_log = fopen(buf, "w"))) {
         _NEWLINE(_prompt_window);
         wprintw(_prompt_window, "Can't open %s", buf);
-        presskey();
+        wait_keypress_continue();
         return NULL;
     }
 
@@ -586,7 +585,7 @@ PRIVATE FILE *to_log(char *buf)
         _no_comment_pix =(*buf == 'n');
     }
 
-    if(!yy_prompt("Print stack pictures in log file ? ESC cancel (y/n, CR = y): ", buf, 0)){
+    if(!yy_prompt("Print stack in log file ? ESC cancel (y/n, CR = y): ", buf, 0)){
         return NULL;
     }
 
@@ -663,7 +662,7 @@ extern int   yy_init_debug(int *sstack, int **p_sp, char **dstack, char ***p_dsp
             return 0;
         }
 
-        new_input_file(buf);
+        new_file_cmd(buf);
     }
 
     delay();
@@ -712,6 +711,7 @@ extern int   yy_get_args(int argc, char **argv)
     char *filename = NULL;
     int   ssize    = _WIN_DEFSTACK;
     newargv = ++argv;
+
     for(--argc; --argc >= 0; ++argv) {
         if(argv[0][0] != '-') {          /*filename*/
             if(filename) {
@@ -835,7 +835,7 @@ extern void  yy_input(char *fmt, ...)
 
 extern int   yy_prompt(char *prompt, char *buf, int getstring)
 {
-    register int c;
+    int c;
     int y,x;
     char *startbuf = buf;
 
@@ -844,9 +844,9 @@ extern int   yy_prompt(char *prompt, char *buf, int getstring)
     wrefresh(_prompt_window);
 
     if(!getstring) {
-        c = *buf++ = get_char_from_promtw();
+        c = *buf++ = read_char_from_promtw();
     } else {
-        while((c = get_char_from_promtw()) != '\n' && c != _ESC) {
+        while((c = read_char_from_promtw()) != '\n' && c != _ESC) {
             if(isspace(c) && buf == startbuf){
                 continue;
             }
@@ -1124,6 +1124,7 @@ extern void  yy_init_cgoccs(void *tos)
 
 }
 
+/*
 extern int  main(int argc, char **argv)
 {
     int yy_lex(void);
@@ -1136,3 +1137,4 @@ extern int  main(int argc, char **argv)
 
     exit(0);
 }
+ */
