@@ -1,5 +1,5 @@
-INC_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/include
-LIB_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/libary
+INC_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
+LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 TARGET  = test_suit
 CC      = gcc
 OBJ     = test_suit.o stack_test.o yystack_test.o hash_test.o set_test.o syslib_test.o yylib_test.o

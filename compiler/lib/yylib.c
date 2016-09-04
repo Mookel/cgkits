@@ -17,7 +17,7 @@
 #include <yylib.h>
 #include <input.h>
 #include <sys/timeb.h>
-#include <syslib.h>
+#include <com.h>
 
 /*macros definitions*/
 #define _NEWLINE(win)       (_interactive ? (waddch(win, '\n'), wclrtoeol(win)) \
@@ -758,7 +758,7 @@ extern void  yy_output(int where, char *fmt, va_list args)
 
     if(_log){
         fprintf(_log, wherestr[where]);
-        sys_prnt((fp_print_t) fputc, _log, fmt, args);
+        com_prnt((fp_print_t) fputc, _log, fmt, args);
         fputc('\n', _log);
     }
 
@@ -767,7 +767,7 @@ extern void  yy_output(int where, char *fmt, va_list args)
     win_putc_func(wherestr[where][0], _code_window);
     win_putc_func(WIN_VERT, _code_window);
 
-    sys_prnt((fp_print_t) win_putc_func, _code_window, fmt, args);
+    com_prnt((fp_print_t) win_putc_func, _code_window, fmt, args);
     refresh_win(_code_window);
 
     if(where == 0 && yycodeout != stdout) {
@@ -792,11 +792,11 @@ extern void  yy_comment(char *fmt, ...)
     va_list args;
     va_start(args, fmt);
     if(_log && !_no_comment_pix) {
-        sys_prnt((fp_print_t)fputc, _log, fmt, args);
+        com_prnt((fp_print_t) fputc, _log, fmt, args);
     }
 
     _NEWLINE(_comment_window);
-    sys_prnt((fp_print_t) win_putc_func, _comment_window, fmt, args);
+    com_prnt((fp_print_t) win_putc_func, _comment_window, fmt, args);
     refresh_win(_comment_window);
 }
 
@@ -812,11 +812,11 @@ extern void  yy_error(char *fmt, ...)
     yy_comment("ERROR, line %d near <%s>\n", yylineno, yytext);
 
     if(_log){
-        sys_prnt((fp_print_t)fputc, _log, fmt, args);
+        com_prnt((fp_print_t) fputc, _log, fmt, args);
     }
 
     _NEWLINE(_comment_window);
-    sys_prnt((fp_print_t)win_putc_func, _comment_window, fmt, args);
+    com_prnt((fp_print_t) win_putc_func, _comment_window, fmt, args);
     refresh_win(_comment_window);
 
     _interactive = old_interactive;
@@ -829,7 +829,7 @@ extern void  yy_input(char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    sys_prnt((fp_print_t) win_putc_func, _prompt_window, fmt, args);
+    com_prnt((fp_print_t) win_putc_func, _prompt_window, fmt, args);
     refresh_win(_prompt_window);
 }
 
@@ -1054,7 +1054,7 @@ extern int  yy_next_token(void)
     }
 
     if(_interactive) {
-        sys_concat(_WIN_TOKEN_WIDTH, buf, str, " ", lexeme, NULL);
+        com_concat(_WIN_TOKEN_WIDTH, buf, str, " ", lexeme, NULL);
         scrollok(_token_window, TRUE);
         _NEWLINE(_token_window);
         scrollok(_token_window, FALSE);

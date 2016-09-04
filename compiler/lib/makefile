@@ -1,9 +1,9 @@
-INC_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/include
+INC_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 TARGET  = test_suit
-LIB_DIR = /Users/mookel/Workspace/CompilerPro/cgkits/libary
+LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 CC      = gcc
-COMPLIB_OBJS    = hash.o set.o syslib.o
-LLIB_OBJS       = input.o yylib.o syslib.o 
+COMPLIB_OBJS    = hash.o set.o syslib.o com.o
+LLIB_OBJS       = input.o yylib.o com.o 
 COMPILING_FLAGS = -I$(INC_DIR) 
 AR = ar
 COMPLIB = complib.a
@@ -33,6 +33,9 @@ input.o: input.c $(INC_DIR)/input.h
 
 yylib.o: yylib.c $(INC_DIR)/yylib.h
 	$(CC) -c $(COMPILING_FLAGS) yylib.c
+
+com.o: com.c $(INC_DIR)/com.h
+	$(CC) -c $(COMPILING_FLAGS) com.c
 
 clean:
 	rm -rf $(COMPLIB_OBJS)

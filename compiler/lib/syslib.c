@@ -8,13 +8,13 @@
 #include <debug.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <math.h>
+#include <com.h>
 #include <syslib.h>
 
 /*private macro definitions.*/
@@ -201,34 +201,6 @@ PUBLIC int sys_movefile(char *dst, char *src, char *mode)
     return ret_val;
 }
 
-/*Concatenates an arbitrary number of strings into a single destination
- * array of size "size" .At most size-1 characters are copied.
- * use example: char target[SIZE];
- * concat(SIZE, target, "first", "second", ..., "last", NULL);
- * Return condition:
- * (1) size <= 1 , return -1;
- * (2) size > 1 but ... is NULL, return size;
- * (3) size > 1 but ... len is longer than size, return -1;
- * (4) size > 1 and ... len is smaller than size, return size - length;
- * */
-PUBLIC int sys_concat(int size, char *dst, ...)
-{
-    char *src;
-    va_list args;
-    va_start(args, dst);
-
-    while((src = va_arg(args, char *)) && size > 1){
-        while(*src && (size-- > 1)) {
-            *dst++ = *src++;
-        }
-    }
-
-    *dst++ = '\0';
-    va_end(args);
-
-    return (size <= 1 && src && *src)  ? -1 : size;
-}
-
 /*
  * Search for files by looking in the directories listed in the envname
  * environment.Put the full path name(if found) into the pathname, or
@@ -244,7 +216,7 @@ PUBLIC int sys_searchenv(char *filename, char *envname, char *pathname)
     char *p;
 
     getcwd(pathname, _MAX_PATH_NAME_LEN);
-    sys_concat(_MAX_PATH_NAME_LEN, pathname, pathname, "/", filename, NULL);
+    com_concat(_MAX_PATH_NAME_LEN, pathname, pathname, "/", filename, NULL);
 
     /*first check current directory*/
     if(access(pathname, 0) != -1){
@@ -302,7 +274,7 @@ PUBLIC int sys_driver_2(FILE *output, int lines)
     int process_comment = 0;
 
     if(!_input_file){
-        sys_ferr("INTERNAL ERROR [driver_2], Tempalte file not open.\n");
+        com_ferr("INTERNAL ERROR [driver_2], Tempalte file not open.\n");
     }
 
     if(lines)
@@ -324,7 +296,7 @@ PUBLIC int sys_driver_2(FILE *output, int lines)
         }
 
         if(fputs(buf, output) == -1){
-            sys_ferr("WRITE OUTPUT ERROR [driver_2].\n");
+            com_ferr("WRITE OUTPUT ERROR [driver_2].\n");
         }
     }
 
@@ -559,19 +531,6 @@ PUBLIC int sys_pnext(FILE *fp, char *name)
     sys_printv(fp, boptext);
 }
 
-PUBLIC void sys_prnt(fp_print_t fp_prnt, void *fun_arg, char *format, va_list args)
-{
-    char buf[256], *p;
-    vsprintf(buf, format, args);
-    for(p = buf; *p; ++p)
-        (*fp_prnt)(*p,  fun_arg);
-}
-
-PUBLIC void sys_stop_prnt(void)
-{
-
-}
-
 PUBLIC void sys_pchar(int c, FILE *stream)
 {
     fputs(sys_bin_to_ascii(c, 1), stream);
@@ -655,27 +614,4 @@ PUBLIC void sys_fputstr(char *str, int maxlen, FILE *stream)
             putc(*s++, stream);
         }
     }
-}
-
-
-PUBLIC int sys_ferr(char *format, ...)
-{
-    D(void (**ret_addr_p)(); )
-    va_list args;
-
-    va_start(args, format);
-    if(format) sys_prnt((fp_print_t)fputc, stderr, format, args);
-    else perror(va_arg(args, char *));
-    va_end(args);
-
-    D(ret_addr_p = (void(**)()) &fmt;)
-    /*Attention : Be carefully in 64bit PC mac os, this is not reliable.*/
-    D(fprintf(stderr, "\n\t--ferr() called from %p\n", ret_addr_p[-1]);)
-
-    exit(sys_on_ferr());
-}
-
-PUBLIC int sys_on_ferr(void)
-{
-    return errno;
 }

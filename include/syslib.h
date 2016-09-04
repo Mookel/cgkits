@@ -29,7 +29,6 @@ extern  int      sys_movefile(char *dst, char *src, char *mode);
 /*driver1 and driver2 work together to transfer a template file to a lex or parser
  *file. driver1 must be called first.
  * */
-extern  int      sys_concat(int size, char *dst, ...);
 extern  int      sys_searchenv(char *filename, char *envname, char *pathname);
 extern  FILE*    sys_driver_1(FILE *output, int lines, char *file_name);
 extern  int      sys_driver_2(FILE *output, int lines);
@@ -53,19 +52,11 @@ extern  int      sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
 extern  int      sys_pnext(FILE *fp, char *name);
 
 /*print like functions.*/
-typedef int      (*fp_print_t)(int, ...);
-extern  void     sys_prnt(fp_print_t fp_prnt, void *fun_arg, char *format, va_list args);
-extern  void     sys_stop_prnt(void);
 extern  void     sys_pchar(int c, FILE *stream);
 extern  void     sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols);
 extern  void     sys_printv(FILE* fp, char **argv);
 extern  void     sys_comment(FILE* fp, char **argv);
 extern  void     sys_print_defnext(FILE *fp, char *name);
 extern  void     sys_fputstr(char *str, int maxlen, FILE *stream);
-
-/*error output*/
-extern  int      sys_ferr(char *format, ...);
-extern  int      sys_on_ferr(void);
-
 
 #endif //CGKITS_SYSLIB_H

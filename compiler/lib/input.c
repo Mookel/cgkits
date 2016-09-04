@@ -206,7 +206,7 @@ PUBLIC int ii_flush(int force)
         _MCOPY(_start_buf, left_edge, copy_amt);
 
         if(!ii_fillbuf(_start_buf + copy_amt)) {
-            sys_ferr("INTERNAL_ERROR, ii_flush: Buffer full, can't read.\n");
+            comm_ferr("INTERNAL_ERROR, ii_flush: Buffer full, can't read.\n");
         }
 
         if(_pmark){_pmark -= shift_amt;}
@@ -227,13 +227,13 @@ PUBLIC int ii_fillbuf(unsigned char *starting_at)
     D(printf("Reading %d bytes.\n", need);)
 
     if(need < 0){
-        sys_ferr("INTER ERROR ii_fillbuf: Bad read request starting addr.\n");
+        comm_ferr("INTER ERROR ii_fillbuf: Bad read request starting addr.\n");
     }
 
     if(need == 0) {return 0;}
 
     if((got = (*_fp_read)(_input_file, starting_at, need)) == -1){
-        sys_ferr("INTER ERROR ii_fillbuf: can not read input file.");
+        comm_ferr("INTER ERROR ii_fillbuf: can not read input file.");
     }
 
     _end_buf = starting_at + got;
