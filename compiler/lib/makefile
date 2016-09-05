@@ -2,8 +2,9 @@ INC_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 TARGET  = test_suit
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 CC      = gcc
-COMPLIB_OBJS    = hash.o set.o syslib.o com.o
-LLIB_OBJS       = input.o yylib.o com.o 
+COM_OBJS = com.o
+COMPLIB_OBJS    = hash.o set.o syslib.o
+LLIB_OBJS       = input.o yylib.o 
 COMPILING_FLAGS = -I$(INC_DIR) 
 AR = ar
 COMPLIB = complib.a
@@ -11,13 +12,15 @@ LLIB    = llib.a
 
 all:$(COMPLIB) $(LLIB)
 
-$(COMPLIB): $(COMPLIB_OBJS)
+$(COMPLIB): $(COMPLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LIB_DIR)/$(COMPLIB)
 	$(AR) -r $(LIB_DIR)/$(COMPLIB) $(COMPLIB_OBJS)
+	rm -rf $(COMPLIB_OBJS) $(COM_OBJS)
 
-$(LLIB): $(LLIB_OBJS)
+$(LLIB): $(LLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LIB_DIR)/$(LLIB)
 	$(AR) -r $(LIB_DIR)/$(LLIB) $(LLIB_OBJS)
+	rm -rf $(LLIB_OBJS) $(COM_OBJS)
 
 hash.o: hash.c $(INC_DIR)/hash.h $(INC_DIR)/debug.h
 	$(CC) -c $(COMPILING_FLAGS) hash.c
@@ -40,7 +43,9 @@ com.o: com.c $(INC_DIR)/com.h
 clean:
 	rm -rf $(COMPLIB_OBJS)
 	rm -rf $(LLIB_OBJS)
+	rm -rf $(COM_OBJS)
 	rm -rf $(LIB_DIR)/$(COMPLIB)
 	rm -rf $(LIB_DIR)/$(LLIB)
+
 
 

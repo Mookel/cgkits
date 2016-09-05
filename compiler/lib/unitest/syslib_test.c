@@ -40,9 +40,9 @@ PRIVATE int test2()
 PRIVATE int test3()
 {
     char target[128];
-    int ret = sys_concat(128, target, "first", "second", "last", NULL);
+    int ret = com_concat(128, target, "first", "second", "last", NULL);
     printf("size = 128, concat : %s, ret = %d\n", target, ret);
-    ret = sys_concat(12, target, "first", "second", "last", NULL);
+    ret = com_concat(12, target, "first", "second", "last", NULL);
     printf("size = 12, concat : %s, ret = %d\n", target, ret);
     return 1;
 

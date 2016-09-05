@@ -162,3 +162,18 @@ PRIVATE void errmsg(int type, char **table, char *msgtype)
     exit(1);
 }
 
+PRIVATE void warning(WARN_NUM type)
+{
+    errmsg((int)type, _warnmsgs, "WARNING");
+}
+
+PRIVATE void parse_err(ERR_NUM type)
+{
+    errmsg((int)type, _errmsg, "ERROR");
+}
+
+/*--------------------------------------------------------------*/
+PRIVATE NFA *new()
+{
+    NFA *p;
+}
