@@ -14,12 +14,12 @@ all:$(COMPLIB) $(LLIB)
 
 $(COMPLIB): $(COMPLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LIB_DIR)/$(COMPLIB)
-	$(AR) -r $(LIB_DIR)/$(COMPLIB) $(COMPLIB_OBJS)
-	rm -rf $(COMPLIB_OBJS) $(COM_OBJS)
+	$(AR) -r $(LIB_DIR)/$(COMPLIB) $(COMPLIB_OBJS) $(COM_OBJS)
+	rm -rf $(COMPLIB_OBJS)
 
 $(LLIB): $(LLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LIB_DIR)/$(LLIB)
-	$(AR) -r $(LIB_DIR)/$(LLIB) $(LLIB_OBJS)
+	$(AR) -r $(LIB_DIR)/$(LLIB) $(LLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LLIB_OBJS) $(COM_OBJS)
 
 hash.o: hash.c $(INC_DIR)/hash.h $(INC_DIR)/debug.h

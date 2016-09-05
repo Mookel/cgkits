@@ -14,10 +14,10 @@
 #include <debug.h>
 #include <win.h>
 #include <ncurses.h>
+#include <com.h>
 #include <yylib.h>
 #include <input.h>
 #include <sys/timeb.h>
-#include <com.h>
 
 /*macros definitions*/
 #define _NEWLINE(win)       (_interactive ? (waddch(win, '\n'), wclrtoeol(win)) \
