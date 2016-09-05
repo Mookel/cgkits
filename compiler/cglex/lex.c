@@ -55,7 +55,88 @@ PRIVATE  void cmd_line_error(int usage, char *fmt, ...)
     va_end(args);
 }
 
-PRIVATE void lerror(int status, char *fmt, ...)
+PRIVATE void strip_comments(char *string)
+{
+    static int incomment = 0;
+
+    for(; *string; ++string){
+        if(incomment){
+            if(string[0] == '*' && string[1] == '/'){
+                incomment = 0;
+                *string++ = ' ';
+            }
+            if(!isspace(*string)) *string = ' ';
+        } else {
+            if(string[0] == '/' && string[1] == '*') {
+                incomment = 1;
+                *string++ = ' ';
+                *string++ = ' ';
+            }
+        }
+    }
+}
+
+PRIVATE void handle_head(int suppress_out)
+{
+    int transparent = 0;
+
+    if(!suppress_out && g_pulic_sym)
+        fputs("#define YYPRIVATE\n\n", g_ofile);
+
+    if(!g_no_lines)
+        fprintf(g_ofile, "#line 1 \"%s\"\n", g_input_file_name);
+
+    while(fgets(g_input_buffer, MAX_RULE_SIZE, g_ifile)){
+        ++g_actual_lineno;
+        if(!transparent) strip_comments(g_input_buffer);
+
+        if(g_verbose > 1) printf("h%d: %s", g_actual_lineno, g_input_buffer);
+
+        if(g_input_buffer[0] == '%'){
+            if(g_input_buffer[1] == '%') {
+                if(!suppress_out) fputs("\n", g_ofile);
+                break;
+            } else {
+                if(g_input_buffer[1] == '{') {
+                    transparent = 1;
+                } else if(g_input_buffer[1] == '}') {
+                    transparent = 0;
+                } else {
+                    lerror(0, "Ignoring illegal %%%%c directive\n", g_input_buffer[1]);
+                }
+            }
+        } else if(transparent || isspace(g_input_buffer[0])) {
+            if(!suppress_out) fputs(g_input_buffer, g_ofile);
+        } else {
+            //new_macro(g_input_buffer);
+            if(!suppress_out) fputs("\n", g_ofile);
+        }
+    }
+
+    //if(g_verbose > 1) print_macs();
+}
+
+PRIVATE void handle_tail()
+{
+    fgets(g_input_buffer, MAX_RULE_SIZE, g_ifile);
+
+    if(!g_no_lines) fprintf(g_ofile, "#line %d \"%s\"", g_actual_lineno + 1, g_input_file_name);
+
+    while(fgets(g_input_buffer, MAX_RULE_SIZE, g_ifile)){
+        if(g_verbose > 1) printf("t%d: %s", g_actual_lineno++, g_input_buffer);
+        fputs(g_input_buffer, g_ofile);
+    }
+}
+
+PRIVATE void work()
+{
+    handle_head(_header_only);
+
+    handle_tail();
+
+}
+
+void lerror(int status, char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -63,11 +144,6 @@ PRIVATE void lerror(int status, char *fmt, ...)
     vfprintf(stderr, fmt, args);
     if(status) exit(status);
     va_end(args);
-}
-
-PRIVATE void work()
-{
-
 }
 
 int main(int argc, char **argv)
