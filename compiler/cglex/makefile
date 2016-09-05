@@ -2,7 +2,7 @@ INC_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 TARGET  = cglex
 CC      = gcc
-OBJ     = lex.o input.o 
+OBJ     = lex.o input.o nfa.o
 LIBCONFIG = $(LIB_DIR)/complib.a
 COMPILING_CFLAGS = -I$(INC_DIR)
 
@@ -17,6 +17,9 @@ lex.o: lex.c globals.h
 
 input.o: input.c globals.h
 	$(CC) -c $(COMPILING_CFLAGS) input.c
+
+nfa.o: nfa.c nfa.h globals.h
+	$(CC) -c $(COMPILING_CFLAGS) nfa.c
 
 clean:
 	rm -rf $(OBJ)

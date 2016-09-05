@@ -19,8 +19,8 @@ typedef struct _NFA{
     int  anchor;        /*says whether pattern is anchored*/
 }NFA;
 
-#define EPSILION -1
-#define CLL      -2
+#define EPSILON -1
+#define CCL      -2
 #define EMPTY    -3
 
 #define NONE  0
@@ -30,5 +30,9 @@ typedef struct _NFA{
 
 #define NFA_MAX 768         /*maximum munber of NFA states in a single machine.*/
 #define STR_MAX (10*1024)   /*total space that can be used by the accept strings.*/
+
+PUBLIC void new_macro(char *def);
+PUBLIC NFA *thompson(fp_input_t input_func, int *max_state, NFA **start_state);
+PUBLIC void  print_nfa(NFA *nfa, int len, NFA *start);
 
 #endif //CGKITS_NFA_H

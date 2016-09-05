@@ -62,28 +62,19 @@ PUBLIC char *get_expr(void)
     space_left = MAX_RULE_SIZE;
 
     if(g_verbose > 1) printf("b%d: ", g_actual_lineno);
-
     if(lookhead == '%') return NULL;
 
     g_lineno = g_actual_lineno;
-
     while((lookhead = get_line(&p, space_left - 1, g_ifile)) != EOF){
-
         if(lookhead == 0) lerror(1, "Rule too long.\n");
-
          ++g_actual_lineno;
-
         if(!g_input_buffer[0]) continue;  /*Note : The regular expression can't not begin with space.*/
-
         space_left = MAX_RULE_SIZE - (int)(p - g_input_buffer);
-
         if(!isspace(lookhead)) break;
-
         *p++ = '\n';
     }
 
     if(g_verbose > 1) printf("%s\n", lookhead ? g_input_buffer : "----EOF----");
-
     return lookhead ? g_input_buffer : NULL;
 
 }

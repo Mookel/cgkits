@@ -35,9 +35,7 @@ CLASS FILE *g_ifile;                       /*input stream*/
 CLASS FILE *g_ofile;                       /*output stream*/
 
 typedef char* (*fp_input_t)(void);
-
 PUBLIC void lerror(int status, char *fmt, ...);
-
 PUBLIC char *get_expr(void);
 
 #undef CLASS
