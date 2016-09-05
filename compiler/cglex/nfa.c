@@ -134,7 +134,7 @@ PRIVATE TOKEN _tok_map[] = {
    L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,
 
 /* O   P   Q   R   S   T   U   V   W   X   Y   Z              */
-   L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,
+   L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,
 
 /* [          \  ]        ^                                   */
    CCL_START, L, CCL_END, AT_BOL,
@@ -151,7 +151,7 @@ PRIVATE TOKEN _tok_map[] = {
 };
 
 PRIVATE  fp_input_t _input_func;
-PRIVATE  char *_input = "";    /*current position in input string*/
+PRIVATE  char *_input = "";   /*current position in input string*/
 PRIVATE  char *_s_input;      /*begining of input string*/
 PRIVATE  TOKEN _current_tok;  /*current token*/
 PRIVATE  int   _lexeme;       /*value associated with literal*/
@@ -807,7 +807,7 @@ PRIVATE char *get_line()
     printf("%d: ", g_lineno++);
 
     if(i-- ==  0) return NULL;
-    sprintf(buf, "%s", "hello*");
+    sprintf(buf, "%s", "^he?lffke.*l\\n(hii)*lo*[^a-b^]c$ return OK;");
     return buf;
 }
 
