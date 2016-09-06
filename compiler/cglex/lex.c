@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <syslib.h>
+#include "nfa.h"
 
 #define ALLOC
 #include "globals.h"
@@ -48,7 +49,7 @@ PRIVATE  void cmd_line_error(int usage, char *fmt, ...)
         E("-t  Send output to standard out instead lexyy.c");
         E("-u  Unix mode, newline is \\n, not \\n or \\r.");
         E("-v  (v)erbose mode, print statistics.");
-        E("-V  More (V)erbose, print internal diagnostics as lex runs." );
+        E("-V  More (V)erbose, print internal diagnostics as lex runs.\n" );
     }
 
     exit(1);
@@ -108,7 +109,7 @@ PRIVATE void handle_head(int suppress_out)
         } else if(transparent || isspace(g_input_buffer[0])) {
             if(!suppress_out) fputs(g_input_buffer, g_ofile);
         } else {
-            //new_macro(g_input_buffer);
+            new_macro(g_input_buffer);
             if(!suppress_out) fputs("\n", g_ofile);
         }
     }

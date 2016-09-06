@@ -9,6 +9,7 @@
 #define CGKITS_NFA_H
 
 #include <compiler.h>
+#include "tydef.h"
 
 typedef struct _NFA{
     int edge;           /*lael for edge: character, CCL, EMPLTY, or EPSILON*/
@@ -19,7 +20,7 @@ typedef struct _NFA{
     int  anchor;        /*says whether pattern is anchored*/
 }NFA;
 
-#define EPSILON -1
+#define EPSILON  -1
 #define CCL      -2
 #define EMPTY    -3
 

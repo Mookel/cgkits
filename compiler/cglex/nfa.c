@@ -12,6 +12,7 @@
 #include <string.h>
 #include "globals.h"
 #include "nfa.h"
+#include "tydef.h"
 
 #ifdef DEBUG
         int  lev = 0;
