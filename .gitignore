@@ -1,4 +1,5 @@
 *.idea
 *.o
+*.lo
 *.out
 CMakeLists.txt
