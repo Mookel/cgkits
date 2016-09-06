@@ -6,13 +6,11 @@
 //
 
 #include <stdio.h>
-#include <ctype.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <string.h>
-#include <math.h>
 #include <debug.h>
 #include <hash.h>
+#include <gc.h>
 
 /*macro definitions*/
 #define HASH_TABLE_MAX_SYM 1024;
@@ -49,7 +47,7 @@ PUBLIC unsigned hash_pjw(unsigned char *name)
 PUBLIC void *hash_new_sym(int size)
 {
     BUCKET_S *sym;
-    if(!(sym = (BUCKET_S *)calloc(size + sizeof(BUCKET_S), 1))){
+    if(!(sym = (BUCKET_S *)GC_MALLOC(size + sizeof(BUCKET_S)))){
         fprintf(stderr, "memory is not enough for BUCKET_S\n");
         raise(SIGABRT);
         return NULL;
@@ -61,7 +59,7 @@ PUBLIC void *hash_new_sym(int size)
 PUBLIC void hash_free_sym(void *sym)
 {
     if(sym != NULL){
-        free((BUCKET_S *)sym - 1);
+        GC_FREE((BUCKET_S *)sym - 1);
     }
 }
 
@@ -71,7 +69,7 @@ PUBLIC HASH_TAB_S *hash_make_tab(unsigned max_sym, fp_hash_t fp_hash, fp_cmp_t f
 
     if(!max_sym) max_sym = HASH_TABLE_MAX_SYM;
 
-    if(NULL != (p = (HASH_TAB_S *)calloc(1, max_sym * sizeof(BUCKET_S *) + sizeof(HASH_TAB_S)))){
+    if(NULL != (p = (HASH_TAB_S *)GC_MALLOC(max_sym * sizeof(BUCKET_S *) + sizeof(HASH_TAB_S)))){
         p -> max_size = max_sym;
         p -> curr_num = 0;
         p -> fp_hash  = fp_hash;
@@ -152,7 +150,7 @@ PUBLIC void *hash_next_sym(HASH_TAB_S *p_tab, void *p_last_sym)
 PUBLIC void hash_free_tab(HASH_TAB_S *p_tab)
 {
     if(p_tab){
-        free(p_tab);
+        GC_FREE(p_tab);
     }
 }
 
@@ -186,7 +184,7 @@ PUBLIC int hash_print_tab(HASH_TAB_S *p_tab, fp_tab_print_t fp_pnt, void *para, 
         }
     }
     else {
-        if( ! (pp_out = (BUCKET_S **)malloc(p_tab->curr_num * sizeof(BUCKET_S *))))
+        if( ! (pp_out = (BUCKET_S **)GC_MALLOC(p_tab->curr_num * sizeof(BUCKET_S *))))
             return 0;
 
         p_out = pp_out;
@@ -208,7 +206,7 @@ PUBLIC int hash_print_tab(HASH_TAB_S *p_tab, fp_tab_print_t fp_pnt, void *para, 
             (*fp_pnt)((*p_out + 1), para);
         }
 
-        free(pp_out);
+        GC_FREE(pp_out);
     }
 
     return 1;

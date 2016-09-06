@@ -267,7 +267,7 @@ PRIVATE NFA *new()
     static int first_time = 1;
 
     if(first_time){
-        if(!(_nfa_states = (NFA*)calloc(NFA_MAX, sizeof(NFA))))
+        if(!(_nfa_states = (NFA*)GC_MALLOC(NFA_MAX * sizeof(NFA))))
             parse_err(E_MEMOUT);
 
         first_time = 0;
@@ -387,7 +387,7 @@ PRIVATE char *save(char *str)
     static int *savep;    /*current position in strings array.*/
 
     if(first_time) {
-        if(!(savep = strings = (int *) malloc(STR_MAX)))
+        if(!(savep = strings = (int *) GC_MALLOC(STR_MAX)))
             parse_err(E_MEMOUT);
         first_time = 0;
     }
@@ -821,6 +821,6 @@ int main(int argc, char **argv) {
 
     nfa = thompson(get_line, &max_state, &start_state);
 
-    free(nfa);
+    GC_FREE(nfa);
 }
 #endif

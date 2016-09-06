@@ -1,11 +1,11 @@
-INC_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
-TARGET  = test_suit
+SYS_INC_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
+GC_INC_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/include
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 CC      = gcc
 COM_OBJS = com.o
 COMPLIB_OBJS    = hash.o set.o syslib.o
 LLIB_OBJS       = input.o yylib.o 
-COMPILING_FLAGS = -I$(INC_DIR) 
+COMPILING_FLAGS = -I$(SYS_INC_DIR) -I$(GC_INC_DIR)
 AR = ar
 COMPLIB = complib.a
 LLIB    = llib.a
@@ -22,22 +22,22 @@ $(LLIB): $(LLIB_OBJS) $(COM_OBJS)
 	$(AR) -r $(LIB_DIR)/$(LLIB) $(LLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LLIB_OBJS) $(COM_OBJS)
 
-hash.o: hash.c $(INC_DIR)/hash.h $(INC_DIR)/debug.h
+hash.o: hash.c $(SYS_INC_DIR)/hash.h $(SYS_INC_DIR)/debug.h
 	$(CC) -c $(COMPILING_FLAGS) hash.c
 
-set.o: set.c $(INC_DIR)/set.h $(INC_DIR)/debug.h
+set.o: set.c $(SYS_INC_DIR)/set.h $(SYS_INC_DIR)/debug.h
 	$(CC) -c $(COMPILING_FLAGS) set.c
 
-syslib.o: syslib.c $(INC_DIR)/syslib.h
+syslib.o: syslib.c $(SYS_INC_DIR)/syslib.h
 	$(CC) -c $(COMPILING_FLAGS) syslib.c
 
-input.o: input.c $(INC_DIR)/input.h
+input.o: input.c $(SYS_INC_DIR)/input.h
 	$(CC) -c $(COMPILING_FLAGS) input.c
 
-yylib.o: yylib.c $(INC_DIR)/yylib.h
+yylib.o: yylib.c $(SYS_INC_DIR)/yylib.h
 	$(CC) -c $(COMPILING_FLAGS) yylib.c
 
-com.o: com.c $(INC_DIR)/com.h
+com.o: com.c $(SYS_INC_DIR)/com.h
 	$(CC) -c $(COMPILING_FLAGS) com.c
 
 clean:

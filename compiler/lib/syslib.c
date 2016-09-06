@@ -16,6 +16,7 @@
 #include <math.h>
 #include <com.h>
 #include <syslib.h>
+#include <gc.h>
 
 /*private macro definitions.*/
 #define _IS_HEXDIGIT(x) (isdigit(x) || ('a' <= (x) && (x) <= 'f') \
@@ -159,7 +160,7 @@ PUBLIC int sys_copyfile(char *dst, char *src, char *mode)
     int ret_val = FILE_ERR_NONE;
     static long buf_size = 31 * 1024;
 
-    while(buf_size > 0 && !(buf = malloc((size_t) buf_size)))
+    while(buf_size > 0 && !(buf = GC_MALLOC((size_t) buf_size)))
         buf_size -= 1024L;
 
     if(!buf_size){
@@ -186,7 +187,7 @@ PUBLIC int sys_copyfile(char *dst, char *src, char *mode)
 
     if(fd_dst != -1) close(fd_dst);
     if(fd_src != -1) close(fd_src);
-    if(buf_size > 256) free(buf);
+    if(buf_size > 256) GC_FREE(buf);
 
     return ret_val;
 }

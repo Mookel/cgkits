@@ -11,12 +11,13 @@
 #include <string.h>
 #include <debug.h>
 #include <set.h>
+#include <gc.h>
 
 PUBLIC SET_S *set_new()
 {
     SET_S *p;
 
-    if(!(p = (SET_S *)malloc(sizeof(SET_S)))) {
+    if(!(p = (SET_S *)GC_MALLOC(sizeof(SET_S)))) {
         fprintf(stderr, "not enough memory for set.\n");
         raise(SIGABRT);
         return NULL;
@@ -33,14 +34,14 @@ PUBLIC SET_S *set_new()
 PUBLIC void set_del(SET_S *set)
 {
     if(!set) return;
-    if(set->map != set->defmap) free(set->map);
-    free(set);
+    if(set->map != set->defmap) GC_FREE(set->map);
+    GC_FREE(set);
 }
 
 PUBLIC SET_S *set_dup(SET_S *set)
 {
     SET_S *new;
-    if(!(new = (SET_S*) malloc(sizeof(SET_S)))){
+    if(!(new = (SET_S*) GC_MALLOC(sizeof(SET_S)))){
         fprintf(stderr, "not enough memory for dup set.\n");
         exit(1);
     }
@@ -54,7 +55,7 @@ PUBLIC SET_S *set_dup(SET_S *set)
         new->map = new->defmap;
         memcpy(new->defmap, set->defmap, _DEFWORDS * sizeof(_SETTYPE));
     } else {
-        new->map = (_SETTYPE *)malloc(set->nwords * sizeof(_SETTYPE));
+        new->map = (_SETTYPE *)GC_MALLOC(set->nwords * sizeof(_SETTYPE));
         if(! new->map){
             fprintf(stderr, "not enough memory for set map allocation.");
             exit(1);
@@ -72,7 +73,7 @@ PRIVATE void enlarge(SET_S *set, int need)
     _SETTYPE  *new;
     D(fprintf(stdout, "enlarging %d word map to %d words\n", set->nwords, need));
 
-    if(!(new = (_SETTYPE *)malloc(sizeof(_SETTYPE) * need))){
+    if(!(new = (_SETTYPE *)GC_MALLOC(sizeof(_SETTYPE) * need))){
         fprintf(stderr, "not enough memory for set enlarge.\n");
         exit(1);
     }
@@ -80,7 +81,7 @@ PRIVATE void enlarge(SET_S *set, int need)
     memcpy(new, set->map,  set->nwords * sizeof(_SETTYPE));
     memset(new + set->nwords, 0, (need - set->nwords) * sizeof(_SETTYPE));
 
-    if(set->map != set->defmap) free(set->map);
+    if(set->map != set->defmap) GC_FREE(set->map);
     set->map = new;
     set->nwords = need;
     set->nbits  = need * _BITS_IN_WORD;
@@ -302,7 +303,7 @@ PUBLIC void set_truncate(SET_S *set)
     if(!set) return;
 
     if(set->map != set->defmap){
-        free(set->map);
+        GC_FREE(set->map);
         set->map = set->defmap;
     }
 

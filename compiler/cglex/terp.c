@@ -22,7 +22,7 @@ PUBLIC int nfa(fp_input_t input_func)
 
 PUBLIC void free_nfa()
 {
-    free(_nfa);
+    GC_FREE(_nfa);
 }
 
 /**
