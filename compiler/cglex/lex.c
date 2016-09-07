@@ -11,6 +11,9 @@
 #include <ctype.h>
 #include <syslib.h>
 #include "nfa.h"
+#include "mindfa.h"
+#include "input.h"
+#include "print.h"
 
 #define ALLOC
 #include "globals.h"
@@ -114,7 +117,7 @@ PRIVATE void handle_head(int suppress_out)
         }
     }
 
-    //if(g_verbose > 1) print_macs();
+    if(g_verbose > 1) print_macs();
 }
 
 PRIVATE void handle_tail()
@@ -131,10 +134,55 @@ PRIVATE void handle_tail()
 
 PRIVATE void work()
 {
+    int nstates;
+    ROW *dtran;
+    ACCEPT *accept;
+    int i;
+
     handle_head(_header_only);
 
-    handle_tail();
+    nstates = min_dfa(get_expr, &dtran, &accept);
+    if(g_verbose){
+        printf("%d out of %d DFA states in minimized machine\n", nstates, DFA_MAX);
+        printf("%d bytes required for minimized tables\n\n", nstates * MAX_CHARS * sizeof(TTYPE)
+                                                             + nstates * sizeof(TTYPE));
+    }
 
+    if(!_no_header) pheader(g_ofile, dtran, nstates, accept);
+
+    if(!_header_only) {
+        if(!sys_driver_1(g_ofile, !g_no_lines, g_template)) {
+            perror(g_template);
+            exit(1);
+        }
+
+        if(_no_compression) {
+            fprintf(g_ofile, "YYPRIVATE YY_TTYPE %s[%d][%d] = \n",
+                    DTRAN_NAME, nstates, MAX_CHARS);
+            sys_print_array(g_ofile, (int *)dtran, nstates, MAX_CHARS);
+            sys_print_defnext(g_ofile, DTRAN_NAME);
+        }
+        else if(_column_compress) { /*column-compressed tables.*/
+
+            /*current do nothing*/
+
+        } else {  /*pair-compressed tables.*/
+
+            i = sys_pairs(g_ofile, (int*)dtran, nstates, MAX_CHARS, DTRAN_NAME, _threshold, 0);
+            if(g_verbose){
+                i = (i * sizeof(TTYPE))
+                    + (nstates * sizeof(TTYPE*))
+                    + (nstates * sizeof(TTYPE))
+                    + 100;
+                printf("%d bytes required for pair-compressed tables.\n", i);
+            }
+            sys_pnext(g_ofile, DTRAN_NAME);
+        }
+
+        pdriver(g_ofile, nstates, accept);
+
+        handle_tail();
+    }
 }
 
 void lerror(int status, char *fmt, ...)

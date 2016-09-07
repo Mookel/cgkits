@@ -4,7 +4,7 @@ GC_LIB_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/lib
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 TARGET  = cglex
 CC      = gcc
-OBJ     = lex.o input.o nfa.o terp.o
+OBJ     = lex.o input.o nfa.o terp.o dfa.o mindfa.o print.o
 COMM_HEADER = tydef.h globals.h
 LIBCONFIG = $(LIB_DIR)/complib.a $(GC_LIB_DIR)/libgc.a 
 COMPILING_CFLAGS = -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR)
@@ -26,6 +26,15 @@ nfa.o: nfa.c nfa.h $(COMM_HEADER)
 
 terp.o: terp.c terp.h $(COMM_HEADER)
 	$(CC) -c $(COMPILING_CFLAGS) terp.c
+
+dfa.o: dfa.c dfa.h $(COMM_HEADER)
+	$(CC) -c $(COMPILING_CFLAGS) dfa.c
+
+mindfa.o: mindfa.c mindfa.h $(COMM_HEADER)
+	$(CC) -c $(COMPILING_CFLAGS) mindfa.c
+
+print.o: print.c print.h $(COMM_HEADER)
+	$(CC) -c $(COMPILING_CFLAGS) print.c
 
 clean:
 	rm -rf $(OBJ)

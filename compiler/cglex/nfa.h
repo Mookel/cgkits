@@ -33,6 +33,7 @@ typedef struct _NFA{
 #define STR_MAX (10*1024)   /*total space that can be used by the accept strings.*/
 
 PUBLIC void new_macro(char *def);
+PUBLIC void print_macs(void);
 PUBLIC NFA *thompson(fp_input_t input_func, int *max_state, NFA **start_state);
 PUBLIC void  print_nfa(NFA *nfa, int len, NFA *start);
 

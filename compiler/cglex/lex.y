@@ -4,17 +4,15 @@
  */
 
 %{
-#include <stdio.h>
-#include <string.h>
-
-     extern union{   /*struct*/
-         char *p_char;
-         int integer;
-     }yylval;
-
+#include "llout.h"
 %}
 
-let [_a-zA-Z] /*letter*/
-suffix [UuLl]  /*suffix*/
-
+%%
+"+" return PLUS;
+"*" return TIMES;
+"(" return LP;
+")" return RP;
+";" return SEMI;
+[0-9]+ |
+[a-z_]+ return NUM_OR_ID;
 %%

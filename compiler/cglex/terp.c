@@ -17,7 +17,7 @@ PUBLIC int nfa(fp_input_t input_func)
 {
     NFA *sstate;
     _nfa = thompson(input_func, &_nstates, &sstate);
-    return (sstate - _nfa);
+    return (sstate - _nfa); /*return the number index of the start state.*/
 }
 
 PUBLIC void free_nfa()
@@ -66,7 +66,8 @@ PUBLIC SET_S *e_closure(SET_S *input, char **accept, int *anchor)
         i = *tos--;
         p = &_nfa[i];
 
-        if(p ->accept && (i < accept_num)) {
+        if(p ->accept && (i < accept_num)) { /*conflicting states that are higher in the input
+                                               file take precedence over the ones that occur later*/
             accept_num = i;
             *accept = p->accept;
             *anchor = p->anchor;
@@ -121,9 +122,9 @@ PUBLIC SET_S *move(SET_S *inp_set, int c)
     for (i = _nstates; --i >= 0;) {
         if (SET_MEMBER(inp_set, i)) {
             p = &_nfa[i];
-            if (p->edge == c || (p->edge == CCL && SET_TEST(p->bitset, c))){
+            if (p->edge == c || ((p->edge == CCL) && (SET_TEST(p->bitset, c)))){
                 if(!outset) outset = set_new();
-                SET_ADD(outset, p->next - _nfa);
+                SET_ADD(outset, (int)(p->next - _nfa));
             }
         }
     }
