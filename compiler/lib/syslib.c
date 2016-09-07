@@ -562,15 +562,15 @@ PUBLIC void sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols)
             }
 
             if(((col % NCOLS) == (NCOLS - 1)) && (col != (ncols - 1))) {
-                fprintf(fp, "\n              ");
+                fprintf(fp, "\n           ");
             }
         }
 
         if(col > NCOLS) {
-            fprintf(fp, "\n            ");
+            fprintf(fp, "\n          ");
         }
 
-        fprintf(fp, " }%c\n", i < nrows - 1 ? ',' : ' ');
+        fprintf(fp, "}%c\n", i < nrows - 1 ? ',' : ' ');
     }
 
     fprintf(fp, "};\n");

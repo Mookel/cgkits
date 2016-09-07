@@ -62,7 +62,7 @@ PUBLIC int com_ferr(char *format, ...)
     else perror(va_arg(args, char *));
     va_end(args);
 
-    D(ret_addr_p = (void(**)()) &fmt;)
+    D(ret_addr_p = (void(**)()) &format;)
     /*Attention : Be carefully in 64bit PC mac os, this is not reliable.*/
     D(fprintf(stderr, "\n\t--ferr() called from %p\n", ret_addr_p[-1]);)
 

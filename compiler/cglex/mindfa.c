@@ -26,7 +26,7 @@ PRIVATE void pgroups(int nstates)
     }
 
     printf("\n");
-    while(--nstates >= 0) printf("\t state %2d is in group %2d\n", nstates, _ingroup[nstates]);
+    while(--nstates >= 0) printf("\tstate %2d is in group %2d\n", nstates, _ingroup[nstates]);
 
 }
 

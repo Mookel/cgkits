@@ -12,6 +12,5 @@
 #include <input.h>
 #include <yylib.h>
 #include <com.h>
-#include <gc.h>
 
 #endif //CGKITS_L_H

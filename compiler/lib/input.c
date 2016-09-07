@@ -246,7 +246,7 @@ PUBLIC int ii_fillbuf(unsigned char *starting_at)
 PUBLIC int ii_look(int n)
 {
     if(n > (_end_buf - _next)) { return _eof_read ? EOF : 0; }
-    if((--n) <  -(int)(_next - _start_buf)) {return 0;}
+    if((--n) <  -(_next - _start_buf)) {return 0;}
     return _next[n];
 }
 
@@ -274,8 +274,10 @@ PUBLIC void ii_term(void)
 
 PUBLIC void ii_unterm(void)
 {
-    *_next = _termchar;
-    _termchar = 0;
+    if(_termchar) {
+        *_next = _termchar;
+        _termchar = 0;
+    }
 }
 
 PUBLIC int ii_input(void)

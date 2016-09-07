@@ -2,6 +2,7 @@ INC_SYS_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 GC_INC_SYS_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/include
 GC_LIB_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/lib
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
+BIN_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/bin
 TARGET  = cglex
 CC      = gcc
 OBJ     = lex.o input.o nfa.o terp.o dfa.o mindfa.o print.o
@@ -13,6 +14,9 @@ all:$(TARGET)
 
 $(TARGET): $(OBJ)
 	$(CC) -o $@ $(COMPILING_CFLAGS) $(OBJ) $(LIBCONFIG) -DDEBUG
+	@rm $(BIN_DIR)/$(TARGET)
+	@cp $(TARGET) $(BIN_DIR)
+	@rm -rf $(TARGET)
 	@rm -rf $(OBJ)
 
 lex.o: lex.c $(COMM_HEADER)

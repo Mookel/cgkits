@@ -4,15 +4,15 @@
  */
 
 %{
-#include "llout.h"
+#include "token.h"
 %}
 
 %%
 "+" return PLUS;
-"*" return TIMES;
+"*" return STAR;
 "(" return LP;
 ")" return RP;
 ";" return SEMI;
-[0-9]+ |
-[a-z_]+ return NUM_OR_ID;
+[0-9]+ return NUM;
+[a-z]+ return ID;
 %%

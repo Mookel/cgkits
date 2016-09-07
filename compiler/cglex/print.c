@@ -41,13 +41,13 @@ PUBLIC void pheader(FILE *fp, ROW dtran[], int nrows, ACCEPT *accept)
         for(j = 0; j < MAX_CHARS; ++j){
             if(dtran[i][j] != F) {
                 if(dtran[i][j] != last_transition){
-                    fprintf(fp, "\n *    goto %2d on ", dtran[i][j]);
+                    fprintf(fp, "\n *      goto %2d  on  ", dtran[i][j]);
                     chars_printed = 0;
                 }
 
                 fprintf(fp, "%s", sys_bin_to_ascii(j, 1));
 
-                if((chars_printed += strlen(sys_bin_to_ascii(j, 1))) > 56) {
+                if((chars_printed += strlen(sys_bin_to_ascii(j, 1))) > 79) {
                     fprintf(fp, "\n *                ");
                     chars_printed = 0;
                 }
@@ -56,7 +56,7 @@ PUBLIC void pheader(FILE *fp, ROW dtran[], int nrows, ACCEPT *accept)
             }
         }
 
-        fprintf(fp, "\n");
+        fprintf(fp, "\n\n");
     }
 
     fprintf(fp, "*/\n\n");
@@ -84,7 +84,7 @@ PUBLIC void pdriver(FILE *output, int nrows, ACCEPT *accept)
         } else {
             fprintf(output, "\t%-3d", accept[i].anchor ? accept[i].anchor : 4);
         }
-        fprintf(output, "%c    /* State %d-3d */\n", i == (nrows - 1) ? ' ' : ',', i);
+        fprintf(output, "%c    /* State %-3d */\n", i == (nrows - 1) ? ' ' : ',', i);
     }
     fprintf(output, "};\n\n");
 
@@ -92,15 +92,13 @@ PUBLIC void pdriver(FILE *output, int nrows, ACCEPT *accept)
 
     for( i = 0;i < nrows; ++i){
         if(accept[i].string) {
-            fprintf(output, "\t\t case %d:\t\t\t\t\t/* State %-3d */\n", i, i);
+            fprintf(output, "\t\t\t\t\tcase %d:\t\t\t\t\t/* State %-3d */\n", i, i);
             if(!g_no_lines)
-                fprintf(output, "#Line %d\" %s \"\n",
+                fprintf(output, "#line %d\" %s \"\n",
                         *((int *)(accept[i].string) - 1), g_input_file_name);
 
-            fprintf(output, "\t\t    %s\n", accept[i].string);
-            fprintf(output, "\t\t    break;\n");
-
-
+            fprintf(output, "\t\t\t\t\t\t%s\n", accept[i].string);
+            fprintf(output, "\t\t\t\t\t\tbreak;\n");
         }
     }
 

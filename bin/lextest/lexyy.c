@@ -1,10 +1,10 @@
-#line 1 "test.y"
+#line 1 "test.lex"
   
                         
                      
    
 
-#include "llout.h"
+#include "token.h"
 
 
 #ifdef __NEVER__
@@ -12,29 +12,29 @@
 * DFA (start state is 0) is:
  *
  * State 0 [nonaccepting]
- *      goto  6  on  (
- *      goto  5  on  )
- *      goto  4  on  *
- *      goto  3  on  +
- *      goto  7  on  0123456789
+ *      goto  7  on  (
+ *      goto  6  on  )
+ *      goto  5  on  *
+ *      goto  4  on  +
+ *      goto  3  on  0123456789
  *      goto  2  on  ;
- *      goto  1  on  _abcdefghijklmnopqrstuvwxyz
+ *      goto  1  on  abcdefghijklmnopqrstuvwxyz
 
- * State 1 [accepting, line 18 <return NUM_OR_ID;>]
- *      goto  1  on  _abcdefghijklmnopqrstuvwxyz
+ * State 1 [accepting, line 18 <return ID;>]
+ *      goto  1  on  abcdefghijklmnopqrstuvwxyz
 
  * State 2 [accepting, line 16 <return SEMI;>]
 
- * State 3 [accepting, line 12 <return PLUS;>]
+ * State 3 [accepting, line 17 <return NUM;>]
+ *      goto  3  on  0123456789
 
- * State 4 [accepting, line 13 <return TIMES;>]
+ * State 4 [accepting, line 12 <return PLUS;>]
 
- * State 5 [accepting, line 15 <return RP;>]
+ * State 5 [accepting, line 13 <return STAR;>]
 
- * State 6 [accepting, line 14 <return LP;>]
+ * State 6 [accepting, line 15 <return RP;>]
 
- * State 7 [accepting, line 18 <return NUM_OR_ID;>]
- *      goto  7  on  0123456789
+ * State 7 [accepting, line 14 <return LP;>]
 
 */
 
@@ -82,12 +82,12 @@ YYPRIVATE YY_TTYPE Yy_nxt[8][128] =
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
-             6,   5,   4,   3,  -1,  -1,  -1,  -1,   7,   7, 
-             7,   7,   7,   7,   7,   7,   7,   7,  -1,   2, 
+             7,   6,   5,   4,  -1,  -1,  -1,  -1,   3,   3, 
+             3,   3,   3,   3,   3,   3,   3,   3,  -1,   2, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
-            -1,  -1,  -1,  -1,  -1,   1,  -1,   1,   1,   1, 
+            -1,  -1,  -1,  -1,  -1,  -1,  -1,   1,   1,   1, 
              1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
              1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
              1,   1,   1,  -1,  -1,  -1,  -1,  -1
@@ -101,7 +101,7 @@ YYPRIVATE YY_TTYPE Yy_nxt[8][128] =
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
-            -1,  -1,  -1,  -1,  -1,   1,  -1,   1,   1,   1, 
+            -1,  -1,  -1,  -1,  -1,  -1,  -1,   1,   1,   1, 
              1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
              1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
              1,   1,   1,  -1,  -1,  -1,  -1,  -1
@@ -124,8 +124,8 @@ YYPRIVATE YY_TTYPE Yy_nxt[8][128] =
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
-            -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
-            -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
+            -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   3,   3, 
+             3,   3,   3,   3,   3,   3,   3,   3,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
@@ -180,8 +180,8 @@ YYPRIVATE YY_TTYPE Yy_nxt[8][128] =
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
-            -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   7,   7, 
-             7,   7,   7,   7,   7,   7,   7,   7,  -1,  -1, 
+            -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
+            -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
             -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
@@ -231,7 +231,7 @@ YYPRIVATE YY_TTYPE Yyaccept[] =
 char    *yytext;		/* Pointer to lexeme.           */
 int    	 yyleng;		/* Length of lexeme.            */
 int    	 yylineno;	    /* Input line number.           */
-FILE	*yyout = stdout;
+FILE	*yyout;
 
 /*-----------------------------------------------------------------
  * Macros that duplicate functions in UNIX lex:
@@ -256,8 +256,7 @@ int  input (void)   /*This is a macro in UNIX lex*/
 {
     int c;
 
-    if( (c = ii_input()) && (c != -1))
-    {
+    if( (c = ii_input()) && (c != -1)) {
 	    yytext   = (char *) ii_text();
 	    yylineno = ii_lineno();
 	    ++yyleng;
@@ -268,7 +267,7 @@ int  input (void)   /*This is a macro in UNIX lex*/
 
 /*----------------------------------------------------------------------*/
 
-yylex()
+int yylex()
 {
     int        yymoreflg;         /* Set when yymore() is executed       */
     static int yystate   = -1;    /* Current state.                      */
@@ -277,16 +276,16 @@ yylex()
     int        yynstate;          /* Next state, given lookahead.        */
     int        yylook;            /* Lookahead character	             */
     int	       yyanchor;	      /* Anchor point for most recently seen */
-				                  /* accepting state.			 */
+				                  /* accepting state.			         */
 
-    if( yystate == -1 )
-    {
-	    yy_init_lex();		/* One-time initializations */
+    if( yystate == -1 ) {
+	    yyout = stdout;
+	    yy_init_cglex();		  /* One-time initializations */
         ii_advance();
         ii_pushback(1);
     }
 
-    yystate      = 0;		/* Top-of-loop initializations */
+    yystate      = 0;		      /* Top-of-loop initializations */
     yylastaccept = 0;
     yymoreflg    = 0;
     ii_unterm();
@@ -301,15 +300,15 @@ yylex()
 	     */
 
 	    while( 1 ) {
-
             if( (yylook=ii_look(1)) != EOF ) {
+		        YY_D(printf("yylook = %d\n", yylook));
 		        yynstate = yy_next( yystate, yylook );
 		        break;
 	        } else {
 		            if( yylastaccept ){	            /* still something to do */
 		                yynstate = YYF;
 		                break;
-		            } else if( yywrap() )   { 		/* another file?  */
+		            } else if( yy_wrap() )   { 		/* another file?  */
                         yytext = "";
                         yyleng = 0;
                         return 0;
@@ -322,7 +321,7 @@ yylex()
 
         if( yynstate != YYF ) {
 
-	        YY_D( printf("    Transition from state %d", yystate )     );
+	        YY_D( printf(" Transition from state %d", yystate )     );
 	        YY_D( printf(" to state %d on <%c>\n",   yynstate, yylook) );
 
             if( ii_advance() < 0 ){           	    /* Buffer full */
@@ -331,31 +330,31 @@ yylex()
                 ii_flush(1);
             }
 
-            if(yyanchor = Yyaccept[ yynstate ]) {  /* saw an accept state */
+            if(yyanchor = Yyaccept[ yynstate ]) {   /* saw an accept state */
 		        yyprev       = yystate  ;
 		        yylastaccept = yynstate ;
-		        ii_mark_end();  	               /* Mark input at current character. */
-                                                   /* A subsequent ii_to_mark()        */
-			        	                           /* returns us to this position.     */
+		        ii_mark_end();  	                /* Mark input at current character. */
+                                                    /* A subsequent ii_move_back()      */
+			        	                            /* returns us to this position.     */
             }
             yystate = yynstate;
         } else {
-            if( !yylastaccept ) {	   			   /* illegal input */
+            if( !yylastaccept ) {	   			    /* illegal input */
 #ifdef YYBADINP
 		YYERROR( "Ignoring bad input\n" );
 #endif
-		        ii_advance();                      /* Skip char that caused failure.   */
+		        ii_advance();                       /* Skip char that caused failure.   */
 	        } else {
 
-                ii_to_mark();                      /* Back up to previous accept state */
+                ii_move_back();                     /* Back up to previous accept state */
 
-                if( yyanchor & 2 )     /* If end anchor is active	   */
-                    ii_pushback(1);    /* push back the CR or LF	   */
+                if( yyanchor & 2 )                  /* If end anchor is active	   */
+                    ii_pushback(1);                 /* push back the CR or LF	   */
 
-		        if( yyanchor & 1 )		/* if start anchor is active */
-		            ii_move_start();		/* skip the leading newline  */
+		        if( yyanchor & 1 )		            /* if start anchor is active   */
+		            ii_move_start();		        /* skip the leading newline    */
 
-		        ii_term();              	/* Null-terminate the string */
+		        ii_term();              	        /* Null-terminate the string   */
 		        yytext   = (char *) ii_text();
 		        yyleng   = ii_length ();
 		        yylineno = ii_lineno ();
@@ -365,37 +364,37 @@ yylex()
 
 		        switch( yylastaccept ) {
 					case 1:					/* State 1   */
-#Line 18" test.y "
-						return NUM_OR_ID;
+#line 18" test.lex "
+						return ID;
 						break;
 					case 2:					/* State 2   */
-#Line 16" test.y "
+#line 16" test.lex "
 						return SEMI;
 						break;
 					case 3:					/* State 3   */
-#Line 12" test.y "
-						return PLUS;
+#line 17" test.lex "
+						return NUM;
 						break;
 					case 4:					/* State 4   */
-#Line 13" test.y "
-						return TIMES;
+#line 12" test.lex "
+						return PLUS;
 						break;
 					case 5:					/* State 5   */
-#Line 15" test.y "
-						return RP;
+#line 13" test.lex "
+						return STAR;
 						break;
 					case 6:					/* State 6   */
-#Line 14" test.y "
-						return LP;
+#line 15" test.lex "
+						return RP;
 						break;
 					case 7:					/* State 7   */
-#Line 18" test.y "
-						return NUM_OR_ID;
+#line 14" test.lex "
+						return LP;
 						break;
 
-#line 191 "lex.m"
+#line 190 "lex.m"
 
-#line 197 "lex.m"
+#line 196 "lex.m"
 
                     default: YYERROR("INTERNAL ERROR, yylex: Unknown accept state %d.\n",
 								yylastaccept );
@@ -416,4 +415,4 @@ yylex()
         }
     }
 }
-#line 19 "test.y"
+#line 19 "test.lex"
