@@ -103,14 +103,14 @@ PUBLIC int ii_plineno(void) { return _plineno;}
 
 PUBLIC unsigned char *ii_mark_start(void)
 {
-    _mline = _lineno;
+    _mline = _lineno;  /*why remember lineno here ?*/
     _emark = _smark = _next;
     return _smark;
 }
 
 PUBLIC unsigned char *ii_mark_end(void)
 {
-    _mline = _lineno;
+    _mline = _lineno;  /*when lookhead has come to a failure status, we can reback*/
     return _emark = _next;
 
 }
@@ -245,7 +245,7 @@ PUBLIC int ii_fillbuf(unsigned char *starting_at)
 
 PUBLIC int ii_look(int n)
 {
-    if(n > (_end_buf - _next)) { return _eof_read ? EOF : 0; }
+    if(n > (_end_buf - _next)) { return _eof_read ? EOF : 0; } /*there may be a bug here, when return 0.*/
     if((--n) <  -(_next - _start_buf)) {return 0;}
     return _next[n];
 }

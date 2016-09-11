@@ -9,8 +9,9 @@
 #define CGKITS_L_H
 
 #include <debug.h>
+#include <com.h>
 #include <input.h>
 #include <yylib.h>
-#include <com.h>
+#include <yydebug.h>
 
 #endif //CGKITS_L_H

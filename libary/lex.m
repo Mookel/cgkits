@@ -124,7 +124,6 @@ int yylex()
 
 	    while( 1 ) {
             if( (yylook=ii_look(1)) != EOF ) {
-		        YY_D(printf("yylook = %d\n", yylook));
 		        yynstate = yy_next( yystate, yylook );
 		        break;
 	        } else {

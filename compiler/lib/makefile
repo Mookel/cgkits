@@ -4,7 +4,7 @@ LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 CC      = gcc
 COM_OBJS = com.o
 COMPLIB_OBJS    = hash.o set.o syslib.o
-LLIB_OBJS       = input.o yylib.o 
+LLIB_OBJS       = input.o yylib.o yydebug.o
 COMPILING_FLAGS = -I$(SYS_INC_DIR) -I$(GC_INC_DIR) -DDEBUG
 AR = ar
 COMPLIB = complib.a
@@ -36,6 +36,9 @@ input.o: input.c $(SYS_INC_DIR)/input.h
 
 yylib.o: yylib.c $(SYS_INC_DIR)/yylib.h
 	$(CC) -c $(COMPILING_FLAGS) yylib.c
+
+yydebug.o: yydebug.c $(SYS_INC_DIR)/yydebug.h
+	$(CC) -c $(COMPILING_FLAGS) yydebug.c
 
 com.o: com.c $(SYS_INC_DIR)/com.h
 	$(CC) -c $(COMPILING_FLAGS) com.c
