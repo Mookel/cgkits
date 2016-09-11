@@ -13,8 +13,8 @@ extern void  yy_hook_b();
 
 extern int   yy_wrap();
 extern char* yy_pstk(void *val, char *sym);
-extern void  yy_init_cgllama(void *tos);
-extern void  yy_init_cglex();
-extern void  yy_init_cgoccs(void *tos);
+extern void  yy_init_llama(void *tos);
+extern void  yy_init_lex();
+extern void  yy_init_occs(void *tos);
 
 #endif //CGKITS_YYLIB_H

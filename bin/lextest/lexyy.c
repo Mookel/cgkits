@@ -280,7 +280,7 @@ int yylex()
 
     if( yystate == -1 ) {
 	    yyout = stdout;
-	    yy_init_cglex();		  /* One-time initializations */
+	    yy_init_lex();		      /* One-time initializations */
         ii_advance();
         ii_pushback(1);
     }
@@ -301,7 +301,6 @@ int yylex()
 
 	    while( 1 ) {
             if( (yylook=ii_look(1)) != EOF ) {
-		        printf("look : %c\n", yylook);
 		        yynstate = yy_next( yystate, yylook );
 		        break;
 	        } else {
@@ -392,9 +391,9 @@ int yylex()
 						return LP;
 						break;
 
-#line 190 "lex.m"
+#line 189 "lex.m"
 
-#line 196 "lex.m"
+#line 195 "lex.m"
 
                     default: YYERROR("INTERNAL ERROR, yylex: Unknown accept state %d.\n",
 								yylastaccept );

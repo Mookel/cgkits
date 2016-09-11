@@ -30,17 +30,17 @@ PUBLIC char *yy_pstk(void *val, char *sym)
     return buf;
 }
 
-PUBLIC void yy_init_cgllama(void *tos)
+PUBLIC void yy_init_llama(void *tos)
 {
 
 }
 
-PUBLIC void yy_init_cglex()
+PUBLIC void yy_init_lex()
 {
 
 }
 
-PUBLIC void yy_init_cgoccs(void *tos)
+PUBLIC void yy_init_occs(void *tos)
 {
 
 }

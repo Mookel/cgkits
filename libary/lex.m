@@ -103,7 +103,7 @@ int yylex()
 
     if( yystate == -1 ) {
 	    yyout = stdout;
-	    yy_init_cglex();		  /* One-time initializations */
+	    yy_init_lex();		      /* One-time initializations */
         ii_advance();
         ii_pushback(1);
     }
