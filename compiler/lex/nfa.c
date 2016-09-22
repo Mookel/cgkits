@@ -808,7 +808,7 @@ PRIVATE char *get_line()
     printf("%d: ", g_lineno++);
 
     if(i-- ==  0) return NULL;
-    sprintf(buf, "%s", "^he?lffke.*l\\n(hii)*lo*[^a-b^]c$ return OK;");
+    sprintf(buf, "%s", "ffff");
     return buf;
 }
 
