@@ -63,16 +63,16 @@
 #define PAR_TEMPL         "llama.par"
 #define PROG_NAME         "llama"
 #else
-#define TOKEN_FILE
-#define PARSE_FILE
-#define ACT_FILE
-#define TAB_FILE
-#define SYM_FILE
-#define DOC_FILE
-#define DEF_EXT
-#define PAR_TEMPL
-#define ACT_TEMPL
-#define PROG_NAME
+#define TOKEN_FILE        "yyout.h"
+#define PARSE_FILE        "yyout.c"
+#define ACT_FILE          "yyact.c"
+#define TAB_FILE          "yyoutab.c"
+#define SYM_FILE          "yyout.sym"
+#define DOC_FILE          "yyout.doc"
+#define DEF_EXT           "ox"
+#define PAR_TEMPL         "occs.par"
+#define ACT_TEMPL         "occs-act.par"
+#define PROG_NAME         "occs"
 #endif
 
 #ifndef CREATING_LLAMA_PARSER

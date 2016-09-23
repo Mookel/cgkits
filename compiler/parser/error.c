@@ -4,7 +4,6 @@
 // Copyright (c) 2016 jlu.edu. All rights reserved.
 // error.c : 
 //
-
 #include "parser.h"
 #include "error.h"
 #include <stdlib.h>
@@ -12,11 +11,21 @@
 
 PRIVATE int  num_warings_ = 0;            /*total warnings printed.*/
 PRIVATE int  num_errors_ = 0;
-PRIVATE FILE *_doc_file = NULL;           /*yyout.doc, Error log & machine description*/
+PRIVATE FILE *_doc_file = NULL;           /*yyout.doc, only support by occs, Error log & machine description*/
 
-void e_doc_file(FILE *fp)
+void e_init()
 {
-    _doc_file = fp;
+    if(g_cmdopt.verbose == 1) {
+        if(!(_doc_file = fopen(DOC_FILE, "w")))
+            com_ferr("Can't open log file %s\n", DOC_FILE);
+    } else if(g_cmdopt.verbose > 1) {
+        _doc_file = stderr;
+    }
+}
+
+FILE *e_get_doc()
+{
+    return _doc_file;
 }
 
 void e_output(char *fmt, ...)
@@ -97,9 +106,9 @@ void e_error(int fatal, char *fmt, ...)
     vfprintf(stdout, fmt, args);
     fflush(stdout);
 
-    OX(if(g_cmdopt.verbose && _doc_file))
+    OX(if(g_cmdopt.verbose && _doc_file))  /*only occs support*/
     OX({)
-    OX(   vfprintf(_doc_file, type);)
+    OX(   fprintf(_doc_file, type);)
     OX(   vfprintf(_doc_file, fmt, args); )
     OX(})
 

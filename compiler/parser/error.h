@@ -16,7 +16,8 @@
 #define WARNING           2
 #define NOHDR             3
 
-void e_doc_file(FILE *fp);
+void e_init();
+FILE *e_get_doc();
 void e_output(char *fmt, ...);
 void e_doc(char *fmt, ...);
 void e_doc_to(FILE *fp);

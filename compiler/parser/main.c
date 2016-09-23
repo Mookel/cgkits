@@ -6,6 +6,7 @@
 //
 
 #include <sys/param.h>
+#include <sys/timeb.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -22,7 +23,7 @@
 #undef ALLOCATE
 #endif
 
-#define VERBOSE(str) if(g_cmdopt.verbose) {printf("%s:\n", (str)); }else
+#define VERBOSE(str) if(g_cmdopt.verbose) { printf("%s:\n", (str)); } else
 
 PRIVATE char* _output_file_name = "???";  /*name of output file*/
 
@@ -144,11 +145,6 @@ PRIVATE void parse_args(int argc, char **argv)
     }
 }
 
-PRIVATE int do_file(void)
-{
-
-}
-
 PRIVATE void symbols()
 {
 
@@ -164,16 +160,104 @@ PRIVATE void tail()
 
 }
 
-#ifdef MAIN_DTEST
+PRIVATE int do_file(void)
+{
+    /*process the input file. return the number of errors.*/
+    struct timeb start_time, end_time;
+    long time;
+    void nows(void); /*declared in parser.lex*/
+
+    ftime(&start_time);
+    end_time = start_time;
+
+    //init_acts();
+    //file_header();
+
+    VERBOSE("parsing");
+
+    //nows();
+    //yyparse();
+
+    if((e_nerrors() /*|| problems()*/)){
+        VERBOSE("Analyzing grammar");
+        //fisrt();
+        //LL(follow());
+        //LL(select());
+
+        //code_header();
+        //OX(patch();)
+        ftime(&start_time);
+        if(g_cmdopt.make_parser) {
+            VERBOSE("making tables");
+            //tables();
+        }
+
+        ftime(&end_time);
+        VERBOSE("copying driver");
+
+        //driver();
+
+        if(g_cmdopt.make_actions) tail();
+    }
+
+    if(g_cmdopt.verbose) {
+        time = (end_time.time * 1000) + end_time.millitm;
+        time -= (start_time.time * 1000) + start_time.millitm;
+        fprintf(stdout, "time required to make tables: %ld.%03ld seconds\n",
+                (time/1000), (time%1000));
+    }
+
+    return e_nerrors();
+}
+
+#define MAIN_TEST
+#ifdef MAIN_TEST
 int yylineno = 0;
 #endif
 
 int main(int argc, char **argv)
 {
     init_cmdopt();
-    signal(SIGINT, onintr);
-    parse_args(argc, argv);
 
-    return 0;
+    signal(SIGINT, onintr);
+
+    /*1. parsing arguments.*/
+    parse_args(argc, argv);
+    if(g_cmdopt.debug && !g_cmdopt.symbols) g_cmdopt.symbols = 1;
+
+    OX(if(g_cmdopt.make_parser))
+    OX(    e_init();)
+
+    /*2. setting output file name and output stream*/
+    if(g_cmdopt.use_stdout) {
+        _output_file_name = "/dev/tty";
+        g_output = stdout;
+    } else {
+        OX(_output_file_name = !g_cmdopt.make_parser ? ACT_FILE : PARSE_FILE; )
+        LL(_output_file_name = PARSE_FILE;)
+
+        if((g_output = fopen(_output_file_name, "w")) == NULL) {
+            e_error(FATAL, "Cant't open output file %s : %s\n", _output_file_name, e_open_errmsg());
+        }
+    }
+
+    /*3. do the real work*/
+    if(do_file() == 0){
+        if(g_cmdopt.symbols)
+            symbols();      /*print the symbol table*/
+        statistics(stdout);
+
+        OX(if(g_cmdopt.verbose && e_get_doc()))
+        OX(    statistics(e_get_doc());)
+
+    } else {                /* there are some errors */
+        if(g_output != stdout) {
+            fclose(g_output);
+            if(unlink(_output_file_name) == -1) perror(_output_file_name);
+        }
+    }
+
+    /*4. exit*/
+    exit(e_nerrors() + (g_cmdopt.warn_exit ? e_nwarnings() : 0));
 }
 
