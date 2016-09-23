@@ -8,12 +8,18 @@
 #ifndef CGKITS_PARSER_H_H
 #define CGKITS_PARSER_H_H
 
+#include <limits.h>
 #include <compiler.h>
+#include <stdbool.h>
+
+#define LLAMA
 
 #ifdef LLAMA
 #define LL(x) x
 #define OX(x)
-#else
+#endif
+
+#ifdef OCCS
 #define LL(x)
 #define OX(x) x
 #endif
@@ -34,22 +40,17 @@
 #define MAXNONTERM        (MINACT - 1)
 #define NUMTERMS          ((MAXTERM - MINTERM) + 1)
 #define NUMNONTERMS       ((MAXNONTERM - MINNONTERM) + 1)
-#define USED_TERMS        ((g_cur_term - MINTERM) + 1)
-#define USED_NONTERMS     ((g_cur_nonterm - MINNONTERM) + 1)
+#define USED_TERMS        ((g_curterm - MINTERM) + 1)
+#define USED_NONTERMS     ((g_curnonterm - MINNONTERM) + 1)
 
 #define ISTERM(x)         ((x) && (MINTERM <= (x)->val && (x)->val <= MAXTERM))
 #define ISNONTERM(x)      ((x) && (MINNONTERM <= (x)->val && (x)->val <= MAXNONTERM))
 #define ISACT(x)          ((x) && (MINACT <= (x)->val))
 
-#define EPSILON           (g_cur_term + 1)
+#define EPSILON           (g_curterm + 1)
 
 #define ADJ_VAL(x)        ((x) - MINNONTERM)
 #define UNADJ_VAL(x)      ((x) + MINNONTERM)
-
-#define NONFATAL          0
-#define FATAL             1
-#define WARNING           2
-#define NOHDR             3
 
 #define DOLLAR_DOLLAR     ((unsigned)~0 >> 1)
 
@@ -79,7 +80,6 @@
     OX(typedef int           YY_TTYPE;)
 #endif
 
-#define NAME_MAX   32
 typedef struct symbol_{
     char name[NAME_MAX];
     char field[NAME_MAX];      /*%type <field>*/
@@ -93,7 +93,7 @@ typedef struct symbol_{
     LL(SET_S *follow;)         /*follow set*/
 }SYMBOL_S;
 
-#define NULLABLE(sym)          (ISNONTERM(sym) && MEMBER((sys)->first, EPSILON))
+#define NULLABLE(sym)          (ISNONTERM(sym) && SET_MEMBER((sys)->first, EPSILON))
 #define MAXRHS    31           /*maximum number of objects on a right-hand side*/
 #define RHSBITS   5            /*Number of bits required to hold MAXRHS*/
 
@@ -108,6 +108,22 @@ typedef struct prod_ {
     OX(int prec;)
 
 }PRODUCTION_S;
+
+typedef struct cmdopt_{
+    bool debug;
+    bool make_actions;
+    bool make_parser;
+    bool make_yyoutab;
+    bool no_lines;
+    bool no_warnings;
+    bool warn_exit;
+    bool public;
+    int  symbols;
+    bool uncompressed;
+    bool use_stdout;
+    int  threshold;
+    int  verbose;
+}CMDOPT_S;
 
 #ifdef OCCS
 typedef struct prectab_{
@@ -128,36 +144,10 @@ typedef struct prectab_{
 #define DEFAULT(x)
 #endif
 
-typedef struct cmdopt_{
-    bool debug;
-    bool make_actions;
-    bool make_parser;
-    bool make_yyoutab;
-    bool no_lines;
-    bool no_warnings;
-    bool public;
-    bool symbols;
-    bool uncompressed;
-    bool use_stdout;
-    int  threshold;
-    int  verbose;
-}CMDOPT_S;
+CLASS CMDOPT_S g_cmdopt;
 
-CLASS CMDOPT_S g_cmdopt I(= {false,
-                             true,
-                             true,
-                             false,
-                             false,
-                             false,
-                             false,
-                             false,
-                             false,
-                             false,
-                             4,
-                             0});
-
-CLASS char *g_input_file_name I(="console");
-CLASS FILE *g_output          I(= stdout);
+CLASS char *g_input_file_name I(="console");    /*input file name*/
+CLASS FILE *g_output          I(= 0);           /*output stream*/
 
 CLASS SYMBOL_S *g_terms[MINACT];                /*pointer to the equivalent symbol-table entry*/
 
