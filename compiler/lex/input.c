@@ -26,10 +26,8 @@ PRIVATE int get_line(char **stringp, int n, FILE *stream)
 
     if(n > 0 && lookhead != EOF){
         while(--n > 0){
-
             *str = lookhead;
             lookhead = getc(stream);
-
             if(*str == '\n' || *str == EOF) break;
             ++str;
         }

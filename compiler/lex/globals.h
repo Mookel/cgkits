@@ -21,7 +21,7 @@
 #define I(x)
 #endif
 
-#define MAX_RULE_SIZE 2048  /*Maximum rule size*/
+#define MAX_RULE_SIZE 20480  /*Maximum rule size*/
 
 CLASS int  g_verbose         I(=0); /*print statistics*/
 CLASS int  g_no_lines        I(=0); /*Suppress #line directives*/

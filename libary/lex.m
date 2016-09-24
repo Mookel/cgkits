@@ -1,7 +1,7 @@
 /*@A (C) 2016 Mookel                                               */
 
 
-  @
+  @----------------------------------------------------------------------
   @	This file contains the lex state-machine driver. It's
   @	path should be put into the libary environment.
   @----------------------------------------------------------------------
