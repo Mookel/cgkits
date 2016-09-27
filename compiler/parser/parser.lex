@@ -1,4 +1,4 @@
-/*@A (c) 2006 recreated by mookel*/
+/*@A (C) 2006 recreated by mookel*/
 
 %{
 #include <stdio.h>
@@ -27,9 +27,15 @@
 PRIVATE bool _ignore = false;
 PRIVATE int  _start_line;
 
-void stripcr(char *src) /*Remove carriage returns (but not linefeeds) from src*/
+PRIVATE void stripcr(char *src); /*Remove carriage returns (but not linefeeds) from src*/
 void nows();
 void ws();
+
+#ifdef MAIN
+void output(char *fmt,...);
+void lerror(int status, char *fmt, ...);
+CMDOPT_S g_cmdopt;
+#endif
 
 %}
 
@@ -44,10 +50,10 @@ c_name [A-Za-z_][A-Za-z_0-9]*
             while(i = input()) {  /*return -1 means there are some errors.*/
                 if(i < 0) {
                     ii_unterm();
-                    ii_flush();
+                    ii_flush(1);
                     ii_term();
-                    e_lerror(NONFATAL, "Comment starting on line ");
-                    e_lerror(NOHDR, "%d too long, truncating.\n", start);
+                    lerror(NONFATAL, "Comment starting on line ");
+                    lerror(NOHDR, "%d too long, truncating.\n", start);
                 } else if(i == '*' && ii_lookahead(1) == '/'){
                     input();
                     stripcr(yytext);
@@ -56,7 +62,7 @@ c_name [A-Za-z_][A-Za-z_0-9]*
                 }
             }
 
-            e_lerror(FATAL, "End of file encountered in comment\n");
+            lerror(FATAL, "End of file encountered in comment\n");
             end:;
         }
 
@@ -77,24 +83,24 @@ c_name [A-Za-z_][A-Za-z_0-9]*
 
             for(nestlev = 1; i = input(); lb2 = lb1, lb1 = i) {
                 if(lb2 == '\n' && lb1 == '%' && i == '%') {
-                    e_lerror(FATAL, "%%%% in code block starting on line %d\n", _start_line);
+                    lerror(FATAL, "%%%% in code block starting on line %d\n", _start_line);
                 }
 
                 if(i < 0) {
                     ii_unterm();
                     ii_flush(1);
                     ii_term();
-                    e_lerror(FATAL, "Code block starting on line %d too long.\n", _start_line);
+                    lerror(FATAL, "Code block starting on line %d too long.\n", _start_line);
                 }
 
                 if(i == '\n' && in_string) {
-                    e_lerror(WARNING, "Newline in string ,inserting \"\n", _start_line);
+                    lerror(WARNING, "Newline in string ,inserting \"\n", _start_line);
                     in_string = false;
                 }
 
                 /*Take care of \{, "{", '{', \}, "}", '}' */
                 if(i == '\\') {
-                    if(!(i = input()) {
+                    if(!(i = input())) {
                         break;
                     } else {
                         continue;   /*dicard backslash and following char*/
@@ -120,7 +126,7 @@ c_name [A-Za-z_][A-Za-z_0-9]*
                 }
             }
 
-            e_lerror(FATAL, "EOF in code block starting on line %d\n", _start_line);
+            lerror(FATAL, "EOF in code block starting on line %d\n", _start_line);
         }
 
 ^"%%"   return SEPARATOR;
@@ -129,9 +135,10 @@ c_name [A-Za-z_][A-Za-z_0-9]*
                     /*copy a code block to the output file*/
                     int c;
                     bool looking_for_brace = false;
+                    #undef output
 
                     if(!g_cmdopt.no_lines)
-                        e_output("\n #line %d \"%s\"", yylineno, g_input_file_name);
+                        output("\n #line %d \"%s\"", yylineno, g_input_file_name);
 
                     while(c = input()) { /*while not at end of file*/
                         if(c == -1) {
@@ -139,11 +146,11 @@ c_name [A-Za-z_][A-Za-z_0-9]*
                         } else if(c != '\r') { /*ignore '\r' */
                             if(looking_for_brace) { /*last char was a %*/
                                 if(c == '}') break;
-                                else e_output("%%%c", c);
+                                else output("%%%c", c);
                                 looking_for_brace = false;
                             } else {
                                 if(c == '%') looking_for_brace = 1;
-                                else e_output("%c", c);
+                                else output("%c", c);
                             }
                         }
                     }
@@ -170,7 +177,7 @@ c_name [A-Za-z_][A-Za-z_0-9]*
 "]*"           return END_OPT;
 
 [^\x00-\s%\{}[\]();|;,<>]+ return NAME;
-\x0d                                  ;/*dicard carriage return '\r'*/
+\x0d                                  ;   /*dicard carriage return '\r'*/
 [\x00-\x0c\x0e-\s]         if(!_ignore) return WHITESPACE;
 
 %%
@@ -194,10 +201,8 @@ PRIVATE void stripcr(char *src)
 }
 
 #ifdef MAIN
-    CMDOPT_S g_cmdopt;
-    g_cmdopt.no_lines = 0;
     char *g_input_file_name;
-    FILE *g_output = stdout;
+    FILE *g_output = 0;
 
     #include <stdarg.h>
 
@@ -231,6 +236,8 @@ PRIVATE void stripcr(char *src)
     int main(int argc, char **argv)
     {
         int lex;
+        g_output = stdout;
+        g_cmdopt.no_lines = 0;
         if(argc == 1) {
             while(lex = yylex()) plex(lex);
         } else {
@@ -240,6 +247,23 @@ PRIVATE void stripcr(char *src)
                 while(lex = yylex()) plex(lex);
             }
         }
+    }
+
+    void output(char *fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(g_output, fmt, args);
+        fflush(g_output);
+    }
+
+    void lerror(int status, char *fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(stderr, fmt, args);
+        fflush(stderr);
+        if(status == FATAL) exit(1);
     }
 
 #endif

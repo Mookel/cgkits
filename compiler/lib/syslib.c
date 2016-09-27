@@ -374,6 +374,10 @@ PUBLIC int *sys_memiset(int *dst, int value, int count)
     return dst;
 }
 
+#define TYPE     "YY_TTYPE"
+#define SCLASS   "YYPRIVATE"
+#define D_SCLASS "YYPRIVATE"
+
 /*
  * This pairs/pnext compress a table horizontally (using char/next pairs) and then
  * print the compressed table. The compressed array looks like this:

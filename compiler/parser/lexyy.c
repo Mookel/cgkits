@@ -1,4 +1,4 @@
-  @                                
+                                   
 
 #include <stdio.h>
 #include <compiler.h>
@@ -26,9 +26,15 @@
 PRIVATE bool _ignore = false;
 PRIVATE int  _start_line;
 
-void stripcr(char *src) /*Remove carriage returns (but not linefeeds) from src*/
+PRIVATE void stripcr(char *src); /*Remove carriage returns (but not linefeeds) from src*/
 void nows();
 void ws();
+
+#ifdef MAIN
+void output(char *fmt,...);
+void lerror(int status, char *fmt, ...);
+CMDOPT_S g_cmdopt;
+#endif
 
 
 
@@ -63,72 +69,72 @@ void ws();
  *      goto  2  on  |
  *      goto  1  on  ~\x07f
 
- * State 1 [accepting, line 173 <return NAME;>]
+ * State 1 [accepting, line 180 <return NAME;>]
  *      goto  1  on  tuvwxyz~\x07f
 
- * State 2 [accepting, line 167 <return OR;>]
+ * State 2 [accepting, line 174 <return OR;>]
 
- * State 3 [accepting, line 126 <{\
+ * State 3 [accepting, line 132 <{\
             int i>]
 
- * State 4 [accepting, line 176 <if(!_ignore) return >]
+ * State 4 [accepting, line 183 <if(!_ignore) return >]
 
- * State 5 [accepting, line 172 <return END_OPT;\
+ * State 5 [accepting, line 179 <return END_OPT;\
 >]
  *      goto 25  on  *
 
- * State 6 [accepting, line 169 <return START_OPT;>]
+ * State 6 [accepting, line 176 <return START_OPT;>]
 
- * State 7 [accepting, line 168 <return SEMI;>]
+ * State 7 [accepting, line 175 <return SEMI;>]
 
- * State 8 [accepting, line 166 <return COLON;>]
+ * State 8 [accepting, line 173 <return COLON;>]
 
- * State 9 [accepting, line 174 <;/*dicard carriage r>]
+ * State 9 [accepting, line 181 <;/*dicard carriage r>]
 
- * State 10 [accepting, line 64 <{ /*Absorb a comment>]
+ * State 10 [accepting, line 70 <{ /*Absorb a comment>]
 
- * State 11 [accepting, line 154 <{\
+ * State 11 [accepting, line 161 <{\
                  >]
  *      goto 11  on  \	s
 
- * State 12 [accepting, line 155 <return FIELD;       >]
+ * State 12 [accepting, line 162 <return FIELD;       >]
 
- * State 13 [accepting, line 128 <return SEPARATOR;\
+ * State 13 [accepting, line 134 <return SEPARATOR;\
 >] Anchor: Start
 
- * State 14 [accepting, line 159 <return TYPE;        >]
+ * State 14 [accepting, line 166 <return TYPE;        >]
 
- * State 15 [accepting, line 158 <return TERM_SPEC;>]
+ * State 15 [accepting, line 165 <return TERM_SPEC;>]
 
- * State 16 [accepting, line 164 <return PREC;        >]
+ * State 16 [accepting, line 171 <return PREC;        >]
 
- * State 17 [accepting, line 161 <return LEFT;        >]
+ * State 17 [accepting, line 168 <return LEFT;        >]
 
- * State 18 [accepting, line 156 <return PERCENT_UNION>]
+ * State 18 [accepting, line 163 <return PERCENT_UNION>]
 
- * State 19 [accepting, line 160 <return SYNCH;       >]
+ * State 19 [accepting, line 167 <return SYNCH;       >]
 
- * State 20 [accepting, line 165 <return START;       >]
+ * State 20 [accepting, line 172 <return START;       >]
 
- * State 21 [accepting, line 162 <return RIGHT;       >]
+ * State 21 [accepting, line 169 <return RIGHT;       >]
 
- * State 22 [accepting, line 163 <return NONASSOC;    >]
+ * State 22 [accepting, line 170 <return NONASSOC;    >]
 
  * State 23 [nonaccepting]
  *      goto 23  on  0123456789
  *      goto 12  on  >
  *      goto 23  on  ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
 
- * State 24 [accepting, line 176 <if(!_ignore) return >]
+ * State 24 [accepting, line 183 <if(!_ignore) return >]
  *      goto 23  on  ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
 
- * State 25 [accepting, line 172 <return END_OPT;\
+ * State 25 [accepting, line 179 <return END_OPT;\
 >]
 
  * State 26 [nonaccepting]
  *      goto 61  on  n
 
- * State 27 [accepting, line 176 <if(!_ignore) return >]
+ * State 27 [accepting, line 183 <if(!_ignore) return >]
  *      goto 10  on  *
 
  * State 28 [nonaccepting]
@@ -136,7 +142,7 @@ void ws();
  *      goto 38  on  o
  *      goto 37  on  y
 
- * State 29 [accepting, line 176 <if(!_ignore) return >]
+ * State 29 [accepting, line 183 <if(!_ignore) return >]
  *      goto 35  on  l
  *      goto 34  on  n
  *      goto 33  on  p
@@ -150,7 +156,7 @@ void ws();
  *      goto 40  on  t
  *      goto 39  on  y
 
- * State 31 [accepting, line 176 <if(!_ignore) return >]
+ * State 31 [accepting, line 183 <if(!_ignore) return >]
  *      goto 36  on  %
 
  * State 32 [nonaccepting]
@@ -1466,24 +1472,24 @@ int yylex()
 
             for(nestlev = 1; i = input(); lb2 = lb1, lb1 = i) {
                 if(lb2 == '\n' && lb1 == '%' && i == '%') {
-                    e_lerror(FATAL, "%%%% in code block starting on line %d\n", _start_line);
+                    lerror(FATAL, "%%%% in code block starting on line %d\n", _start_line);
                 }
 
                 if(i < 0) {
                     ii_unterm();
                     ii_flush(1);
                     ii_term();
-                    e_lerror(FATAL, "Code block starting on line %d too long.\n", _start_line);
+                    lerror(FATAL, "Code block starting on line %d too long.\n", _start_line);
                 }
 
                 if(i == '\n' && in_string) {
-                    e_lerror(WARNING, "Newline in string ,inserting \"\n", _start_line);
+                    lerror(WARNING, "Newline in string ,inserting \"\n", _start_line);
                     in_string = false;
                 }
 
                 /*Take care of \{, "{", '{', \}, "}", '}' */
                 if(i == '\\') {
-                    if(!(i = input()) {
+                    if(!(i = input())) {
                         break;
                     } else {
                         continue;   /*dicard backslash and following char*/
@@ -1509,7 +1515,7 @@ int yylex()
                 }
             }
 
-            e_lerror(FATAL, "EOF in code block starting on line %d\n", _start_line);
+            lerror(FATAL, "EOF in code block starting on line %d\n", _start_line);
         }
 
 						break;
@@ -1541,10 +1547,10 @@ int yylex()
             while(i = input()) {  /*return -1 means there are some errors.*/
                 if(i < 0) {
                     ii_unterm();
-                    ii_flush();
+                    ii_flush(1);
                     ii_term();
-                    e_lerror(NONFATAL, "Comment starting on line ");
-                    e_lerror(NOHDR, "%d too long, truncating.\n", start);
+                    lerror(NONFATAL, "Comment starting on line ");
+                    lerror(NOHDR, "%d too long, truncating.\n", start);
                 } else if(i == '*' && ii_lookahead(1) == '/'){
                     input();
                     stripcr(yytext);
@@ -1553,7 +1559,7 @@ int yylex()
                 }
             }
 
-            e_lerror(FATAL, "End of file encountered in comment\n");
+            lerror(FATAL, "End of file encountered in comment\n");
             end:;
         }
 
@@ -1564,9 +1570,10 @@ int yylex()
                     /*copy a code block to the output file*/
                     int c;
                     bool looking_for_brace = false;
+                    #undef output
 
                     if(!g_cmdopt.no_lines)
-                        e_output("\n #line %d \"%s\"", yylineno, g_input_file_name);
+                        output("\n #line %d \"%s\"", yylineno, g_input_file_name);
 
                     while(c = input()) { /*while not at end of file*/
                         if(c == -1) {
@@ -1574,11 +1581,11 @@ int yylex()
                         } else if(c != '\r') { /*ignore '\r' */
                             if(looking_for_brace) { /*last char was a %*/
                                 if(c == '}') break;
-                                else e_output("%%%c", c);
+                                else output("%%%c", c);
                                 looking_for_brace = false;
                             } else {
                                 if(c == '%') looking_for_brace = 1;
-                                else e_output("%c", c);
+                                else output("%c", c);
                             }
                         }
                     }
@@ -1681,10 +1688,8 @@ PRIVATE void stripcr(char *src)
 }
 
 #ifdef MAIN
-    CMDOPT_S g_cmdopt;
-    g_cmdopt.no_lines = 0;
     char *g_input_file_name;
-    FILE *g_output = stdout;
+    FILE *g_output = 0;
 
     #include <stdarg.h>
 
@@ -1718,6 +1723,8 @@ PRIVATE void stripcr(char *src)
     int main(int argc, char **argv)
     {
         int lex;
+        g_output = stdout;
+        g_cmdopt.no_lines = 0;
         if(argc == 1) {
             while(lex = yylex()) plex(lex);
         } else {
@@ -1727,6 +1734,23 @@ PRIVATE void stripcr(char *src)
                 while(lex = yylex()) plex(lex);
             }
         }
+    }
+
+    void output(char *fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(g_output, fmt, args);
+        fflush(g_output);
+    }
+
+    void lerror(int status, char *fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(stderr, fmt, args);
+        fflush(stderr);
+        if(status == FATAL) exit(1);
     }
 
 #endif

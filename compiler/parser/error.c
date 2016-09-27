@@ -23,12 +23,12 @@ void e_init()
     }
 }
 
-FILE *e_get_doc()
+FILE *get_doc()
 {
     return _doc_file;
 }
 
-void e_output(char *fmt, ...)
+void output(char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -36,7 +36,7 @@ void e_output(char *fmt, ...)
 }
 
 /*works like printf(), but writes to yyout.doc.*/
-void e_doc(char *fmt, ...)
+void doc(char *fmt, ...)
 {
     va_list args;
 
@@ -46,7 +46,7 @@ void e_doc(char *fmt, ...)
     }
 }
 
-void e_doc_to(FILE *fp)
+void doc_to(FILE *fp)
 {
     static FILE *oldfp;
 
@@ -58,7 +58,7 @@ void e_doc_to(FILE *fp)
     }
 }
 
-void e_lerror(int fatal, char *fmt, ...)
+void lerror(int fatal, char *fmt, ...)
 {
     va_list args;
     extern int yylineno;
@@ -86,7 +86,7 @@ void e_lerror(int fatal, char *fmt, ...)
     if(fatal == FATAL) exit(EXIT_OTHER);
 }
 
-void e_error(int fatal, char *fmt, ...)
+void error(int fatal, char *fmt, ...)
 {
     va_list args;
     const char *type;
@@ -116,17 +116,17 @@ void e_error(int fatal, char *fmt, ...)
 
 }
 
-int e_nerrors()
+int nerrors()
 {
     return num_errors_;
 }
 
-int e_nwarnings()
+int nwarnings()
 {
     return num_warings_;
 }
 
-const char *e_open_errmsg(void)
+const char *open_errmsg(void)
 {
     switch(errno) {
         case EACCES: return "File is read only or a directory";

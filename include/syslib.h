@@ -44,9 +44,6 @@ extern  int*     sys_memiset(int *dst, int value, int count);
 /*For char/mext pairs, mainly used for compress a table.*/
 typedef int ATYPE;   /*type of input tables*/
 #define NCOLS    10
-#define TYPE     "YY_TTYPE"
-#define SCLASS   "YYPRIVATE"
-#define D_SCLASS "YYPRIVATE"
 extern  int      sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
                           char *name, int threshold, int numbers);
 extern  int      sys_pnext(FILE *fp, char *name);

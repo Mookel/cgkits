@@ -17,14 +17,14 @@
 #define NOHDR             3
 
 void e_init();
-FILE *e_get_doc();
-void e_output(char *fmt, ...);
-void e_doc(char *fmt, ...);
-void e_doc_to(FILE *fp);
-void e_lerror(int fatal, char *fmt, ...);
-void e_error(int fatal, char *fmt, ...);
-int e_nerrors();
-int e_nwarnings();
-const char *e_open_errmsg();
+FILE *get_doc();
+void output(char *fmt, ...);
+void doc(char *fmt, ...);
+void doc_to(FILE *fp);
+void lerror(int fatal, char *fmt, ...);
+void error(int fatal, char *fmt, ...);
+int  nerrors();
+int  nwarnings();
+const char *open_errmsg();
 
 #endif //CGKITS_ERROR_H

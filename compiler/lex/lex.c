@@ -74,7 +74,7 @@ PRIVATE void strip_comments(char *string)
             if(string[0] == '/' && string[1] == '*') {
                 incomment = 1;
                 *string++ = ' ';
-                *string++ = ' ';
+                *string = ' ';
             }
         }
     }

@@ -11,7 +11,6 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <l.h>
-#include "error.h"
 
 #ifdef LLAMA
 #define ALLOCATE
@@ -22,6 +21,12 @@
 #include "parser.h"
 #undef ALLOCATE
 #endif
+
+#include "error.h"
+#include "acts.h"
+#include "lldriver.h"
+#include "llpar.h"
+
 
 #define VERBOSE(str) if(g_cmdopt.verbose) { printf("%s:\n", (str)); } else
 
@@ -99,7 +104,6 @@ PRIVATE void parse_args(int argc, char **argv)
              OX(case 'a': g_cmdopt.make_parser = false;)
              OX(          g_template = ACT_TEMPL;)
              OX(          break;)
-
                 case 'D': g_cmdopt.debug = true; break;
                 case 'g': g_cmdopt.public = true;break;
                 LL(case 'f' : g_cmdopt.uncompressed = true; break;)
@@ -139,8 +143,8 @@ PRIVATE void parse_args(int argc, char **argv)
         if(ii_newfile(g_input_file_name = *argv) < 0) {
             sprintf(name_buf, "%s.%s", *argv, DEF_EXT);
             if(ii_newfile(g_input_file_name = name_buf) < 0)
-                e_error(FATAL, "Can't open input file %s or %s: %s\n",
-                    *argv, name_buf, e_open_errmsg());
+                error(FATAL, "Can't open input file %s or %s: %s\n",
+                    *argv, name_buf, open_errmsg());
         }
     }
 }
@@ -160,25 +164,26 @@ PRIVATE void tail()
 
 }
 
+extern void nows(void); /*declared in parser.lex*/
+
 PRIVATE int do_file(void)
 {
     /*process the input file. return the number of errors.*/
     struct timeb start_time, end_time;
     long time;
-    void nows(void); /*declared in parser.lex*/
 
     ftime(&start_time);
     end_time = start_time;
 
-    //init_acts();
-    //file_header();
+    init_acts();
+    file_header();
 
     VERBOSE("parsing");
 
-    //nows();
-    //yyparse();
+    nows();    /*Make lex ignore white space until ws() is called.*/
+    yyparse(); /*parser the entire input file.*/
 
-    if((e_nerrors() /*|| problems()*/)){
+    if((nerrors() /*|| problems()*/)){
         VERBOSE("Analyzing grammar");
         //fisrt();
         //LL(follow());
@@ -207,7 +212,7 @@ PRIVATE int do_file(void)
                 (time/1000), (time%1000));
     }
 
-    return e_nerrors();
+    return nerrors();
 }
 
 #define MAIN_TEST
@@ -237,7 +242,7 @@ int main(int argc, char **argv)
         LL(_output_file_name = PARSE_FILE;)
 
         if((g_output = fopen(_output_file_name, "w")) == NULL) {
-            e_error(FATAL, "Cant't open output file %s : %s\n", _output_file_name, e_open_errmsg());
+            error(FATAL, "Cant't open output file %s : %s\n", _output_file_name, open_errmsg());
         }
     }
 
@@ -247,8 +252,8 @@ int main(int argc, char **argv)
             symbols();      /*print the symbol table*/
         statistics(stdout);
 
-        OX(if(g_cmdopt.verbose && e_get_doc()))
-        OX(    statistics(e_get_doc());)
+        OX(if(g_cmdopt.verbose && get_doc()))
+        OX(    statistics(get_doc());)
 
     } else {                /* there are some errors */
         if(g_output != stdout) {
@@ -258,6 +263,6 @@ int main(int argc, char **argv)
     }
 
     /*4. exit*/
-    exit(e_nerrors() + (g_cmdopt.warn_exit ? e_nwarnings() : 0));
+    exit(nerrors() + (g_cmdopt.warn_exit ? nwarnings() : 0));
 }
 
