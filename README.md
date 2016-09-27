@@ -16,7 +16,7 @@ I almost rewrite all source code using C and make it executable on OS X and Ubun
 - Interface and variable names are renamed to make them more clear and readable.
 - Interfaces with similar function are abstracted into common modules, which are easier maintained.
 - Get rid of usage of global variables, reducing coupling of different module.
-- Add gc support. The simplest malloc/free interfaces were used by Allen for his memory management, which leading to many memory leak problems in his code. To solve this, I add gc support.
+- Add gc support. The simplest malloc/free interfaces were used by Allen for his memory management, leading to many memory leak problems in his code. To solve this, I add gc support.
 - The tools are ported to OS X and Ubuntu/other Linux platform.
 
 ## Contact me
