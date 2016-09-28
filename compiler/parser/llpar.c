@@ -8,6 +8,7 @@
 #include "parser.h"
 #include "llout.h"
 #include "error.h"
+#include "acts.h"
 
 /* A recursive-descent parser for a very stripped down llama.
  * The small version grammar is as follows:
@@ -43,6 +44,7 @@ extern  int   yylineno;
 extern  char *yytext;
 extern  int   yylex();
 extern  void  ws();
+extern  int start_action();
 
 /*local variables*/
 PRIVATE int _lookhead;
@@ -62,7 +64,7 @@ PUBLIC int yyparse()
 {
     _lookhead = yylex();
     definitions();
-    //first_sym();
+    first_sym();
     body();
     return 0;
 }
@@ -99,10 +101,10 @@ PRIVATE void definitions()
     while(!match(SEPARATOR) && !match(_EOI_)) {
         if(_lookhead == SYNCH) {
             for(advance(); match(NAME); advance())
-                //add_synch(yytext);
+                add_synch(yytext);
         } else if(_lookhead == TERM_SPEC) {
             for(advance(); match(NAME); advance())
-                //make_term(yytext);
+                make_term(yytext);
         } else if(_lookhead == CODE_BLOCK) {
                 advance();
         } else {
@@ -118,7 +120,7 @@ PRIVATE void body()
 {
     while(!match(SEPARATOR) && !match(_EOI_)) {
         if(match(NAME)) {
-            //new_nonterm(yytext, 1);
+            new_nonterm(yytext, 1);
             advance();
         } else {
             lerror(NONFATAL, "Illegal <%s>, nonterminal expected.\n", yytext);
@@ -132,22 +134,20 @@ PRIVATE void body()
         } else {
             lerror(NONFATAL, "Inserted missing ':' \n");
         }
-
         right_sides();
     }
 
     ws(); /*Enable white space.*/
-
     if(match(SEPARATOR)) yylex();
 }
 
 PRIVATE void right_sides()
 {
-    //new_rhs();
+    new_rhs();
     rhs();
     while(match(OR)) {
         advance();
-        //new_rhs();
+        new_rhs();
         rhs();
     }
 
@@ -161,7 +161,7 @@ PRIVATE void right_sides()
 PRIVATE void rhs()
 {
     while(match(NAME) || match(ACTION)) {
-        //add_to_rhs(yytext, match(ACTION) ? start_action() : 0);
+        add_to_rhs(yytext, match(ACTION), start_action());
         advance();
     }
 

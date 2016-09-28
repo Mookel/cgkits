@@ -102,7 +102,7 @@ typedef struct prod_ {
     SYMBOL_S *rhs[MAXRHS + 1];
     SYMBOL_S *lhs;
     unsigned char rhs_len;     /*number of elements in rhs array*/
-    unsigned char non_acts;
+    unsigned char non_acts;    /*that are not actions*/
     SET_S *select;
     struct prod_ *next;        /*pointer to next production for this left-hand side*/
     OX(int prec;)
@@ -157,10 +157,10 @@ LL(CLASS SET_S *g_synch;)
 CLASS char       *g_template I(= PAR_TEMPL);
 CLASS HASH_TAB_S *g_symtab;                     /*the symbol table*/
 CLASS SYMBOL_S   *g_goal_symbol I( = NULL);     /*pointer to symbol-table entry for the start symbol*/
-CLASS int         g_currtem     I( = MINTERM - 1);
-CLASS int         g_currnonterm I( = MINNONTERM-1);
-CLASS int         g_curract     I( = MINACT - 1);
-CLASS int         g_num_productons I( = 0);
+CLASS unsigned    g_currterm     I( = MINTERM - 1);
+CLASS unsigned    g_currnonterm I( = MINNONTERM-1);
+CLASS unsigned    g_curract     I( = MINACT - 1);
+CLASS unsigned    g_num_productons I( = 0);
 
 #undef CLASS
 #undef I
