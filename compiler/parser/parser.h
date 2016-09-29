@@ -60,7 +60,7 @@
 #define SYM_FILE          "llout.sym"
 #define DOC_FILE          "llout.doc"
 #define DEF_EXT           "lma"
-#define PAR_TEMPL         "llama.par"
+#define PAR_TEMPL         "llama.m"
 #define PROG_NAME         "llama"
 #else
 #define TOKEN_FILE        "yyout.h"

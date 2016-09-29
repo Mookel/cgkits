@@ -183,14 +183,14 @@ PRIVATE int do_file(void)
     nows();    /*Make lex ignore white space until ws() is called.*/
     yyparse(); /*parser the entire input file.*/
 
-    if((nerrors() /*|| problems()*/)){
+    if(!(nerrors() || problems())){
         VERBOSE("Analyzing grammar");
         //fisrt();
         //LL(follow());
         //LL(select());
 
-        //code_header();
-        //OX(patch();)
+        code_header();
+        OX(patch();)
         ftime(&start_time);
         if(g_cmdopt.make_parser) {
             VERBOSE("making tables");
@@ -200,8 +200,7 @@ PRIVATE int do_file(void)
         ftime(&end_time);
         VERBOSE("copying driver");
 
-        //driver();
-
+        driver();
         if(g_cmdopt.make_actions) tail();
     }
 
@@ -214,11 +213,6 @@ PRIVATE int do_file(void)
 
     return nerrors();
 }
-
-#define MAIN_TEST
-#ifdef MAIN_TEST
-int yylineno = 0;
-#endif
 
 int main(int argc, char **argv)
 {

@@ -10,6 +10,11 @@
 
 PRIVATE FILE *_driver_file = 0;
 
+/*
+ * This header is printed at the top of the output file, before
+ * the definitions section is processed. Various #defines that
+ * you might want to modify are put here.
+ */
 void file_header()
 {
     if(g_cmdopt.public)
@@ -27,13 +32,27 @@ void file_header()
 
 }
 
+/*
+ * This header is printed after the definitons section is processed,
+ * but but before any tables or the driver is processed.
+ */
 void code_header()
 {
+    output("\n\n/*-------------------------------------------*/\n\n");
+    output("#include \"%s\"\n\n", TOKEN_FILE);
+    output("#define YY_MINTERM     1\n");
+    output("#define YY_MAXTERM     %d\n", g_currterm);
+    output("#define YY_MINNONTERM  %d\n", MINNONTERM);
+    output("#define YY_MAXNONTERM  %d\n", g_currnonterm);
+    output("#define YY_START_STATE %d\n", MINACT);
+    output("\n");
 
+    sys_driver_2(g_output, !g_cmdopt.no_lines);
 }
 
 void driver()
 {
-
+    sys_driver_2(g_output, !g_cmdopt.no_lines);
+    fclose(_driver_file);
 }
 

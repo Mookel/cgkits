@@ -55,6 +55,12 @@ PUBLIC void init_acts()
     LL(g_synch = set_new();)
 }
 
+PUBLIC int problems()
+{
+    hash_print_tab(g_symtab, (fp_tab_print_t)find_problems, NULL, 0);
+    return nerrors();
+}
+
 PUBLIC SYMBOL_S *make_term(char *name)
 {
     SYMBOL_S *p;
@@ -226,6 +232,15 @@ PRIVATE bool c_identifier(char *name)
     }
 
     return true;
+}
+
+PRIVATE void find_problems(SYMBOL_S *sym)
+{
+    if(!sym->used && sym!=g_goal_symbol)
+        error(WARNING, "<%s> not used (defined on line %d)\n", sym->name, sym->set);
+
+    if(!sym->set && !ISACT(sym))
+        error(NONFATAL, "<%s> not defined (used on line %d)\n", sym->name, sym->used);
 }
 
 #ifdef LLAMA

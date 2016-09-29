@@ -9,5 +9,7 @@
 #define CGKITS_LLDRIVER_H
 
 void file_header();
+void code_header();
+void driver();
 
 #endif //CGKITS_LLDRIVER_H

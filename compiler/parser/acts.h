@@ -9,6 +9,7 @@
 #define CGKITS_ACTS_H
 
 void      init_acts();
+int       problems();
 void      first_sym();
 void      add_synch(char *name);
 void      new_rhs();
