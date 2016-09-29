@@ -6,7 +6,7 @@
 #define LP    '('
 #define RP    ')'
 #define NUM   'n'
-#define ID    'a'
 #define SEMI  ';'
+#define NAME  'N'
 
 #endif

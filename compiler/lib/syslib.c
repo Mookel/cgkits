@@ -97,6 +97,7 @@ PUBLIC int sys_esc(char **s)
             case 'F' : rval = '\f';   break;
             case 'N' : rval = '\n';   break;
             case 'R' : rval = '\r';   break;
+            case 'S' : rval = ' ' ;   break;
             case 'T' : rval = '\t';   break;
             case 'E' : rval = '\033'; break;
 

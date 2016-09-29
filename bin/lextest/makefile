@@ -1,7 +1,7 @@
 INC_SYS_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 GC_LIB_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/lib
 LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
-LEX = /Users/mookel/Workspace/CompilerPro/private/cgkits/bin/cglex
+LEX = /Users/mookel/Workspace/CompilerPro/private/cgkits/bin/lex
 
 LIB_CFG = $(LIB_DIR)/llib.a -lncurses
 TARGET = lextext
@@ -15,7 +15,7 @@ main.o: main.c
 
 lexyy.o: lexyy.c
 lexyy.c: test.lex
-	$(LEX) test.lex
+	$(LEX) -lV test.lex
 
 
 clean:

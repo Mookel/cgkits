@@ -8,11 +8,5 @@
 %}
 
 %%
-"+" return PLUS;
-"*" return STAR;
-"(" return LP;
-")" return RP;
-";" return SEMI;
-[0-9]+ return NUM;
-[a-z]+ return ID;
+[^\x00-\s%\{}[\]()*:|;,<>]+ return NAME;
 %%

@@ -67,7 +67,7 @@ c_name [A-Za-z_][A-Za-z_0-9]*
         }
 
         /*Suck up entire action.*/
-\{      {
+"{"     {
             int i;
             int nestlev;
             int lb1;            /*preivous character*/
@@ -79,6 +79,7 @@ c_name [A-Za-z_][A-Za-z_0-9]*
             lb1 = lb2 = 0;
             in_string = false;
             in_char_const = false;
+            in_comment = false;
             _start_line = yylineno;
 
             for(nestlev = 1; i = input(); lb2 = lb1, lb1 = i) {
@@ -119,7 +120,8 @@ c_name [A-Za-z_][A-Za-z_0-9]*
 
                 if(!(in_string || in_char_const || in_comment)) {
                     if(i == '{') ++nestlev;
-                    if(i == '}' && --nestlev <= 0) {
+
+                    if(i == '}' && (--nestlev <= 0)) {
                         stripcr(yytext);
                         return ACTION;
                     }
@@ -176,9 +178,9 @@ c_name [A-Za-z_][A-Za-z_0-9]*
 "]"            |
 "]*"           return END_OPT;
 
-[^\x00-\s%\{}[\]();|;,<>]+ return NAME;
-\x0d                                  ;   /*dicard carriage return '\r'*/
-[\x00-\x0c\x0e-\s]         if(!_ignore) return WHITESPACE;
+[^\x00-\s%\{}[\]()*:|;,<>]+ return NAME;
+\x0d                                   ;   /*dicard carriage return '\r'*/
+[\x00-\x0c\x0e-\s]          if(!_ignore) return WHITESPACE;
 
 %%
 
