@@ -95,6 +95,7 @@ PRIVATE void parse_args(int argc, char **argv)
     "-V         more verbos than -v. Implies -t, & yyout.doc goes to stderr",
     "-w         suppress all warning messages",
     "-W         warnings (as well as errors) generate nonzero exit status",
+    "\n",
     NULL
     };
 

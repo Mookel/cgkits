@@ -89,7 +89,7 @@ CMDOPT_S g_cmdopt;
 
  * State 8 [accepting, line 173 <return COLON;>]
 
- * State 9 [accepting, line 181 <;/*dicard carriage r>]
+ * State 9 [accepting, line 181 <;   /*dicard carriag>]
 
  * State 10 [accepting, line 70 <{ /*Absorb a comment>]
 
@@ -1537,7 +1537,7 @@ int yylex()
 						return COLON;
 						break;
 					case 9:					/* State 9   */
-						;/*dicard carriage return '\r'*/
+						;   /*dicard carriage return '\r'*/
 						break;
 					case 10:					/* State 10  */
 						{ /*Absorb a comment (treat it as WHITESPACE)*/
@@ -1686,74 +1686,6 @@ PRIVATE void stripcr(char *src)
         *dest = '\0';
     }
 }
-
-#ifdef MAIN
-    char *g_input_file_name;
-    FILE *g_output = 0;
-
-    #include <stdarg.h>
-
-    void plex(int lex) {
-        switch(lex) {
-            case ACTION:	   printf("ACTION (%s)\n",	   yytext); break;
-            case CODE_BLOCK:   printf("CODE_BLOCK (%s)\n", yytext); break;
-            case COLON:	       printf("COLON (%s)\n",	   yytext); break;
-            case END_OPT:      printf("END_OPT (%s)\n",	   yytext); break;
-            case FIELD:	       printf("FIELD (%s)\n",	   yytext); break;
-            case LEFT:	       printf("LEFT (%s)\n",	   yytext); break;
-            case NAME:	       printf("NAME (%s)\n",	   yytext); break;
-            case NONASSOC:	   printf("NONASSOC (%s)\n",   yytext); break;
-            case OR:		   printf("OR (%s)\n",		   yytext); break;
-            case OTHER:	       printf("OTHER (%s)\n",	   yytext); break;
-            case PERCENT_UNION: printf("PERCENT_UNION (%s)\n",  yytext); break;
-            case PREC:	       printf("PREC (%s)\n",	   yytext); break;
-            case RIGHT:	       printf("RIGHT (%s)\n",	   yytext); break;
-            case SEMI:	       printf("SEMI (%s)\n",	   yytext); break;
-            case SEPARATOR:	   printf("SEPARATOR (%s)\n",  yytext); break;
-            case START:	       printf("START (%s)\n",	   yytext); break;
-            case START_OPT:	   printf("START_OPT (%s)\n",  yytext); break;
-            case SYNCH:	       printf("SYNCH (%s)\n",	   yytext); break;
-            case TERM_SPEC:	   printf("TERM_SPEC (%s)\n",  yytext); break;
-            case TYPE:	       printf("TYPE (%s)\n",	   yytext); break;
-            case WHITESPACE:   printf("WHITESPACE (%s)\n", yytext); break;
-            default:		   printf("*** unknown *** (%s)\n",yytext); break;
-        }
-    }
-
-    int main(int argc, char **argv)
-    {
-        int lex;
-        g_output = stdout;
-        g_cmdopt.no_lines = 0;
-        if(argc == 1) {
-            while(lex = yylex()) plex(lex);
-        } else {
-            if(ii_newfile(g_input_file_name = argv[1]) < 0) {
-                perror(argv[1]);
-            } else {
-                while(lex = yylex()) plex(lex);
-            }
-        }
-    }
-
-    void output(char *fmt, ...)
-    {
-        va_list args;
-        va_start(args, fmt);
-        vfprintf(g_output, fmt, args);
-        fflush(g_output);
-    }
-
-    void lerror(int status, char *fmt, ...)
-    {
-        va_list args;
-        va_start(args, fmt);
-        vfprintf(stderr, fmt, args);
-        fflush(stderr);
-        if(status == FATAL) exit(1);
-    }
-
-#endif
 
 
 

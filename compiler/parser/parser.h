@@ -12,8 +12,6 @@
 #include <compiler.h>
 #include <stdbool.h>
 
-#define LLAMA
-
 #ifdef LLAMA
 #define LL(x) x
 #define OX(x)

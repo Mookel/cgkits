@@ -5,6 +5,7 @@
 // llpar.c : 
 //
 
+#include <stdlib.h>
 #include "parser.h"
 #include "llout.h"
 #include "error.h"
@@ -48,6 +49,7 @@ extern  int start_action();
 
 /*local variables*/
 PRIVATE int _lookhead;
+PRIVATE FILE *_tok_file = 0;
 
 /*local functions*/
 PRIVATE void advance();
@@ -56,6 +58,7 @@ PRIVATE void definitions();
 PRIVATE void body();
 PRIVATE void right_sides();
 PRIVATE void rhs();
+PRIVATE void plex(int token);
 
 #define match(x) ((x) == _lookhead)
 
@@ -74,6 +77,7 @@ PRIVATE void advance()
     if(_lookhead != _EOI_)
         while((_lookhead = yylex()) == WHITESPACE)
             ;
+    if(g_cmdopt.verbose) plex(_lookhead);
 }
 
 PRIVATE void lookfor(int first, ...)
@@ -168,5 +172,39 @@ PRIVATE void rhs()
     if(!match(OR) && !match(SEMI)) {
         lerror(NONFATAL, "Illegal <%s>, ignoring rest of production\n", yytext);
         lookfor(SEMI, SEPARATOR, OR, 0);
+    }
+}
+
+PRIVATE void plex(int token)
+{
+    if(!_tok_file) {
+        if(!(_tok_file = fopen(".token", "w"))){
+            perror("open file failed.");
+            exit(1);
+        }
+    }
+    switch(token) {
+        case ACTION:	   fprintf(_tok_file, "ACTION (%s)\n",	   yytext); break;
+        case CODE_BLOCK:   fprintf(_tok_file, "CODE_BLOCK (%s)\n", yytext); break;
+        case COLON:	       fprintf(_tok_file, "COLON (%s)\n",	   yytext); break;
+        case END_OPT:      fprintf(_tok_file, "END_OPT (%s)\n",	   yytext); break;
+        case FIELD:	       fprintf(_tok_file, "FIELD (%s)\n",	   yytext); break;
+        case LEFT:	       fprintf(_tok_file, "LEFT (%s)\n",	   yytext); break;
+        case NAME:	       fprintf(_tok_file, "NAME (%s)\n",	   yytext); break;
+        case NONASSOC:	   fprintf(_tok_file, "NONASSOC (%s)\n",   yytext); break;
+        case OR:		   fprintf(_tok_file, "OR (%s)\n",		   yytext); break;
+        case OTHER:	       fprintf(_tok_file, "OTHER (%s)\n",	   yytext); break;
+        case PERCENT_UNION: fprintf(_tok_file, "PERCENT_UNION (%s)\n",  yytext); break;
+        case PREC:	       fprintf(_tok_file, "PREC (%s)\n",	   yytext); break;
+        case RIGHT:	       fprintf(_tok_file, "RIGHT (%s)\n",	   yytext); break;
+        case SEMI:	       fprintf(_tok_file, "SEMI (%s)\n",	   yytext); break;
+        case SEPARATOR:	   fprintf(_tok_file, "SEPARATOR (%s)\n",  yytext); break;
+        case START:	       fprintf(_tok_file, "START (%s)\n",	   yytext); break;
+        case START_OPT:	   fprintf(_tok_file, "START_OPT (%s)\n",  yytext); break;
+        case SYNCH:	       fprintf(_tok_file, "SYNCH (%s)\n",	   yytext); break;
+        case TERM_SPEC:	   fprintf(_tok_file, "TERM_SPEC (%s)\n",  yytext); break;
+        case TYPE:	       fprintf(_tok_file, "TYPE (%s)\n",	   yytext); break;
+        case WHITESPACE:   fprintf(_tok_file, "WHITESPACE (%s)\n", yytext); break;
+        default:		   fprintf(_tok_file, "*** unknown *** (%s)\n",yytext); break;
     }
 }
