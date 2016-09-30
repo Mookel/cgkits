@@ -204,10 +204,10 @@ PUBLIC void add_to_rhs(char *object, bool is_an_action, int action_lineno)
         lerror(FATAL, "Right-hand side too long (%d max)\n", MAXRHS);
     } else {
         LL(if(i == 0 && p == _sp->lhs))
-        LL(    lerror(NONFATAL, "Illegal left recursion in productions.\n");)
+        LL(lerror(NONFATAL, "Illegal left recursion in productions.\n");)
 
         OX(if(ISTERM(p)))
-        OX(    _sp->rhs->prec = g_precedence[p->val].level;)
+        OX(_sp->rhs->prec = g_precedence[p->val].level;)
 
         _sp->rhs->rhs[i] = p;
         _sp->rhs->rhs[i+1] = NULL;

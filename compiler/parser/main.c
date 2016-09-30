@@ -12,21 +12,19 @@
 #include <unistd.h>
 #include <l.h>
 
-#ifdef LLAMA
 #define ALLOCATE
 #include "parser.h"
 #undef ALLOCATE
-#else
-#define ALLOCATE
-#include "parser.h"
-#undef ALLOCATE
-#endif
 
 #include "error.h"
 #include "acts.h"
 #include "lldriver.h"
 #include "llpar.h"
-
+#include "first.h"
+#ifdef LLAMA
+#include "follow.h"
+#include "select.h"
+#endif
 
 #define VERBOSE(str) if(g_cmdopt.verbose) { printf("%s:\n", (str)); } else
 
@@ -186,8 +184,8 @@ PRIVATE int do_file(void)
 
     if(!(nerrors() || problems())){
         VERBOSE("Analyzing grammar");
-        //fisrt();
-        //LL(follow());
+        first();
+        LL(follow());
         //LL(select());
 
         code_header();

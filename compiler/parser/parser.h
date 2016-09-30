@@ -38,14 +38,14 @@
 #define MAXNONTERM        (MINACT - 1)
 #define NUMTERMS          ((MAXTERM - MINTERM) + 1)
 #define NUMNONTERMS       ((MAXNONTERM - MINNONTERM) + 1)
-#define USED_TERMS        ((g_curterm - MINTERM) + 1)
-#define USED_NONTERMS     ((g_curnonterm - MINNONTERM) + 1)
+#define USED_TERMS        ((g_currterm - MINTERM) + 1)
+#define USED_NONTERMS     ((g_currnonterm - MINNONTERM) + 1)
 
 #define ISTERM(x)         ((x) && (MINTERM <= (x)->val && (x)->val <= MAXTERM))
 #define ISNONTERM(x)      ((x) && (MINNONTERM <= (x)->val && (x)->val <= MAXNONTERM))
 #define ISACT(x)          ((x) && (MINACT <= (x)->val))
 
-#define EPSILON           (g_curterm + 1)
+#define EPSILON           (g_currterm + 1)
 
 #define ADJ_VAL(x)        ((x) - MINNONTERM)
 #define UNADJ_VAL(x)      ((x) + MINNONTERM)
@@ -91,7 +91,7 @@ typedef struct symbol_{
     LL(SET_S *follow;)         /*follow set*/
 }SYMBOL_S;
 
-#define NULLABLE(sym)          (ISNONTERM(sym) && SET_MEMBER((sys)->first, EPSILON))
+#define NULLABLE(sym)          (ISNONTERM(sym) && SET_MEMBER((sym)->first, EPSILON))
 #define MAXRHS    31           /*maximum number of objects on a right-hand side*/
 #define RHSBITS   5            /*Number of bits required to hold MAXRHS*/
 

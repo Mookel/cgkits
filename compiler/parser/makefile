@@ -23,8 +23,8 @@ endif
 ##Compiling target
 target: $(TARGET)
 
-COMMOBJ = main.o acts.o lexyy.o error.o
-LLOBJ = lldriver.o 
+COMMOBJ = main.o acts.o lexyy.o error.o first.o
+LLOBJ = lldriver.o follow.o select.o
 YYOBJ =
 
 LLPAR = llpar.o
@@ -48,6 +48,15 @@ acts.o: acts.c parser.h
 
 error.o: error.c error.h parser.h
 	$(CC) -c $(CFLAGS) error.c
+
+first.o: first.c first.h parser.h
+	$(CC) -c $(CFLAGS) first.c
+
+follow.o: follow.c follow.h parser.h
+	$(CC) -c $(CFLAGS) follow.c
+
+select.o: select.c select.h parser.h
+	$(CC) -c $(CFLAGS) select.c
 
 lldriver.o: lldriver.c lldriver.h parser.h
 	$(CC) -c $(CFLAGS) lldriver.c
