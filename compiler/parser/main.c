@@ -140,11 +140,39 @@ PRIVATE void parse_args(int argc, char **argv)
 
 PRIVATE void symbols()
 {
+    FILE *fd;
 
+    if(!(fd = fopen(SYM_FILE, "w"))){
+        perror(SYM_FILE);
+    } else {
+        print_symbols(fd);
+        fclose(fd);
+    }
 }
 
 PRIVATE void statistics(FILE *fp)
 {
+    int conflicts;
+
+    if(g_cmdopt.verbose) {
+        fprintf(fp, "\n");
+        fprintf(fp, "%4d/%-4d terminals\n", USED_TERMS, NUMNONTERMS);
+        fprintf(fp, "%4d/%-4d nonterminals\n", USED_NONTERMS, NUMNONTERMS);
+        fprintf(fp, "%4d/%-4d productions\n",  g_num_productons, MAXPROD);
+        LL(fprintf(fp, "%4d        actions\n", (g_curract - MINACT) + 1);)
+        //TODO: occs
+    }
+
+    LL(conflicts = 0;)
+    //TODO: occs
+
+    if(fp == stdout) fp = stderr;
+
+    if(nwarnings() - conflicts > 0)
+        fprintf(fp, "%4d        warnings\n", nwarnings() - conflicts);
+
+    if(nerrors())
+        fprintf(fp, "%4d        hard errors\n", nerrors());
 
 }
 
@@ -179,7 +207,7 @@ PRIVATE int do_file(void)
         LL(llselect());
 
         code_header();
-        //OX(patch();)
+        OX(patch();)
         ftime(&start_time);
         if(g_cmdopt.make_parser) {
             VERBOSE("making tables");
@@ -211,13 +239,13 @@ int main(int argc, char **argv)
 
     /*1. parsing arguments.*/
     parse_args(argc, argv);
-    if(g_cmdopt.debug && !g_cmdopt.symbols) g_cmdopt.symbols = 1;
+    if(g_cmdopt.debug && !g_cmdopt.symbols) g_cmdopt.symbols = 1; /*-D implies -s*/
 
-    OX(if(g_cmdopt.make_parser))
+    OX(if(g_cmdopt.make_parser))  /*llama doesn't support -a*/
     OX(    e_init();)
 
     /*2. setting output file name and output stream*/
-    if(g_cmdopt.use_stdout) {
+    if(g_cmdopt.use_stdout) {   /*-t*/
         _output_file_name = "/dev/tty";
         g_output = stdout;
     } else {
@@ -232,12 +260,11 @@ int main(int argc, char **argv)
     /*3. do the real work*/
     if(do_file() == 0){
         if(g_cmdopt.symbols)
-            symbols();      /*print the symbol table*/
+            symbols();      /* -s/-S option: print the symbol table*/
         statistics(stdout);
 
         OX(if(g_cmdopt.verbose && get_doc()))
         OX(    statistics(get_doc());)
-
     } else {                /* there are some errors */
         if(g_output != stdout) {
             fclose(g_output);

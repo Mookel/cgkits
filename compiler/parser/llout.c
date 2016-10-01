@@ -1,8 +1,6 @@
 
 /*---------------------------------------------*/
 
-
-#line 1 "llama.m"
 /*@A (C) 1992 Allen I. Holub                                                */
 
 /*--------------------------------------------------------------
@@ -29,13 +27,10 @@ void yy_comment(char *fmt, ...);
 int  yy_next_token();
 
 
-#line 30 "llama.m"
-
 
 /*---------------------------------------------*/
 
 
- #line 3 "parser.lma"
 #include <stdarg.h>
 #include "acts.h"
 
@@ -68,8 +63,6 @@ extern void	ws(void);	/* Declared in llama.lex. */
 #define YY_MAXNONTERM  268
 #define YY_START_STATE 512
 
-
-#line 31 "llama.m"
 typedef unsigned char   YY_TTYPE;	/* Type used for tables. 	*/
 
 #define YYF	(YY_TTYPE)( -1 )	    /* Failure transition in table. */
@@ -131,10 +124,379 @@ yyvstype  Yy_vstack[ YYMAXDEPTH ]; 		    /* Value stack.		*/
 yyvstype *Yy_vsp = Yy_vstack + YYMAXDEPTH;	/* Value-stack pointer	*/
 
 
-#line 95 "llama.m"
+
+/*--------------------------------------------------------------
+ * The YypNN arrays hold the right-hand sides of productions, listed back
+ * to front (so that they are pushed in reverse order), NN is the production
+ * number (to be found in the symbol-table listing output with a -s switch).
+ * 
+ * Yy_pushtab[] is indexed by production number and points to the appropriate
+ * right-hand side (YypNN) array.
+ */
+
+YYPRIVATE int Yyp32[ ] = { 13, 0 };
+YYPRIVATE int Yyp31[ ] = { 266, 9, 0 };
+YYPRIVATE int Yyp21[ ] = { 0 };
+YYPRIVATE int Yyp20[ ] = { 263, 530, 5, 0 };
+YYPRIVATE int Yyp19[ ] = { 263, 529, 7, 0 };
+YYPRIVATE int Yyp27[ ] = { 0 };
+YYPRIVATE int Yyp26[ ] = { 258, 265, 0 };
+YYPRIVATE int Yyp38[ ] = { 0 };
+YYPRIVATE int Yyp37[ ] = { 267, 540, 4, 267, 539, 16, 0 };
+YYPRIVATE int Yyp36[ ] = { 267, 538, 7, 11, 0 };
+YYPRIVATE int Yyp35[ ] = { 267, 537, 1, 0 };
+YYPRIVATE int Yyp34[ ] = { 267, 536, 5, 0 };
+YYPRIVATE int Yyp33[ ] = { 267, 535, 7, 0 };
+YYPRIVATE int Yyp18[ ] = { 0 };
+YYPRIVATE int Yyp17[ ] = { 262, 528, 5, 0 };
+YYPRIVATE int Yyp16[ ] = { 262, 527, 7, 0 };
+YYPRIVATE int Yyp30[ ] = { 268, 267, 534, 0 };
+YYPRIVATE int Yyp2 [ ] = { 0 };
+YYPRIVATE int Yyp1 [ ] = { 14, 513, 0 };
+YYPRIVATE int Yyp23[ ] = { 0 };
+YYPRIVATE int Yyp22[ ] = { 264, 7, 0 };
+YYPRIVATE int Yyp25[ ] = { 0 };
+YYPRIVATE int Yyp24[ ] = { 260, 531, 7, 0 };
+YYPRIVATE int Yyp29[ ] = { 266, 3, 533, 5, 0 };
+YYPRIVATE int Yyp28[ ] = { 266, 3, 532, 7, 0 };
+YYPRIVATE int Yyp12[ ] = { 0 };
+YYPRIVATE int Yyp11[ ] = { 257, 264, 524, 15, 0 };
+YYPRIVATE int Yyp10[ ] = { 257, 2, 0 };
+YYPRIVATE int Yyp9 [ ] = { 257, 523, 263, 522, 8, 0 };
+YYPRIVATE int Yyp8 [ ] = { 257, 521, 263, 520, 12, 0 };
+YYPRIVATE int Yyp7 [ ] = { 257, 519, 263, 518, 6, 0 };
+YYPRIVATE int Yyp6 [ ] = { 257, 517, 262, 516, 18, 0 };
+YYPRIVATE int Yyp5 [ ] = { 257, 515, 261, 19, 0 };
+YYPRIVATE int Yyp4 [ ] = { 257, 514, 1, 20, 0 };
+YYPRIVATE int Yyp3 [ ] = { 257, 260, 17, 0 };
+YYPRIVATE int Yyp0 [ ] = { 259, 258, 512, 14, 257, 0 };
+YYPRIVATE int Yyp15[ ] = { 0 };
+YYPRIVATE int Yyp14[ ] = { 261, 526, 5, 0 };
+YYPRIVATE int Yyp13[ ] = { 261, 525, 7, 0 };
+YYPRIVATE int *Yy_pushtab[ ] = 
+{
+	Yyp0 ,
+	Yyp1 ,
+	Yyp2 ,
+	Yyp3 ,
+	Yyp4 ,
+	Yyp5 ,
+	Yyp6 ,
+	Yyp7 ,
+	Yyp8 ,
+	Yyp9 ,
+	Yyp10,
+	Yyp11,
+	Yyp12,
+	Yyp13,
+	Yyp14,
+	Yyp15,
+	Yyp16,
+	Yyp17,
+	Yyp18,
+	Yyp19,
+	Yyp20,
+	Yyp21,
+	Yyp22,
+	Yyp23,
+	Yyp24,
+	Yyp25,
+	Yyp26,
+	Yyp27,
+	Yyp28,
+	Yyp29,
+	Yyp30,
+	Yyp31,
+	Yyp32,
+	Yyp33,
+	Yyp34,
+	Yyp35,
+	Yyp36,
+	Yyp37,
+	Yyp38
+};
+
+/*--------------------------------------------------------------
+ * Yyd[][] is the DFA transition table for the parser. It is indexed as follows:
+ * 
+ *                   Input symbol
+ *              +---------------------+
+ *           L  |  production number  |
+ *           H  |       or YYF        |
+ *           S  |                     |
+ *              +---------------------+
+ * 
+ * The production number is used as an index into Yy_pushtab, which looks like: 
+ * 
+ *           Yy_pushtab      YypDD:
+ *           +--------+      +----------------+
+ *           |   *----|----->|                |
+ *           +--------+      +----------------+
+ *           |   *----|----->
+ *           +--------+
+ *           |   *----|----->
+ *           +--------+
+ * 
+ * YypDD is the tokenized right-hand side of the production.Generate a symbol
+ * table listing with llama's -l command-line switch to get both production
+ * numbers and the meanings of the YypDD string contents.
+ */
+
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ0 [] = {0,
+                    -1,  -1,   0,  -1,  -1,  -1,   0,  -1,   0,  -1, 
+                  -1,  -1,   0,  -1,   0,   0,  -1,   0,   0,   0, 
+                   0,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ1 [] = {0,
+                    -1,  -1,  10,  -1,  -1,  -1,   7,  -1,   9,  -1, 
+                  -1,  -1,   8,  -1,  12,  11,  -1,   3,   6,   5, 
+                   4,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ2 [] = { 4, 0,275,267,2614,27};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ3 [] = { 2, 0,214,1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ4 [] = {0,
+                    -1,  -1,  25,  -1,  -1,  -1,  25,  24,  25,  -1, 
+                  -1,  -1,  25,  -1,  25,  25,  -1,  25,  25,  25, 
+                  25,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ5 [] = {0,
+                    -1,  -1,  15,  -1,  -1,  14,  15,  13,  15,  -1, 
+                  -1,  -1,  15,  -1,  15,  15,  -1,  15,  15,  15, 
+                  15,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ6 [] = {0,
+                    -1,  -1,  18,  -1,  -1,  17,  18,  16,  18,  -1, 
+                  -1,  -1,  18,  -1,  18,  18,  -1,  18,  18,  18, 
+                  18,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ7 [] = {0,
+                    -1,  -1,  21,  -1,  -1,  20,  21,  19,  21,  -1, 
+                  -1,  -1,  21,  -1,  21,  21,  -1,  21,  21,  21, 
+                  21,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ8 [] = {0,
+                    -1,  -1,  23,  -1,  -1,  -1,  23,  22,  23,  -1, 
+                  -1,  -1,  23,  -1,  23,  23,  -1,  23,  23,  23, 
+                  23,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ9 [] = { 2, 5,297,28};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ10[] = {0,
+                    -1,  30,  -1,  -1,  -1,  30,  -1,  30,  -1,  30, 
+                  -1,  30,  -1,  30,  -1,  -1,  30,  -1,  -1,  -1, 
+                  -1,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ11[] = {0,
+                    -1,  35,  -1,  -1,  38,  34,  -1,  33,  -1,  38, 
+                  -1,  36,  -1,  38,  -1,  -1,  37,  -1,  -1,  -1, 
+                  -1,  -1};
+YYPRIVATE YY_TTYPE ÿÿÿÿÿÿÿÿ12[] = { 2, 9,3113,32};
+
+YYPRIVATE YY_TTYPE *ÿÿÿÿÿÿÿÿ[ 13 ] =
+{
+      ÿÿÿÿÿÿÿÿ0 ,    ÿÿÿÿÿÿÿÿ1 ,    ÿÿÿÿÿÿÿÿ2 ,    ÿÿÿÿÿÿÿÿ3 ,    ÿÿÿÿÿÿÿÿ4 ,    ÿÿÿÿÿÿÿÿ5 ,    ÿÿÿÿÿÿÿÿ6 ,    ÿÿÿÿÿÿÿÿ7 ,    ÿÿÿÿÿÿÿÿ8 ,    ÿÿÿÿÿÿÿÿ9 ,    
+    ÿÿÿÿÿÿÿÿ10,    ÿÿÿÿÿÿÿÿ11,    ÿÿÿÿÿÿÿÿ12
+};
 
 
-#line 96 "llama.m"
+/*-------------------------------------------------------*/
+YYPRIVATE YY_TTYPE yy_next( cur_state, c )
+unsigned int c;
+int      cur_state;
+{
+    /* Given the current state and the current input character, return
+     * the next state.
+     */
+
+    YY_TTYPE    *p = Yyd[ cur_state ] ;
+    int i;
+
+    if(p)
+    {
+        if((i = *p++) == 0)
+            return p[ c ];
+
+        for(; --i >= 0; p += 2)
+            if(c == p[0])
+                return p[1];
+    }
+    return YYF;
+}
+
+
+
+/*--------------------------------------------------------------
+ * Yy_act() is the action subroutine. It is passed the tokenized value of
+ * an action and executes the corresponding code.
+ */
+
+YYPRIVATE int yy_act(int actnum)
+{
+   /*The actions. Returns 0 normally but a nonzero error code can be returned
+    *if one of the acts causes the parser to terminate abnormally.
+    */
+
+    switch(actum) {
+        case 540:
+		{
+        break;
+        case 527:
+		{
+        break;
+        case 520:
+		{
+        break;
+        case 528:
+		{
+        break;
+        case 521:
+		{
+        break;
+        case 532:
+		{
+        break;
+        case 512:
+		{
+        break;
+        case 529:
+		{
+        break;
+        case 533:
+		{
+        break;
+        case 513:
+		{
+        break;
+        case 530:
+		{
+        break;
+        case 534:
+		{
+        break;
+        case 514:
+		{
+        break;
+        case 531:
+		{
+        break;
+        case 535:
+		{
+        break;
+        case 522:
+		{
+        break;
+        case 515:
+		{
+        break;
+        case 536:
+		{
+        break;
+        case 523:
+		{
+        break;
+        case 516:
+		{
+        break;
+        case 537:
+		{
+        break;
+        case 524:
+		{
+        break;
+        case 517:
+		{
+        break;
+        case 538:
+		{
+        break;
+        case 525:
+		{
+        break;
+        case 518:
+		{
+        break;
+        case 539:
+		{
+        break;
+        case 526:
+		{
+        break;
+        case 519:
+		{
+        break;
+    default: printf("INTERNAL ERROR: Illegal action number (%s)\n",
+                                                              actnum);
+             break;
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------
+ * Yy_synch[] is  an array of synchronization tokens. When an error is detected, 
+ * stack items are popped until one of the tokens in this array is encountered.
+ * The input is then read until the same item is found. Then parsing continues.
+ */
+
+YYPRIVATE int Yy_synch[] = 
+{
+	OR,
+	SEMI,
+	-1
+};
+
+/*--------------------------------------------------------------
+ * Yy_stok[] is used for debugging and error messages.It is indexed by
+ * the internal value used for a token(as used for a column index in the
+ * transition matrix) and evaluates to a string naming that token.
+ */
+
+YYPRIVATE char *Yy_stok[] = 
+{
+	 /*  0  */    "_EOI_",
+	/*   1 */    "ACTION",	/*   2 */    "CODE_BLOCK",
+	/*   3 */    "COLON",	/*   4 */    "END_OPT",
+	/*   5 */    "FIELD",	/*   6 */    "LEFT",
+	/*   7 */    "NAME",	/*   8 */    "NONASSOC",
+	/*   9 */    "OR",	/*  10 */    "OTHER",
+	/*  11 */    "PREC",	/*  12 */    "RIGHT",
+	/*  13 */    "SEMI",	/*  14 */    "SEPARATOR",
+	/*  15 */    "START",	/*  16 */    "START_OPT",
+	/*  17 */    "SYNCH",	/*  18 */    "TERM_SPEC",
+	/*  19 */    "TYPE",	/*  20 */    "PERCENT_UNION",
+	/*  21 */    "WHITESPACE"
+};
+
+
+ #ifdef YYDEBUG
+
+/*--------------------------------------------------------------
+ * Yy_snonterm[] is used only for debugging.It is indexed by the tokenized left-hand
+ * side(as used for a row index in Yyd[]) and evaluates to a string naming that lhs.
+ */
+
+char *Yy_snonterm[] = 
+{
+	/* 256 */ "spec",
+	/* 257 */ "defs",
+	/* 258 */ "rules",
+	/* 259 */ "end",
+	/* 260 */ "snames",
+	/* 261 */ "fnames",
+	/* 262 */ "tnames",
+	/* 263 */ "pnames",
+	/* 264 */ "opt_names",
+	/* 265 */ "rule",
+	/* 266 */ "right_sides",
+	/* 267 */ "rhs",
+	/* 268 */ "end_rhs"
+};
+
+
+/*--------------------------------------------------------------
+ * Yy_sact[] is alse used only for debugging. It is indexed by the internal value
+ * used for an action symbol and evaluates to a string naming that token symbol.
+ */
+
+char *Yy_sact[] = 
+{
+	"{0}","{1}","{2}","{3}","{4}","{5}","{6}","{7}",
+	"{8}","{9}","{10}","{11}","{12}","{13}","{14}","{15}","{16}","{17}",
+	"{18}","{19}","{20}","{21}","{22}","{23}","{24}","{25}","{26}","{27}",
+	"{28}" 
+};
+
+ #endif
 
 /*----------------------------------------------------------------------*/
 

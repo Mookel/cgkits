@@ -23,8 +23,8 @@ endif
 ##Compiling target
 target: $(TARGET)
 
-COMMOBJ = main.o acts.o lexyy.o error.o first.o 
-LLOBJ = lldriver.o llselect.o follow.o llcode.o
+COMMOBJ = main.o acts.o lexyy.o error.o first.o stok.o
+LLOBJ = lldriver.o llselect.o llfollow.o llcode.o
 YYOBJ =
 
 LLPAR = llpar.o
@@ -33,7 +33,7 @@ LLPAR = llpar.o
 #-----------------llama---------------------
 llama : $(LLPAR) $(LLOBJ) $(COMMOBJ) 
 	$(CC) -o llama $(LLPAR) $(COMMOBJ) $(LLOBJ) $(CLIB) -lncurses
-	@echo "Building target successful."
+	@echo "\033[31mOK, Building is successful.\033[0m"
 	@rm -rf *.o
 
 #-----------------occs----------------------
@@ -52,8 +52,11 @@ error.o: error.c parser.h
 first.o: first.c parser.h
 	$(CC) -c $(CFLAGS) first.c
 
-follow.o: follow.c parser.h
-	$(CC) -c $(CFLAGS) follow.c
+stok.o: stok.c parser.h
+	$(CC) -c $(CFLAGS) stok.c
+
+llfollow.o: llfollow.c parser.h
+	$(CC) -c $(CFLAGS) llfollow.c
 
 llselect.o: llselect.c parser.h
 	$(CC) -c $(CFLAGS) llselect.c

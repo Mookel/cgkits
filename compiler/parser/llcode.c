@@ -58,8 +58,8 @@ PUBLIC void tables()
     make_yy_dtran();
     make_yy_act();
     make_yy_synch();
-    //make_yy_stok();
-    //make_token_file();
+    make_yy_stok();
+    make_token_file();
 
     output("\n #ifdef YYDEBUG\n");
     make_yy_snonterm();
@@ -114,7 +114,7 @@ PRIVATE void make_pushtab(SYMBOL_S *lhs)
 
     sp = &stack[-1];
     for(prod = lhs->productions; prod; prod = prod->next) {
-        output("YYPRIVATE int Yyp%2d[] = { ", prod->num);
+        output("YYPRIVATE int Yyp%-2d[ ] = { ", prod->num);
         for(sym = prod->rhs, i = prod->rhs_len; --i >= 0;)
             *++sp = *sym++;
 
@@ -142,10 +142,10 @@ PRIVATE void make_yy_pushtab()
     sys_comment(g_output, text);
     hash_print_tab(g_symtab, (fp_tab_print_t)make_pushtab, NULL, 0);
 
-    output("\YYPRIVATE int *Yy_pushtab[] = \n{\n");
+    output("\YYPRIVATE int *Yy_pushtab[ ] = \n{\n");
     for(i = 0;i < maxprod; ++i)
-        output("\t Yyp%02d,\n", i);
-    output("\tYyp%02d\n};\n", maxprod);
+        output("\tYyp%-2d,\n", i);
+    output("\tYyp%-2d\n};\n", maxprod);
 }
 
 /*print the DFA transition table.*/
@@ -225,7 +225,7 @@ PRIVATE void make_yy_synch()
     sys_comment(g_output, text);
     output("YYPRIVATE int Yy_synch[] = \n{\n");
     i = 0;
-    for(set_next_member(NULL); (mem = set_next_member(g_symtab)) >= 0;){
+    for(set_next_member(NULL); (mem = set_next_member(g_synch)) >= 0;){
         output("\t%s,\n", g_terms[mem]->name);  /*Note: name will be macro after output.*/
         ++i;
     }

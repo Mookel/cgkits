@@ -33,7 +33,7 @@ set(SOURCE_FILES
     compiler/parser/main.c compiler/parser/error.c
     compiler/parser/llout.h compiler/parser/acts.c
     compiler/parser/lldriver.c compiler/parser/llpar.c
-    compiler/parser/first.c compiler/parser/follow.c
+    compiler/parser/first.c compiler/parser/llfollow.c
     compiler/parser/llselect.c compiler/parser/llcode.c
     compiler/parser/stok.c compiler/parser/lldollar.c)
 

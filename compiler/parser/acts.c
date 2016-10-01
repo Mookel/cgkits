@@ -59,6 +59,15 @@ PUBLIC int problems()
     return nerrors();
 }
 
+/*
+ * Print out the symbol table. Nonterminal symbols come first for the sake
+ * of the 's' option in yydebug(); symbols other
+ */
+PUBLIC void print_symbols(FILE *stream)
+{
+    //TODO:
+}
+
 PUBLIC SYMBOL_S *make_term(char *name)
 {
     SYMBOL_S *p;

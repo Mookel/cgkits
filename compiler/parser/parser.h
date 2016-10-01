@@ -165,12 +165,11 @@ CLASS unsigned    g_num_productons I( = 0);
 
 #define outc(c)   putc(c, g_output);
 
+/*----------------------------------------------------------------------------
+ * To get rid of number of header files, all module interfaces are put bellow.
+ * --------------------------------------------------------------------------*/
 
-/*-------------------------------------------------------------------------
- * To get rid of number of header files, all module interfaces are put here.
- * ----------------------------------------------------------------------*/
-
-/*1. error.c */
+/*---------1.common: error.c-------------*/
 #define NONFATAL          0  /*error type definitions */
 #define FATAL             1
 #define WARNING           2
@@ -187,19 +186,19 @@ int  nerrors();
 int  nwarnings();
 const char *open_errmsg();
 
-/*2. first.c */
+/*----------2.common: first.c------------*/
 void first();
 bool first_rhs(SET_S *dest, SYMBOL_S **rhs, int len);
 
 #ifdef LLAMA
-/*3. follow.c*/
+/*----------3.llama: follow.c------------*/
 void follow();
 
-/*4. llselect.c*/
+/*----------4.llama: llselect.c----------*/
 void llselect();
 #endif
 
-/*5. acts.c */
+/*----------5.common: acts.c ------------*/
 void      init_acts();
 int       problems();
 void      first_sym();
@@ -208,16 +207,23 @@ void      new_rhs();
 void      add_to_rhs(char *object, bool is_an_action, int action_lineno);
 SYMBOL_S *make_term(char *name);
 SYMBOL_S *new_nonterm(char *name, bool is_lhs);
+void      print_symbols(FILE *stream);
 
-/*6. llcode.c/yycode.c */
+/*---------6.common: stok.c--------------*/
+void make_yy_stok();
+void make_token_file();
+
+/*---7.llama: llcode.c + occs:yycode.c----------*/
 void tables();
 
-/*7. llpar.c/llout.c/yyout.c */
+/*---8.llama: llpar.c/llout.c + occs: yyout.c---*/
 int yyparse();
 
-/*8. lldriver.c/yydriver.c */
+/*---9.llama: lldriver.c + occs: yydriver.c-----*/
 void file_header();
 void code_header();
 void driver();
+
+
 
 #endif //CGKITS_PARSER_H_H
