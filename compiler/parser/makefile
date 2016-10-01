@@ -23,8 +23,8 @@ endif
 ##Compiling target
 target: $(TARGET)
 
-COMMOBJ = main.o acts.o lexyy.o error.o first.o
-LLOBJ = lldriver.o follow.o select.o
+COMMOBJ = main.o acts.o lexyy.o error.o first.o follow.o
+LLOBJ = lldriver.o llselect.o
 YYOBJ =
 
 LLPAR = llpar.o

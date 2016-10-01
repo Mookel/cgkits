@@ -24,9 +24,31 @@ PUBLIC void first()
     }while(_did_somthing);
 }
 
-PUBLIC void first_rhs(SET_S *dest, SYMBOL_S **rhs, int len)
+/*
+ *Fill the destination set with FIRST(rhs) where rhs is the right-hand side of
+ *a production represented as an array of pointers to symbol-table elements.
+ *Return true if the entire right-hand side is nullable, otherwise return false.
+ */
+PUBLIC bool first_rhs(SET_S *dest, SYMBOL_S **rhs, int len)
 {
+    if(len <= 0) {
+        SET_ADD(dest, EPSILON);
+        return true;
+    }
 
+    for(; --len >= 0; ++rhs) {
+        if(ISACT(rhs[0])) continue;
+
+        if(ISTERM(rhs[0])){
+            SET_ADD(dest, rhs[0]->val);
+        } else {
+            SET_UNION(dest, rhs[0]->first);
+        }
+
+        if(!NULLABLE(rhs[0])) break;
+    }
+
+    return len < 0;
 }
 
 /*

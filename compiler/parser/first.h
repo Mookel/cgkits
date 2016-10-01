@@ -11,6 +11,6 @@
 #define CGKITS_FIRST_H
 
 void first();
-void first_rhs(SET_S *dest, SYMBOL_S **rhs, int len);
+bool first_rhs(SET_S *dest, SYMBOL_S **rhs, int len);
 
 #endif //CGKITS_FIRST_H

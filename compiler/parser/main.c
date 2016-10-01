@@ -21,9 +21,9 @@
 #include "lldriver.h"
 #include "llpar.h"
 #include "first.h"
-#ifdef LLAMA
 #include "follow.h"
-#include "select.h"
+#ifdef LLAMA
+#include "llselect.h"
 #endif
 
 #define VERBOSE(str) if(g_cmdopt.verbose) { printf("%s:\n", (str)); } else
@@ -186,7 +186,7 @@ PRIVATE int do_file(void)
         VERBOSE("Analyzing grammar");
         first();
         LL(follow());
-        //LL(select());
+        LL(llselect());
 
         code_header();
         OX(patch();)
