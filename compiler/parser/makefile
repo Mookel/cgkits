@@ -23,8 +23,8 @@ endif
 ##Compiling target
 target: $(TARGET)
 
-COMMOBJ = main.o acts.o lexyy.o error.o first.o follow.o
-LLOBJ = lldriver.o llselect.o
+COMMOBJ = main.o acts.o lexyy.o error.o first.o 
+LLOBJ = lldriver.o llselect.o follow.o llcode.o
 YYOBJ =
 
 LLPAR = llpar.o
@@ -46,23 +46,26 @@ main.o: main.c parser.h
 acts.o: acts.c parser.h
 	$(CC) -c $(CFLAGS) acts.c 
 
-error.o: error.c error.h parser.h
+error.o: error.c parser.h
 	$(CC) -c $(CFLAGS) error.c
 
-first.o: first.c first.h parser.h
+first.o: first.c parser.h
 	$(CC) -c $(CFLAGS) first.c
 
-follow.o: follow.c follow.h parser.h
+follow.o: follow.c parser.h
 	$(CC) -c $(CFLAGS) follow.c
 
-select.o: select.c select.h parser.h
-	$(CC) -c $(CFLAGS) select.c
+llselect.o: llselect.c parser.h
+	$(CC) -c $(CFLAGS) llselect.c
 
-lldriver.o: lldriver.c lldriver.h parser.h
+lldriver.o: lldriver.c parser.h
 	$(CC) -c $(CFLAGS) lldriver.c
 
-llpar.o: llpar.c llpar.h parser.h
+llpar.o: llpar.c parser.h
 	$(CC) -c $(CFLAGS) llpar.c
+
+llcode.o:llcode.c parser.h
+	$(CC) -c $(CFLAGS) llcode.c
 
 lexyy.o: lexyy.c parser.h
 	$(CC) -c $(CFLAGS) lexyy.c
@@ -71,6 +74,6 @@ lexyy.c: parser.lex
 	$(LEX) -vl parser.lex
 
 clean:
-	rm -rf *.o
+	rm -rf *.o 
 	rm -rf lexyy.c
 	rm -rf $(TARGET)

@@ -10,8 +10,6 @@
 #include <ctype.h>
 
 #include "parser.h"
-#include "llout.h"
-#include "error.h"
 
 #undef stack_cls
 #define stack_cls static

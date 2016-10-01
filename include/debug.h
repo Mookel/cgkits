@@ -19,11 +19,7 @@
 
 #define PUBLIC
 
-#define FARPTR   *
-#define VA_LIST  ...
 #define O_BINARY 0
-
-#define PHYS(p)  p
 
 /* For array operation */
 #define NUMELE(a)       (sizeof(a)/sizeof(*(a)))           /*Evaluates to the array size in elements*/

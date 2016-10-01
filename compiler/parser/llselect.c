@@ -8,7 +8,6 @@
 //
 
 #include "parser.h"
-#include "first.h"
 
 /*local static functions declarations.*/
 PRIVATE void find_select_set(SYMBOL_S *lhs);

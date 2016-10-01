@@ -7,7 +7,6 @@
 
 #define CREATING_LLAMA_PARSER
 #include "parser.h"
-#include "error.h"
 
 /*--------------------------------------------------------------------
  * Lexical analyzer for both llama and occs. Note that llama doesn't

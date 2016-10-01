@@ -165,4 +165,59 @@ CLASS unsigned    g_num_productons I( = 0);
 
 #define outc(c)   putc(c, g_output);
 
+
+/*-------------------------------------------------------------------------
+ * To get rid of number of header files, all module interfaces are put here.
+ * ----------------------------------------------------------------------*/
+
+/*1. error.c */
+#define NONFATAL          0  /*error type definitions */
+#define FATAL             1
+#define WARNING           2
+#define NOHDR             3
+
+void e_init();
+FILE *get_doc();
+void output(char *fmt, ...);
+void doc(char *fmt, ...);
+void doc_to(FILE *fp);
+void lerror(int fatal, char *fmt, ...);
+void error(int fatal, char *fmt, ...);
+int  nerrors();
+int  nwarnings();
+const char *open_errmsg();
+
+/*2. first.c */
+void first();
+bool first_rhs(SET_S *dest, SYMBOL_S **rhs, int len);
+
+#ifdef LLAMA
+/*3. follow.c*/
+void follow();
+
+/*4. llselect.c*/
+void llselect();
+#endif
+
+/*5. acts.c */
+void      init_acts();
+int       problems();
+void      first_sym();
+void      add_synch(char *name);
+void      new_rhs();
+void      add_to_rhs(char *object, bool is_an_action, int action_lineno);
+SYMBOL_S *make_term(char *name);
+SYMBOL_S *new_nonterm(char *name, bool is_lhs);
+
+/*6. llcode.c/yycode.c */
+void tables();
+
+/*7. llpar.c/llout.c/yyout.c */
+int yyparse();
+
+/*8. lldriver.c/yydriver.c */
+void file_header();
+void code_header();
+void driver();
+
 #endif //CGKITS_PARSER_H_H

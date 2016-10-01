@@ -6,7 +6,6 @@
 //
 
 #include "parser.h"
-#include "error.h"
 
 PRIVATE FILE *_driver_file = 0;
 

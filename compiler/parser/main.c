@@ -16,16 +16,6 @@
 #include "parser.h"
 #undef ALLOCATE
 
-#include "error.h"
-#include "acts.h"
-#include "lldriver.h"
-#include "llpar.h"
-#include "first.h"
-#include "follow.h"
-#ifdef LLAMA
-#include "llselect.h"
-#endif
-
 #define VERBOSE(str) if(g_cmdopt.verbose) { printf("%s:\n", (str)); } else
 
 PRIVATE char* _output_file_name = "???";  /*name of output file*/
@@ -189,11 +179,11 @@ PRIVATE int do_file(void)
         LL(llselect());
 
         code_header();
-        OX(patch();)
+        //OX(patch();)
         ftime(&start_time);
         if(g_cmdopt.make_parser) {
             VERBOSE("making tables");
-            //tables();
+            tables();
         }
 
         ftime(&end_time);

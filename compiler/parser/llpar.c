@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include "parser.h"
 #include "llout.h"
-#include "error.h"
-#include "acts.h"
 
 /* A recursive-descent parser for a very stripped down llama.
  * The small version grammar is as follows:
