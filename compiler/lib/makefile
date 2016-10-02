@@ -4,7 +4,7 @@ LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 CC      = gcc
 COM_OBJS = com.o
 COMPLIB_OBJS    = hash.o set.o syslib.o
-LLIB_OBJS       = input.o yylib.o yydebug.o
+LLIB_OBJS       = input.o yy_hook_a.o yy_hook_b.o yy_pstk.o yy_wrap.o yy_init_lex.o yy_init_llama.o yy_init_occs.o yydebug.o
 COMPILING_FLAGS = -I$(SYS_INC_DIR) -I$(GC_INC_DIR)
 AR = ar
 COMPLIB = complib.a
@@ -34,8 +34,26 @@ syslib.o: syslib.c $(SYS_INC_DIR)/syslib.h
 input.o: input.c $(SYS_INC_DIR)/input.h
 	$(CC) -c $(COMPILING_FLAGS) input.c
 
-yylib.o: yylib.c $(SYS_INC_DIR)/yylib.h
-	$(CC) -c $(COMPILING_FLAGS) yylib.c
+yy_hook_a.o: yy_hook_a.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_hook_a.c
+
+yy_hook_b.o: yy_hook_b.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_hook_b.c
+
+yy_wrap.o: yy_wrap.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_wrap.c
+
+yy_pstk.o: yy_pstk.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_pstk.c
+
+yy_init_lex.o: yy_init_lex.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_init_lex.c
+
+yy_init_llama.o: yy_init_llama.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_init_llama.c
+
+yy_init_occs.o: yy_init_occs.c $(SYS_INC_DIR)/debug.h
+	$(CC) -c $(COMPILING_FLAGS) yy_init_occs.c	
 
 yydebug.o: yydebug.c $(SYS_INC_DIR)/yydebug.h
 	$(CC) -c $(COMPILING_FLAGS) yydebug.c

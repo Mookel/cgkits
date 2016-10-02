@@ -1,4 +1,4 @@
-/*@A (C) 1992 Allen I. Holub                                                */
+/*@A (C) 2016 refactored by Mookel */
 
 /*--------------------------------------------------------------
  *  Parser for llama-generated tables

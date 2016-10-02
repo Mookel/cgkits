@@ -16,8 +16,7 @@ set(SOURCE_FILES
     compiler/lib/unitest/test_suit.h
     compiler/lib/unitest/yystack_test.c
     compiler/lib/set.c include/set.h
-    include/syslib.h compiler/lib/syslib.c
-    compiler/lib/yylib.c include/yylib.h
+    include/syslib.h compiler/lib/syslib.c include/yylib.h
     compiler/lib/input.c include/input.h
     include/l.h compiler/lib/lex_io.c
     compiler/lex/globals.h compiler/lex/lex.c
@@ -35,7 +34,7 @@ set(SOURCE_FILES
     compiler/parser/lldriver.c compiler/parser/llpar.c
     compiler/parser/first.c compiler/parser/llfollow.c
     compiler/parser/llselect.c compiler/parser/llcode.c
-    compiler/parser/stok.c compiler/parser/lldollar.c)
+    compiler/parser/stok.c compiler/parser/lldollar.c compiler/lib/yy_hook_a.c compiler/lib/yy_hook_b.c compiler/lib/yy_wrap.c compiler/lib/yy_pstk.c compiler/lib/yy_init_lex.c compiler/lib/yy_init_llama.c compiler/lib/yy_init_occs.c)
 
 include_directories(.)
 include_directories(compiler)

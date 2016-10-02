@@ -1,7 +1,7 @@
 
 /*---------------------------------------------*/
 
-/*@A (C) 1992 Allen I. Holub                                                */
+/*@A (C) 2016 refactored by Mookel */
 
 /*--------------------------------------------------------------
  *  Parser for llama-generated tables
@@ -50,7 +50,7 @@ extern void	nows(void);	   /* Declared in llama.lex. */
 extern void	ws(void);	   /* Declared in llama.lex. */
 extern int  start_action();/* Declared in llama.lex*/
 
-#define YYSTYPE  char*	/* Value-stack type.	  */
+#define YYSTYPE  char*	   /* Value-stack type.	  */
 
 
 /*-------------------------------------------*/
@@ -895,4 +895,30 @@ int yyparse(void)
 
     yy_quit_debug();
     YYACCEPT;
+}
+
+
+#line 119 "parser.lma"
+
+/* Support routines for the llama parser. The arguments must be declared void*
+ * to get them to match the prototypes in l.h. They are really ponters to
+ * yyvstypes, though.
+ */
+
+void yy_init_llama(void *tovs)
+{
+    ((yyvstype *)tovs)->left = ((yyvstype *)tovs)->right = "" ;
+}
+
+char *yypstk(void *tovs, char *tods)
+{
+    static char buf[128];
+    yyvstype *vs = (yyvstype *)tovs;
+
+    if( *vs->left || *vs->right ) {
+		sprintf(buf,"[%s,%s]", vs->left, vs->right);
+		return buf;
+    } else {
+		return "";
+	}
 }

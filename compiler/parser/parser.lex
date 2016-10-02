@@ -1,4 +1,4 @@
-/*@A (C) 2006 recreated by mookel*/
+/*@A (C) 2006 refactored by Mookel */
 
 %{
 #include <stdio.h>
@@ -29,12 +29,6 @@ PRIVATE int  _start_line;
 PRIVATE void stripcr(char *src); /*Remove carriage returns (but not linefeeds) from src*/
 void nows();
 void ws();
-
-#ifdef MAIN
-void output(char *fmt,...);
-void lerror(int status, char *fmt, ...);
-CMDOPT_S g_cmdopt;
-#endif
 
 %}
 

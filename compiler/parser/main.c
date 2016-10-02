@@ -176,9 +176,38 @@ PRIVATE void statistics(FILE *fp)
 
 }
 
+/*
+ * Copy the remainder of input file to standard output. Yyparse will have
+ * terminated with the input pointer just past the %%. Atrribute mapping
+ * ($$ to Yyval, $N to a stack reference,etc) is done by the do_dollar()
+ * call.
+ *
+ * On entry, the parser will have read one token too far, so the first
+ * thing to do is print the current line number and lexeme.
+ */
 PRIVATE void tail()
 {
+    extern int yylineno;
+    extern char *yytext;
+    int c,i,sign;
+    char fname[80], *p;
 
+    output("%s", yytext);
+
+    if(g_cmdopt.no_lines)
+        output("\n#line %d \"%s\"\n", yylineno, g_input_file_name);
+
+    ii_unterm();
+    while((c = ii_advance()) != 0) {
+        if(c == -1) {
+            ii_flush(i);
+            continue;
+        } else if(c == '$') {
+            //TODO: occs
+        } else if(c != '\r') {
+            outc(c);
+        }
+    }
 }
 
 extern void nows(void); /*declared in parser.lex*/

@@ -20,7 +20,7 @@ extern void	nows(void);	   /* Declared in llama.lex. */
 extern void	ws(void);	   /* Declared in llama.lex. */
 extern int  start_action();/* Declared in llama.lex*/
 
-#define YYSTYPE  char*	/* Value-stack type.	  */
+#define YYSTYPE  char*	   /* Value-stack type.	  */
 %}
 
 %token ACTION		    /*	{str}	   */
@@ -116,8 +116,9 @@ rhs		: NAME	      { add_to_rhs(yytext, 0             ); }  rhs
 		;
 
 %%
+
 /* Support routines for the llama parser. The arguments must be declared void*
- * to get them to match the prototypes in l.h. They are really ponters to
+ * to get them to match the prototypes in l.h. They are really pointers to
  * yyvstypes, though.
  */
 
