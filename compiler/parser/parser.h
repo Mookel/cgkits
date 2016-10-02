@@ -202,13 +202,18 @@ void llselect();
 void      init_acts();
 int       problems();
 void      first_sym();
-#ifdef LLAMA
 void      add_synch(char *name);
-#endif
+void      new_lev(int how);
+void      prec(char *name);
+void      union_def(char *action);
+void      prec_list(char *name);
+void      new_field(char *field_name);
 void      new_rhs();
-void      add_to_rhs(char *object, bool is_an_action, int action_lineno);
+void      add_to_rhs(char *object, int is_an_action);
 SYMBOL_S *make_term(char *name);
 SYMBOL_S *new_nonterm(char *name, bool is_lhs);
+void      start_opt(char *lex);
+void      end_opt(char *lex);
 void      print_symbols(FILE *stream);
 
 /*---------6.common: stok.c--------------*/

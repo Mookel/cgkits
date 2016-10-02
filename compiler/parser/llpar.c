@@ -161,7 +161,7 @@ PRIVATE void right_sides()
 PRIVATE void rhs()
 {
     while(match(NAME) || match(ACTION)) {
-        add_to_rhs(yytext, match(ACTION), start_action());
+        add_to_rhs(yytext, match(ACTION) ? start_action() : 0);
         advance();
     }
 

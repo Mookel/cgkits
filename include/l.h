@@ -9,6 +9,7 @@
 #define CGKITS_L_H
 
 #include <debug.h>
+#include <yystack.h>
 #include <com.h>
 #include <input.h>
 #include <yylib.h>

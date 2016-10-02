@@ -61,8 +61,8 @@ typedef unsigned char   YY_TTYPE;	/* Type used for tables. 	*/
 #    define YYSTYPE int
 #endif
 
-int 	 yy_act( int actnum );  /* Supplied by llama */
-YY_TTYPE yy_next( int cur_state, unsigned c );
+YYPRIVATE int 	   yy_act( int actnum );  /* Supplied by llama */
+YYPRIVATE YY_TTYPE yy_next( int cur_state, int c );
 
 /*----------------------------------------------------------------------
  * Parse and value stacks:
@@ -70,8 +70,8 @@ YY_TTYPE yy_next( int cur_state, unsigned c );
 #undef   yystk_cls
 #define  yystk_cls YYPRIVATE
 #undef   yystk_err
-#define  yystk_err(o)  ((o) ? (yyerror("Stack overflow\n" ),exit(1)) \
-			                : (yyerror("Stack underflow\n"),exit(1)) )
+#define  yystk_err(o)  ((o) ? (yy_error("Stack overflow\n" ),exit(1)) \
+			                : (yy_error("Stack underflow\n"),exit(1)) )
 
 #define yytos(stk)  yystk_item(stk, 0) /* Evaluates to top-of-stack item.*/
 
@@ -223,27 +223,27 @@ void yy_bss(char *fmt, ...)  /* Write to the bss-segment stream.  */
     yy_output( 2, fmt, args );
 }
 
-/* Debugging versions of yycomment() and yy_error() are pulled out of yydebug.c
+/* Debugging versions of yy_comment() and yy_error() are pulled out of yydebug.c
  * when YYDEBUG is defined. Similarly, yy_break(), which halts the parse if a
  * break-on-production-applied breakpoint has been triggered, is found in
  * yydebug.c. It is eliminated from the production-mode output by defining it as
- * an empty macro, below. Finally, yy_nextoken(), which evaluates to a yylex()
+ * an empty macro, below. Finally, yy_next_token(), which evaluates to a yylex()
  * call in production mode, and which is defined in yydebug.c, both gets the
  * next token and prints it in the TOKEN window.
  */
 #else  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#    define  yy_push(x,v)  	    ( yypush(Yy_stack, x),			    \
-				                  --Yy_vsp, Yy_vsp->left=Yy_vsp->right=v )
+#define  yy_push(x,v)  	    ( yypush(Yy_stack, x),\
+				              --Yy_vsp, Yy_vsp->left=Yy_vsp->right = v )
 
-#    define  yy_pop()    	    ( ++Yy_vsp, yypop(Yy_stack) )
-#    define  yy_next_token()	yylex()
-#    define  yy_quit_debug()
-#    define  yy_sym()
-#    define  yy_say_whats_happening(tos_item,prod)
-#    define  yy_redraw_stack()
-#    define  yy_pstack(refresh,print_it)
-#    define  yy_break(x)
+#define  yy_pop()    	    ( ++Yy_vsp, yypop(Yy_stack) )
+#define  yy_next_token()	yylex()
+#define  yy_quit_debug()
+#define  yy_sym()
+#define  yy_say_whats_happening(tos_item,prod)
+#define  yy_redraw_stack()
+#define  yy_pstack(refresh,print_it)
+#define  yy_break(x)
 
 void yy_code(char *fmt, ...) /* Write to the code-segment stream. */
 {
@@ -322,15 +322,15 @@ YYPRIVATE int yy_synch( int lookahead )
     if( ++yynerrs > YYMAXERR )
         return 0;
 
-    while( !yy_in_synch( tok = yytos( Yy_stack )) \
-					&& !yystk_empty( Yy_stack ))	/* 1 */
-	yy_pop();
+    while( !yystk_empty( Yy_stack ) &&
+           !yy_in_synch( tok = yytos( Yy_stack )))  /* 1 */
+        yy_pop();
 
     if( yystk_empty(Yy_stack) )						/* 2 */
         return 0;
 
     while( lookahead && lookahead != tok )		    /* 3 */
-        lookahead = yy_nextoken();
+        lookahead = yy_next_token();
 
     return lookahead;
 }
@@ -393,7 +393,7 @@ int yyparse(void)
 	    } else if( YY_ISTERM( yytos(Yy_stack) )){	/* Advance if it's a terminal.*/
 
             if( yytos(Yy_stack) != lookahead ) {	/* ERROR if it's not there.   */
-                yyerror( "%s expected\n", Yy_stok[ yytos(Yy_stack) ]);
+                yy_error( "%s expected\n", Yy_stok[ yytos(Yy_stack) ]);
                 if( !(lookahead = yy_synch(lookahead)) )
 	                YYABORT;
 
@@ -406,7 +406,7 @@ int yyparse(void)
                 yy_pop();
                 ii_mark_prev();
 
-                lookahead     = yy_nextoken();
+                lookahead     = yy_next_token();
 	            actual_lineno = yylineno;
 	            actual_text   = yytext  ;
 	            actual_leng   = yyleng  ;
@@ -424,7 +424,7 @@ int yyparse(void)
             prod = yy_next( yytos(Yy_stack)-YY_MINNONTERM, lookahead );
 
             if( prod == YYF ) {
-                yyerror( "Unexpected %s\n", Yy_stok[ lookahead ] );
+                yy_error( "Unexpected %s\n", Yy_stok[ lookahead ] );
                 if( !(lookahead = yy_synch(lookahead)) )
 	                YYABORT;
             } else {

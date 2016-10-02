@@ -198,7 +198,7 @@ PUBLIC void new_rhs()
  * exit the if statement, p points at the symbol table entry for the current
  * object.
  */
-PUBLIC void add_to_rhs(char *object, bool is_an_action, int action_lineno)
+PUBLIC void add_to_rhs(char *object, int is_an_action)
 {
     SYMBOL_S *p;
     int i;
@@ -220,7 +220,7 @@ PUBLIC void add_to_rhs(char *object, bool is_an_action, int action_lineno)
             strncpy(p->name, buf, NAME_MAX);
             hash_add_sym(g_symtab, p);
             p->val = g_curract;
-            p->lineno = (unsigned)action_lineno;
+            p->lineno = (unsigned)is_an_action;
             if (!(p->string = strdup(object)))
                 lerror(FATAL, "Insufficient memory to save action\n");
         }
@@ -249,6 +249,99 @@ PUBLIC void first_sym()
     _goal_symbol_is_next = true;
 }
 
+/*
+ * The next two subroutines handle repeating or optional subexpressions.
+ * The following mappings are done depending on the operator:
+ *
+ * S : A [B] C;    S-> A 001 C
+ *               001-> B | epsilon
+ *
+ * llama:
+ * S: A [B]* C;    S-> A 001 C
+ *               001-> B 001 | epsilon
+ *
+ * occs:
+ * S: A [B]* C:    S-> A 001 C
+ *               001-> 001 B | epsilon
+ */
+PUBLIC void start_opt(char *lex)
+{
+    char name[32];
+    static int num = 0;
+
+    --_sp;
+    sprintf(name, " %06d", num++);
+    new_nonterm(name, true);
+    new_rhs();
+    new_rhs();
+}
+
+PUBLIC void end_opt(char *lex)
+{
+    char *name = _sp->lhs->name;
+    OX(int i;)
+    OX(SYMBOL_S *p;)
+
+    if(lex[1] == '*') {
+        add_to_rhs(name, 0);
+        OX(i = _sp->rhs->rhs_len - 1;)
+        OX(p = _sp->rhs->rhs[i]; )
+        OX(memmove(&(_sp->rhs->rhs)[1], &(_sp->rhs->rhs)[0], i * sizeof((_sp->rhs->rhs)[1]));)
+        OX(_sp->rhs->rhs[0] = p;)
+    }
+
+    ++_sp;
+    add_to_rhs(name, 0);
+}
+
+#ifdef LLAMA
+PUBLIC void add_synch(char *name)
+{
+    SYMBOL_S *p;
+    if(!(p = (SYMBOL_S *)hash_find_sym(g_symtab, name))) {
+        lerror(NONFATAL, "%%synch: undeclared symbol <%s>.\n", name);
+    } else if(!ISTERM(p)) {
+        lerror(NONFATAL, "%%synch: <%s> not a terminal symbol\n", name);
+    } else {
+        SET_ADD(g_synch, p->val);
+    }
+}
+
+PUBLIC void new_lev(int how)
+{
+    switch(how) {
+        case 0: break;
+        case 'l': lerror(NONFATAL, "%%left not recognized by LLAMA.\n"); break;
+        case 'r': lerror(NONFATAL, "%%right not recognized by LLAMA.\n"); break;
+        case 'n': lerror(NONFATAL, "%%nonassoc not recognized by LLAMA.\n");break;
+        default:  lerror(FATAL, "INTERNAL ERROR.\n"); break;
+    }
+}
+
+PUBLIC void prec(char *name)
+{
+    lerror(NONFATAL, "%%prec %s not recognized by LLAMA.\n", name);
+}
+
+PUBLIC void union_def(char *action)
+{
+    lerror(NONFATAL, "%%union not supported by LLAMA.\n");
+}
+
+PUBLIC void prec_list(char *name)
+{
+
+}
+
+PUBLIC void new_field(char *field_name)
+{
+    if(*field_name)
+        lerror(NONFATAL, "<name> not supported by LLAMA.\n");
+}
+#else
+
+#endif
+
 PRIVATE bool c_identifier(char *name)
 {
     if(isdigit(*name)) return false;
@@ -270,20 +363,6 @@ PRIVATE void find_problems(SYMBOL_S *sym)
         error(NONFATAL, "<%s> not defined (used on line %d)\n", sym->name, sym->used);
 }
 
-#ifdef LLAMA
-PUBLIC void add_synch(char *name)
-{
-    SYMBOL_S *p;
-    if(!(p = (SYMBOL_S *)hash_find_sym(g_symtab, name))) {
-        lerror(NONFATAL, "%%synch: undeclared symbol <%s>.\n", name);
-    } else if(!ISTERM(p)) {
-        lerror(NONFATAL, "%%synch: <%s> not a terminal symbol\n", name);
-    } else {
-        SET_ADD(g_synch, p->val);
-    }
-}
-#else
-#endif
 
 PRIVATE void print_tok(FILE *stream, char *format, int arg)
 {
@@ -299,16 +378,12 @@ PRIVATE void pterm(SYMBOL_S *sym, FILE *stream)
     OX(int i);
     if(!ISTERM(sym)) return;
 
-#ifdef LLAMA
-    fprintf(stream, "%-16s    %3d\n", sym->name, sym->val);
-#else
-    fprintf(stream, "%-16s    %3d    %2d    %c    <%s>\n",
-            sym->name,
-            sym->val,
-            g_precedence[sym->val].level,
-            (i = g_precedence[sym->val].assoc) ? i : '-',
-            sym->field);
-#endif
+    LL(fprintf(stream, "%-16s    %3d\n", sym->name, sym->val);)
+    OX(fprintf(stream, "%-16s    %3d    %2d    %c    <%s>\n", sym->name, sym->val, \
+                                                     g_precedence[sym->val].level, \
+                                                     (i = g_precedence[sym->val].assoc) ?\
+                                                     i : '-', sym->field);)
+
 }
 
 PRIVATE void pact(SYMBOL_S *sym, FILE *stream)

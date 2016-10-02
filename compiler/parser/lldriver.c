@@ -43,7 +43,8 @@ void code_header()
     output("#define YY_MAXTERM     %d\n", g_currterm);
     output("#define YY_MINNONTERM  %d\n", MINNONTERM);
     output("#define YY_MAXNONTERM  %d\n", g_currnonterm);
-    output("#define YY_START_STATE %d\n", MINACT);
+    output("#define YY_START_STATE %d\n", MINNONTERM);
+    output("#define YY_MINACT      %d\n", MINACT);
     output("\n");
 
     sys_driver_2(g_output, !g_cmdopt.no_lines);

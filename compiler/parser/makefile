@@ -27,8 +27,8 @@ COMMOBJ = main.o acts.o lexyy.o error.o first.o stok.o
 LLOBJ = lldriver.o llselect.o llfollow.o llcode.o lldollar.o
 YYOBJ =
 
-LLPAR = llpar.o
-#LLPAR = llout.o
+#LLPAR = llpar.o
+LLPAR = llout.o
 
 #-----------------llama---------------------
 llama : $(LLPAR) $(LLOBJ) $(COMMOBJ) 
@@ -72,6 +72,9 @@ llpar.o: llpar.c parser.h
 
 llcode.o:llcode.c parser.h
 	$(CC) -c $(CFLAGS) llcode.c
+
+llout.o: llout.c parser.h
+	$(CC) -c $(CFLAGS) llout.c
 
 lexyy.o: lexyy.c parser.h
 	$(CC) -c $(CFLAGS) lexyy.c

@@ -354,7 +354,7 @@ PRIVATE void make_yy_act()
         "    *-urned,if one of the acts causes the parser to terminate abnormally.",
         "    */",
         "",
-        "    switch(actum) {",
+        "    switch(actnum) {",
         NULL
     };
 
