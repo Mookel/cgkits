@@ -68,71 +68,71 @@ CMDOPT_S g_cmdopt;
  *      goto  2  on  |
  *      goto  1  on  ~\x07f
 
- * State 1 [accepting, line 181 <return NAME;>]
+ * State 1 [accepting, line 180 <return NAME;>]
  *      goto  1  on  !"#$&\'+-./0123456789=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxy
  *                z~\x07f
 
- * State 2 [accepting, line 175 <return OR;>]
+ * State 2 [accepting, line 174 <return OR;>]
 
- * State 3 [accepting, line 133 <{\
+ * State 3 [accepting, line 132 <{\
             int i>]
 
- * State 4 [accepting, line 180 <return END_OPT;\
+ * State 4 [accepting, line 179 <return END_OPT;\
 >]
  *      goto 25  on  *
 
- * State 5 [accepting, line 177 <return START_OPT;>]
+ * State 5 [accepting, line 176 <return START_OPT;>]
 
- * State 6 [accepting, line 176 <return SEMI;>]
+ * State 6 [accepting, line 175 <return SEMI;>]
 
- * State 7 [accepting, line 174 <return COLON;>]
+ * State 7 [accepting, line 173 <return COLON;>]
 
- * State 8 [accepting, line 184 <if(!_ignore) return >]
+ * State 8 [accepting, line 183 <if(!_ignore) return >]
 
- * State 9 [accepting, line 182 <;   /*dicard carriag>]
+ * State 9 [accepting, line 181 <;   /*dicard carriag>]
 
  * State 10 [accepting, line 69 <{ /*Absorb a comment>]
 
- * State 11 [accepting, line 162 <{\
+ * State 11 [accepting, line 161 <{\
                  >]
  *      goto 11  on  \	 
 
- * State 12 [accepting, line 163 <return FIELD;       >]
+ * State 12 [accepting, line 162 <return FIELD;       >]
 
- * State 13 [accepting, line 135 <return SEPARATOR;\
+ * State 13 [accepting, line 134 <return SEPARATOR;\
 >] Anchor: Start
 
- * State 14 [accepting, line 167 <return TYPE;        >]
+ * State 14 [accepting, line 166 <return TYPE;        >]
 
- * State 15 [accepting, line 166 <return TERM_SPEC;>]
+ * State 15 [accepting, line 165 <return TERM_SPEC;>]
 
- * State 16 [accepting, line 172 <return PREC;        >]
+ * State 16 [accepting, line 171 <return PREC;        >]
 
- * State 17 [accepting, line 169 <return LEFT;        >]
+ * State 17 [accepting, line 168 <return LEFT;        >]
 
- * State 18 [accepting, line 164 <return PERCENT_UNION>]
+ * State 18 [accepting, line 163 <return PERCENT_UNION>]
 
- * State 19 [accepting, line 168 <return SYNCH;       >]
+ * State 19 [accepting, line 167 <return SYNCH;       >]
 
- * State 20 [accepting, line 173 <return START;       >]
+ * State 20 [accepting, line 172 <return START;       >]
 
- * State 21 [accepting, line 170 <return RIGHT;       >]
+ * State 21 [accepting, line 169 <return RIGHT;       >]
 
- * State 22 [accepting, line 171 <return NONASSOC;    >]
+ * State 22 [accepting, line 170 <return NONASSOC;    >]
 
  * State 23 [nonaccepting]
  *      goto 28  on  ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
 
- * State 24 [accepting, line 181 <return NAME;>]
+ * State 24 [accepting, line 180 <return NAME;>]
  *      goto  1  on  !"#$&\'
  *      goto 10  on  *
  *      goto  1  on  +-./0123456789=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxyz~\x07f
  *                
 
- * State 25 [accepting, line 180 <return END_OPT;\
+ * State 25 [accepting, line 179 <return END_OPT;\
 >]
 
- * State 26 [accepting, line 184 <if(!_ignore) return >]
+ * State 26 [accepting, line 183 <if(!_ignore) return >]
  *      goto 36  on  %
 
  * State 27 [nonaccepting]
@@ -1478,7 +1478,6 @@ int yylex()
                 if(lb2 == '\n' && lb1 == '%' && i == '%') {
                     lerror(FATAL, "%%%% in code block starting on line %d\n", _start_line);
                 }
-
                 if(i < 0) {
                     ii_unterm();
                     ii_flush(1);
@@ -1679,8 +1678,8 @@ PRIVATE void stripcr(char *src)
     for(dest = src; *src; src++){
         if(*src != '\r')
             *dest++ = *src;
-        *dest = '\0';
     }
+    *dest = '\0';
 }
 
 

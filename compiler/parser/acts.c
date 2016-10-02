@@ -10,6 +10,7 @@
 #include <ctype.h>
 
 #include "parser.h"
+#include "llout.h"
 
 #undef stack_cls
 #define stack_cls static
@@ -41,6 +42,12 @@ CUR_SYM_S *_sp = Statck + (SSIZE - 1);
 /*private interfaces declerations.*/
 PRIVATE bool c_identifier(char *name);
 PRIVATE void find_problems(SYMBOL_S *sym);
+/*subroutines used for printing */
+PRIVATE void print_tok(FILE* stream, char *format, int arg);
+PRIVATE void pterm(SYMBOL_S *sym, FILE *stream);
+PRIVATE void pact(SYMBOL_S *sym, FILE *stream);
+PRIVATE void pnonterm(SYMBOL_S *sym, FILE *stream);
+PRIVATE char *production_str(PRODUCTION_S *prod);
 
 /*public interfaces*/
 PUBLIC void init_acts()
@@ -65,7 +72,20 @@ PUBLIC int problems()
  */
 PUBLIC void print_symbols(FILE *stream)
 {
-    //TODO:
+    putc('\n', stream);
+
+    fprintf(stream, "-----------------------Symbol table-----------------\n");
+    fprintf(stream, "\nNONTERMINAL SYMBOLS:\n\n");
+    hash_print_tab(g_symtab, (fp_tab_print_t)pnonterm, stream, 1);
+    fprintf(stream, "\nTERMINAL SYMBOLS:\n\n");
+    OX(fprintf(stream, "name                value    prec    assoc    field\n");)
+    LL(fprintf(stream, "name                value\n");)
+
+    hash_print_tab(g_symtab, (fp_tab_print_t)pterm, stream, 1);
+
+    LL(fprintf(stream, "\nACTION SYMBOLS:\n\n");)
+    LL(hash_print_tab(g_symtab, (fp_tab_print_t)pact, stream, 1);)
+    LL(fprintf(stream, "-------------------------------------------------\n");)
 }
 
 PUBLIC SYMBOL_S *make_term(char *name)
@@ -263,12 +283,109 @@ PUBLIC void add_synch(char *name)
     }
 }
 #else
-
-
 #endif
 
+PRIVATE void print_tok(FILE *stream, char *format, int arg)
+{
+    if(arg == -1) fprintf(stream, "null ");
+    else if(arg == -2) fprintf(stream, "empty ");
+    else if(arg == _EOI_) fprintf(stream, "$ ");
+    else if(arg == EPSILON) fprintf(stream, "<epsilon> ");
+    else fprintf(stream, "%s ", g_terms[arg]->name);
+}
 
+PRIVATE void pterm(SYMBOL_S *sym, FILE *stream)
+{
+    OX(int i);
+    if(!ISTERM(sym)) return;
 
+#ifdef LLAMA
+    fprintf(stream, "%-16s    %3d\n", sym->name, sym->val);
+#else
+    fprintf(stream, "%-16s    %3d    %2d    %c    <%s>\n",
+            sym->name,
+            sym->val,
+            g_precedence[sym->val].level,
+            (i = g_precedence[sym->val].assoc) ? i : '-',
+            sym->field);
+#endif
+}
+
+PRIVATE void pact(SYMBOL_S *sym, FILE *stream)
+{
+    if(!ISACT(sym)) return;
+    fprintf(stream, "%-5s %3d", sym->name, sym->val);
+    fprintf(stream, " line %-3d: ", sym->lineno);
+    sys_fputstr(sym->string, 80, stream);
+    fprintf(stream, "\n");
+}
+
+PRIVATE char *production_str(PRODUCTION_S *prod)
+{
+    int i, nchars, avail;
+    static char buf[256];
+    char *p;
+
+    nchars = sprintf(buf, "%s ->", prod->lhs->name);
+
+    p = buf + nchars;
+    avail = sizeof(buf) - nchars;
+
+    if(!prod->rhs_len){
+        sprintf(p, " (epsilon)");
+    } else {
+        for(i = 0;i < prod->rhs_len && avail > 0; ++i) {
+            nchars = snprintf(p, avail, " %s", prod->rhs[i]->name);
+            avail -= nchars;
+            p += nchars;
+        }
+    }
+
+    return buf;
+}
+
+PRIVATE void pnonterm(SYMBOL_S *sym, FILE *stream)
+{
+    PRODUCTION_S *p;
+    int chars_printed;
+
+    stack_dcl(pstack, PRODUCTION_S *, MAXPROD);
+
+    if(!ISNONTERM(sym)) return;
+
+    fprintf(stream, "%s    (%3d)    %s", sym->name, sym->val, sym == g_goal_symbol ?
+                                                              "(goal symbol)" : "");
+
+    OX(fprintf(stream, "     <%s>\n", sym->field);)
+    LL(fprintf(stream, "\n");)
+
+    if(g_cmdopt.symbols > 1) {   /*more printed.*/
+        fprintf(stream, "\tFIRST: ");
+        set_print(sym->first, (fp_set_prnt) print_tok, stream);
+
+        LL(fprintf(stream, "\n\tFOLLOW: ");)
+        LL(set_print(sym->follow, (fp_set_prnt)print_tok, stream); )
+        fprintf(stream, "\n");
+    }
+
+    for(p = sym->productions; p ; p = p->next) push(pstack, p);
+
+    while(!stack_empty(pstack)) {
+        p = pop(pstack);
+        chars_printed = fprintf(stream, "\t%3d: %s", p->num, production_str(p));
+
+        LL(for(; chars_printed <= 50; ++chars_printed))
+        LL(putc('.', stream);)
+        LL(fprintf(stream, ".SELECT: ");)
+        LL(set_print(p->select, (fp_set_prnt)print_tok, stream);)
+
+        //TODO: output occs
+
+        putc('\n', stream);
+    }
+
+    fprintf(stream, "\n");
+}
 
 
 

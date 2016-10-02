@@ -34,6 +34,6 @@
 #define popn_(stack, amt)            ((p_##stack += amt)[-amt])
 #define popn(stack, amt)             (((stack_ele(stack)) < amt) ? ((t_##stack)(long)(stack_err(0))) : popn_(stack,amt))
 
-#define stack_err(o)                 ((o) ? sys_ferr("Stack overflow.\n") : ferr("Stack underflow.\n"))
+#define stack_err(o)                 ((o) ? com_ferr("Stack overflow.\n") : com_ferr("Stack underflow.\n"))
 
 #endif //CGKITS_STACK_H

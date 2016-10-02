@@ -49,17 +49,17 @@ extern void	ws(void);	/* Declared in llama.lex. */
 %%
 spec 	: defs SEPARATOR { first_sym(); } rules end
 		;
-end		: {ws();} SEPARATOR
+end		: { ws(); } SEPARATOR
 		| /* empty */
 		;
 
 defs	: SYNCH snames defs
 		| PERCENT_UNION ACTION  { union_def( yytext ); } defs
-		| TYPE				fnames {new_field("");} defs
-		| TERM_SPEC  { new_lev ( 0 ); }	tnames {new_field("");} defs
-		| LEFT       { new_lev ('l'); }	pnames {new_field("");} defs
-		| RIGHT      { new_lev ('r'); }	pnames {new_field("");} defs
-		| NONASSOC   { new_lev ('n'); }	pnames {new_field("");} defs
+		| TYPE	fnames { new_field(""); } defs
+		| TERM_SPEC  { new_lev ( 0 ); }	tnames { new_field(""); } defs
+		| LEFT       { new_lev ('l'); }	pnames { new_field(""); } defs
+		| RIGHT      { new_lev ('r'); }	pnames { new_field(""); } defs
+		| NONASSOC   { new_lev ('n'); }	pnames { new_field(""); } defs
 	 	| CODE_BLOCK	/* the block is copied out by yylex */  defs
 		| START
 		  {

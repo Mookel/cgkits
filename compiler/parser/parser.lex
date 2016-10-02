@@ -85,7 +85,6 @@ c_name [A-Za-z_][A-Za-z_0-9]*
                 if(lb2 == '\n' && lb1 == '%' && i == '%') {
                     lerror(FATAL, "%%%% in code block starting on line %d\n", _start_line);
                 }
-
                 if(i < 0) {
                     ii_unterm();
                     ii_flush(1);
@@ -197,8 +196,8 @@ PRIVATE void stripcr(char *src)
     for(dest = src; *src; src++){
         if(*src != '\r')
             *dest++ = *src;
-        *dest = '\0';
     }
+    *dest = '\0';
 }
 
 

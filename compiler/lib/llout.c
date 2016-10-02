@@ -125,7 +125,7 @@ yyvstype *Yy_vsp = Yy_vstack + YYMAXDEPTH;	/* Value-stack pointer	*/
 
 
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * The YypNN arrays hold the right-hand sides of productions, listed back
  * to front (so that they are pushed in reverse order), NN is the production
  * number (to be found in the symbol-table listing output with a -s switch).
@@ -216,7 +216,7 @@ YYPRIVATE int *Yy_pushtab[ ] =
 	Yyp38
 };
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * Yyd[][] is the DFA transition table for the parser. It is indexed as follows:
  * 
  *                   Input symbol
@@ -242,206 +242,177 @@ YYPRIVATE int *Yy_pushtab[ ] =
  * numbers and the meanings of the YypDD string contents.
  */
 
-YYPRIVATE YY_TTYPE Yyd0 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,   0,  -1,  -1,  -1,   0,  -1,   0,  -1, 
-                                -1,  -1,   0,  -1,   0,   0,  -1,   0,   0,   0, 
-                                 0,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd1 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,  10,  -1,  -1,  -1,   7,  -1,   9,  -1, 
-                                -1,  -1,   8,  -1,  12,  11,  -1,   3,   6,   5, 
-                                 4,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd2 [ ] = {  4,   0,  27,   5,  26,   7,  26,  14,  27 };
-
-YYPRIVATE YY_TTYPE Yyd3 [ ] = {  2,   0,   2,  14,   1 };
-
-YYPRIVATE YY_TTYPE Yyd4 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,  25,  -1,  -1,  -1,  25,  24,  25,  -1, 
-                                -1,  -1,  25,  -1,  25,  25,  -1,  25,  25,  25, 
-                                25,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd5 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,  15,  -1,  -1,  14,  15,  13,  15,  -1, 
-                                -1,  -1,  15,  -1,  15,  15,  -1,  15,  15,  15, 
-                                15,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd6 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,  18,  -1,  -1,  17,  18,  16,  18,  -1, 
-                                -1,  -1,  18,  -1,  18,  18,  -1,  18,  18,  18, 
-                                18,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd7 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,  21,  -1,  -1,  20,  21,  19,  21,  -1, 
-                                -1,  -1,  21,  -1,  21,  21,  -1,  21,  21,  21, 
-                                21,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd8 [ ] = {  0, /*uncompressed*/
-                                -1,  -1,  23,  -1,  -1,  -1,  23,  22,  23,  -1, 
-                                -1,  -1,  23,  -1,  23,  23,  -1,  23,  23,  23, 
-                                23,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd9 [ ] = {  2,   5,  29,   7,  28 };
-
-YYPRIVATE YY_TTYPE Yyd10[ ] = {  0, /*uncompressed*/
-                                -1,  30,  -1,  -1,  -1,  30,  -1,  30,  -1,  30, 
-                                -1,  30,  -1,  30,  -1,  -1,  30,  -1,  -1,  -1, 
-                                -1,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd11[ ] = {  0, /*uncompressed*/
-                                -1,  35,  -1,  -1,  38,  34,  -1,  33,  -1,  38, 
-                                -1,  36,  -1,  38,  -1,  -1,  37,  -1,  -1,  -1, 
-                                -1,  -1
-                              };
-
-YYPRIVATE YY_TTYPE Yyd12[ ] = {  2,   9,  31,  13,  32 };
-
-
-YYPRIVATE YY_TTYPE *Yyd[ 13 ] =
+YYPRIVATE YY_TTYPE Yyd[ 13 ][ 22 ] = 
 {
-      Yyd0 ,    Yyd1 ,    Yyd2 ,    Yyd3 ,    Yyd4 ,    Yyd5 ,    Yyd6 ,    Yyd7 ,    Yyd8 ,    Yyd9 ,    
-      Yyd10,    Yyd11,    Yyd12
+/* 00 */ {  -1,  -1,   0,  -1,  -1,  -1,   0,  -1,   0,  -1, 
+   -1,  -1,   0,  -1,   0,   0,  -1,   0,   0,   0, 
+    0,  -1
+   },
+/* 01 */ {  -1,  -1,  10,  -1,  -1,  -1,   7,  -1,   9,  -1, 
+   -1,  -1,   8,  -1,  12,  11,  -1,   3,   6,   5, 
+    4,  -1
+   },
+/* 02 */ {  27,  -1,  -1,  -1,  -1,  26,  -1,  26,  -1,  -1, 
+   -1,  -1,  -1,  -1,  27,  -1,  -1,  -1,  -1,  -1, 
+   -1,  -1
+   },
+/* 03 */ {   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
+   -1,  -1,  -1,  -1,   1,  -1,  -1,  -1,  -1,  -1, 
+   -1,  -1
+   },
+/* 04 */ {  -1,  -1,  25,  -1,  -1,  -1,  25,  24,  25,  -1, 
+   -1,  -1,  25,  -1,  25,  25,  -1,  25,  25,  25, 
+   25,  -1
+   },
+/* 05 */ {  -1,  -1,  15,  -1,  -1,  14,  15,  13,  15,  -1, 
+   -1,  -1,  15,  -1,  15,  15,  -1,  15,  15,  15, 
+   15,  -1
+   },
+/* 06 */ {  -1,  -1,  18,  -1,  -1,  17,  18,  16,  18,  -1, 
+   -1,  -1,  18,  -1,  18,  18,  -1,  18,  18,  18, 
+   18,  -1
+   },
+/* 07 */ {  -1,  -1,  21,  -1,  -1,  20,  21,  19,  21,  -1, 
+   -1,  -1,  21,  -1,  21,  21,  -1,  21,  21,  21, 
+   21,  -1
+   },
+/* 08 */ {  -1,  -1,  23,  -1,  -1,  -1,  23,  22,  23,  -1, 
+   -1,  -1,  23,  -1,  23,  23,  -1,  23,  23,  23, 
+   23,  -1
+   },
+/* 09 */ {  -1,  -1,  -1,  -1,  -1,  29,  -1,  28,  -1,  -1, 
+   -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 
+   -1,  -1
+   },
+/* 10 */ {  -1,  30,  -1,  -1,  -1,  30,  -1,  30,  -1,  30, 
+   -1,  30,  -1,  30,  -1,  -1,  30,  -1,  -1,  -1, 
+   -1,  -1
+   },
+/* 11 */ {  -1,  35,  -1,  -1,  38,  34,  -1,  33,  -1,  38, 
+   -1,  36,  -1,  38,  -1,  -1,  37,  -1,  -1,  -1, 
+   -1,  -1
+   },
+/* 12 */ {  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  31, 
+   -1,  -1,  -1,  32,  -1,  -1,  -1,  -1,  -1,  -1, 
+   -1,  -1
+   } 
 };
 
+/*--------------------------------------------------------------
+ * yy_next(state, c) is given the current state and input character and evaluates to the next state.
+ */
 
-/*-------------------------------------------------------*/
-YYPRIVATE YY_TTYPE yy_next( int cur_state, int c )
-{
-    /* Given the current state and the current input character, return
-     * the next state.
-     */
-
-    YY_TTYPE    *p = Yyd[ cur_state ] ;
-    int i;
-
-    if(p) {
-        if(!(i = *p++)) return p[c];
-
-        for(; --i >= 0; p += 2)
-            if(c == p[0]) return p[1];
-    }
-    return YYF;
-}
+#define yy_next(state, c) Yyd[ state ][ c ]
 
 
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * Yy_act() is the action subroutine. It is passed the tokenized value of
  * an action and executes the corresponding code.
  */
 
 YYPRIVATE int yy_act(int actnum)
 {
-   /*The actions. Returns 0 normally but a nonzero error code can be ret-
-    *-urned,if one of the acts causes the parser to terminate abnormally.
+   /*The actions. Returns 0 normally but a nonzero error code can be returned
+    *if one of the acts causes the parser to terminate abnormally.
     */
 
     switch(actum) {
         case 540:
-		        { end_opt  ( yytext ); }
-            break;
+		{
+        break;
         case 527:
-		        { make_term(yytext); }
-            break;
+		{
+        break;
         case 520:
-		        { new_lev ('r'); }
-            break;
+		{
+        break;
         case 528:
-		        { new_field(yytext); }
-            break;
+		{
+        break;
         case 521:
-		        { new_field(""); }
-            break;
+		{
+        break;
         case 532:
-		        { new_nonterm(yytext,1); }
-            break;
+		{
+        break;
         case 512:
-		        { first_sym(); }
-            break;
+		{
+        break;
         case 529:
-		        { prec_list(yytext); }
-            break;
+		{
+        break;
         case 533:
-		        { new_nonterm(yytext,1); }
-            break;
+		{
+        break;
         case 513:
-		        { ws(); }
-            break;
+		{
+        break;
         case 530:
-		        { new_field(yytext); }
-            break;
+		{
+        break;
         case 534:
-		        { new_rhs(); }
-            break;
+		{
+        break;
         case 514:
-		        { union_def( yytext ); }
-            break;
+		{
+        break;
         case 531:
-		        { add_synch(yytext); }
-            break;
+		{
+        break;
         case 535:
-		        { add_to_rhs(yytext, 0             ); }
-            break;
+		{
+        break;
         case 522:
-		        { new_lev ('n'); }
-            break;
+		{
+        break;
         case 515:
-		        { new_field(""); }
-            break;
+		{
+        break;
         case 536:
-		        { add_to_rhs(yytext, 0             ); }
-            break;
+		{
+        break;
         case 523:
-		        { new_field(""); }
-            break;
+		{
+        break;
         case 516:
-		        { new_lev ( 0 ); }
-            break;
+		{
+        break;
         case 537:
-		        { add_to_rhs(yytext, start_action()); }
-            break;
+		{
+        break;
         case 524:
-		        {
-		     lerror(NONFATAL,"%%start not supported by occs. First " );
-		     lerror(NOHDR,   "production is the start production\n." );
-		  }
-            break;
+		{
+        break;
         case 517:
-		        { new_field(""); }
-            break;
+		{
+        break;
         case 538:
-		        { prec      (yytext                ); }
-            break;
+		{
+        break;
         case 525:
-		        { new_nonterm (yytext,0); }
-            break;
+		{
+        break;
         case 518:
-		        { new_lev ('l'); }
-            break;
+		{
+        break;
         case 539:
-		        { start_opt( yytext ); }
-            break;
+		{
+        break;
         case 526:
-		        { new_field   (yytext);   }
-            break;
+		{
+        break;
         case 519:
-		        { new_field(""); }
-            break;
-        default: printf("INTERNAL ERROR: Illegal action number (%d)\n", actnum);
-            break;
+		{
+        break;
+    default: printf("INTERNAL ERROR: Illegal action number (%s)\n",
+                                                              actnum);
+             break;
     }
     return 0;
 }
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * Yy_synch[] is  an array of synchronization tokens. When an error is detected, 
  * stack items are popped until one of the tokens in this array is encountered.
  * The input is then read until the same item is found. Then parsing continues.
@@ -454,7 +425,7 @@ YYPRIVATE int Yy_synch[] =
 	-1
 };
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * Yy_stok[] is used for debugging and error messages.It is indexed by
  * the internal value used for a token(as used for a column index in the
  * transition matrix) and evaluates to a string naming that token.
@@ -462,24 +433,24 @@ YYPRIVATE int Yy_synch[] =
 
 YYPRIVATE char *Yy_stok[] = 
 {
-	/*   0 */    "_EOI_",
-	/*   1 */    "ACTION    ",	/*   2 */    "CODE_BLOCK",
-	/*   3 */    "COLON     ",	/*   4 */    "END_OPT   ",
-	/*   5 */    "FIELD     ",	/*   6 */    "LEFT      ",
-	/*   7 */    "NAME      ",	/*   8 */    "NONASSOC  ",
-	/*   9 */    "OR        ",	/*  10 */    "OTHER     ",
-	/*  11 */    "PREC      ",	/*  12 */    "RIGHT     ",
-	/*  13 */    "SEMI      ",	/*  14 */    "SEPARATOR ",
-	/*  15 */    "START     ",	/*  16 */    "START_OPT ",
-	/*  17 */    "SYNCH     ",	/*  18 */    "TERM_SPEC ",
-	/*  19 */    "TYPE      ",	/*  20 */    "PERCENT_UNION",
+	 /*  0  */    "_EOI_",
+	/*   1 */    "ACTION",	/*   2 */    "CODE_BLOCK",
+	/*   3 */    "COLON",	/*   4 */    "END_OPT",
+	/*   5 */    "FIELD",	/*   6 */    "LEFT",
+	/*   7 */    "NAME",	/*   8 */    "NONASSOC",
+	/*   9 */    "OR",	/*  10 */    "OTHER",
+	/*  11 */    "PREC",	/*  12 */    "RIGHT",
+	/*  13 */    "SEMI",	/*  14 */    "SEPARATOR",
+	/*  15 */    "START",	/*  16 */    "START_OPT",
+	/*  17 */    "SYNCH",	/*  18 */    "TERM_SPEC",
+	/*  19 */    "TYPE",	/*  20 */    "PERCENT_UNION",
 	/*  21 */    "WHITESPACE"
 };
 
 
  #ifdef YYDEBUG
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * Yy_snonterm[] is used only for debugging.It is indexed by the tokenized left-hand
  * side(as used for a row index in Yyd[]) and evaluates to a string naming that lhs.
  */
@@ -502,43 +473,18 @@ char *Yy_snonterm[] =
 };
 
 
-/*-----------------------------------------------------------------------
+/*--------------------------------------------------------------
  * Yy_sact[] is alse used only for debugging. It is indexed by the internal value
  * used for an action symbol and evaluates to a string naming that token symbol.
  */
 
 char *Yy_sact[] = 
 {
-	"{0}",
-	"{1}",
-	"{2}",
-	"{3}",
-	"{4}",
-	"{5}",
-	"{6}",
-	"{7}",
-	"{8}",
-	"{9}",
-	"{10}",
-	"{11}",
-	"{12}",
-	"{13}",
-	"{14}",
-	"{15}",
-	"{16}",
-	"{17}",
-	"{18}",
-	"{19}",
-	"{20}",
-	"{21}",
-	"{22}",
-	"{23}",
-	"{24}",
-	"{25}",
-	"{26}",
-	"{27}",
+	"{0}","{1}","{2}","{3}","{4}","{5}","{6}","{7}",
+	"{8}","{9}","{10}","{11}","{12}","{13}","{14}","{15}","{16}","{17}",
+	"{18}","{19}","{20}","{21}","{22}","{23}","{24}","{25}","{26}","{27}",
 	"{28}" 
-	};
+};
 
  #endif
 

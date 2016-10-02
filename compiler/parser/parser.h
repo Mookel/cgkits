@@ -202,7 +202,9 @@ void llselect();
 void      init_acts();
 int       problems();
 void      first_sym();
+#ifdef LLAMA
 void      add_synch(char *name);
+#endif
 void      new_rhs();
 void      add_to_rhs(char *object, bool is_an_action, int action_lineno);
 SYMBOL_S *make_term(char *name);
@@ -224,6 +226,7 @@ void file_header();
 void code_header();
 void driver();
 
-
+/*---10.llama: lldollar.c + occs: yydollar.c----*/
+char *do_dollar(int num, int rhs_size, int lineno, PRODUCTION_S *prod, char *field);
 
 #endif //CGKITS_PARSER_H_H

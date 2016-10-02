@@ -26,10 +26,10 @@ PUBLIC void make_yy_stok()
     sys_comment(g_output, text);
 
     output("YYPRIVATE char *Yy_stok[] = \n{\n");
-    output("\t /*  0  */    \"_EOI_\",\n");
+    output("\t/*   0 */    \"_EOI_\",\n");
 
     for(i = MINTERM; i <= g_currterm; i++) {
-        output("\t/* %3d */    \"%s\"", (i-MINTERM)+1, g_terms[i]->name);
+        output("\t/* %3d */    \"%-10s\"", (i-MINTERM)+1, g_terms[i]->name);
         if(i != g_currterm) outc(',');
 
         if(!(i & 0x1) || (i == g_currterm)) outc('\n');

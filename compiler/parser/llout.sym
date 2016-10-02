@@ -1,0 +1,154 @@
+
+-----------------------Symbol table-----------------
+
+NONTERMINAL SYMBOLS:
+
+defs    (257)    
+	FIRST: CODE_BLOCK LEFT NONASSOC RIGHT START SYNCH TERM_SPEC TYPE PERCENT_UNION <epsilon> 
+	FOLLOW: SEPARATOR 
+	  3: defs -> SYNCH snames defs.....................SELECT: SYNCH 
+	  4: defs -> PERCENT_UNION ACTION {2} defs.........SELECT: PERCENT_UNION 
+	  5: defs -> TYPE fnames {3} defs..................SELECT: TYPE 
+	  6: defs -> TERM_SPEC {4} tnames {5} defs.........SELECT: TERM_SPEC 
+	  7: defs -> LEFT {6} pnames {7} defs..............SELECT: LEFT 
+	  8: defs -> RIGHT {8} pnames {9} defs.............SELECT: RIGHT 
+	  9: defs -> NONASSOC {10} pnames {11} defs........SELECT: NONASSOC 
+	 10: defs -> CODE_BLOCK defs.......................SELECT: CODE_BLOCK 
+	 11: defs -> START {12} opt_names defs.............SELECT: START 
+	 12: defs -> (epsilon).............................SELECT: SEPARATOR 
+
+end    (259)    
+	FIRST: SEPARATOR <epsilon> 
+	FOLLOW: $ 
+	  1: end -> {1} SEPARATOR..........................SELECT: SEPARATOR 
+	  2: end -> (epsilon)..............................SELECT: $ 
+
+end_rhs    (268)    
+	FIRST: OR SEMI 
+	FOLLOW: $ FIELD NAME SEPARATOR 
+	 31: end_rhs -> OR right_sides.....................SELECT: OR 
+	 32: end_rhs -> SEMI...............................SELECT: SEMI 
+
+fnames    (261)    
+	FIRST: FIELD NAME <epsilon> 
+	FOLLOW: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+	 13: fnames -> NAME {13} fnames....................SELECT: NAME 
+	 14: fnames -> FIELD {14} fnames...................SELECT: FIELD 
+	 15: fnames -> (epsilon)...........................SELECT: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+
+opt_names    (264)    
+	FIRST: NAME <epsilon> 
+	FOLLOW: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+	 22: opt_names -> NAME opt_names...................SELECT: NAME 
+	 23: opt_names -> (epsilon)........................SELECT: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+
+pnames    (263)    
+	FIRST: FIELD NAME <epsilon> 
+	FOLLOW: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+	 19: pnames -> NAME {17} pnames....................SELECT: NAME 
+	 20: pnames -> FIELD {18} pnames...................SELECT: FIELD 
+	 21: pnames -> (epsilon)...........................SELECT: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+
+rhs    (267)    
+	FIRST: ACTION FIELD NAME PREC START_OPT <epsilon> 
+	FOLLOW: END_OPT OR SEMI 
+	 33: rhs -> NAME {23} rhs..........................SELECT: NAME 
+	 34: rhs -> FIELD {24} rhs.........................SELECT: FIELD 
+	 35: rhs -> ACTION {25} rhs........................SELECT: ACTION 
+	 36: rhs -> PREC NAME {26} rhs.....................SELECT: PREC 
+	 37: rhs -> START_OPT {27} rhs END_OPT {28} rhs....SELECT: START_OPT 
+	 38: rhs -> (epsilon)..............................SELECT: END_OPT OR SEMI 
+
+right_sides    (266)    
+	FIRST: ACTION FIELD NAME OR PREC SEMI START_OPT <epsilon> 
+	FOLLOW: $ FIELD NAME SEPARATOR 
+	 30: right_sides -> {22} rhs end_rhs...............SELECT: ACTION FIELD NAME OR PREC SEMI START_OPT 
+
+rule    (265)    
+	FIRST: FIELD NAME 
+	FOLLOW: $ FIELD NAME SEPARATOR 
+	 28: rule -> NAME {20} COLON right_sides...........SELECT: NAME 
+	 29: rule -> FIELD {21} COLON right_sides..........SELECT: FIELD 
+
+rules    (258)    
+	FIRST: FIELD NAME <epsilon> 
+	FOLLOW: $ SEPARATOR 
+	 26: rules -> rule rules...........................SELECT: FIELD NAME 
+	 27: rules -> (epsilon)............................SELECT: $ SEPARATOR 
+
+snames    (260)    
+	FIRST: NAME <epsilon> 
+	FOLLOW: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+	 24: snames -> NAME {19} snames....................SELECT: NAME 
+	 25: snames -> (epsilon)...........................SELECT: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+
+spec    (256)    (goal symbol)
+	FIRST: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION <epsilon> 
+	FOLLOW: $ 
+	  0: spec -> defs SEPARATOR {0} rules end..........SELECT: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+
+tnames    (262)    
+	FIRST: FIELD NAME <epsilon> 
+	FOLLOW: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+	 16: tnames -> NAME {15} tnames....................SELECT: NAME 
+	 17: tnames -> FIELD {16} tnames...................SELECT: FIELD 
+	 18: tnames -> (epsilon)...........................SELECT: CODE_BLOCK LEFT NONASSOC RIGHT SEPARATOR START SYNCH TERM_SPEC TYPE PERCENT_UNION 
+
+
+TERMINAL SYMBOLS:
+
+name                value
+ACTION                1
+CODE_BLOCK            2
+COLON                 3
+END_OPT               4
+FIELD                 5
+LEFT                  6
+NAME                  7
+NONASSOC              8
+OR                    9
+OTHER                10
+PERCENT_UNION        20
+PREC                 11
+RIGHT                12
+SEMI                 13
+SEPARATOR            14
+START                15
+START_OPT            16
+SYNCH                17
+TERM_SPEC            18
+TYPE                 19
+WHITESPACE           21
+
+ACTION SYMBOLS:
+
+{0}   512 line 50 : { first_sym(); }
+{10}  522 line 62 : { new_lev (\'n\'); }
+{11}  523 line 62 : { new_field(""); }
+{12}  524 line 65 : {\n\t\t     lerror(NONFATAL,"%%start not supported by occs. First " );\n\t\t    
+{13}  525 line 73 : { new_nonterm (yytext,0); }
+{14}  526 line 74 : { new_field   (yytext);   }
+{15}  527 line 78 : { make_term(yytext); }
+{16}  528 line 79 : { new_field(yytext); }
+{17}  529 line 83 : { prec_list(yytext); }
+{18}  530 line 84 : { new_field(yytext); }
+{19}  531 line 92 : { add_synch(yytext); }
+{1}   513 line 52 : { ws(); }
+{20}  532 line 97 : { new_nonterm(yytext,1); }
+{21}  533 line 98 : { new_nonterm(yytext,1); }
+{22}  534 line 101: { new_rhs(); }
+{23}  535 line 108: { add_to_rhs(yytext, 0             ); }
+{24}  536 line 109: { add_to_rhs(yytext, 0             ); }
+{25}  537 line 110: { add_to_rhs(yytext, start_action()); }
+{26}  538 line 111: { prec      (yytext                ); }
+{27}  539 line 112: { start_opt( yytext ); }
+{28}  540 line 113: { end_opt  ( yytext ); }
+{2}   514 line 57 : { union_def( yytext ); }
+{3}   515 line 58 : { new_field(""); }
+{4}   516 line 59 : { new_lev ( 0 ); }
+{5}   517 line 59 : { new_field(""); }
+{6}   518 line 60 : { new_lev (\'l\'); }
+{7}   519 line 60 : { new_field(""); }
+{8}   520 line 61 : { new_lev (\'r\'); }
+{9}   521 line 61 : { new_field(""); }
+-------------------------------------------------

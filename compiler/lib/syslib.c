@@ -60,11 +60,11 @@ PUBLIC char *sys_bin_to_ascii(int c, int use_hex)
         switch (c) {
             case '\\' : buf[1] = '\\'; break;
             case '\'' : buf[1] = '\''; break;
-            case '\b' : buf[1] = '\b'; break;
-            case '\f' : buf[1] = '\f'; break;
-            case '\t' : buf[1] = '\t'; break;
-            case '\r' : buf[1] = '\r'; break;
-            case '\n' : buf[1] = '\n'; break;
+            case '\b' : buf[1] = 'b'; break;
+            case '\f' : buf[1] = 'f'; break;
+            case '\t' : buf[1] = 't'; break;
+            case '\r' : buf[1] = 'r'; break;
+            case '\n' : buf[1] = 'n'; break;
             default   : sprintf(&buf[1], (use_hex ? "x%03x" : "%03o"), c);
                 break;
         }
@@ -378,7 +378,6 @@ PUBLIC int *sys_memiset(int *dst, int value, int count)
 #define TYPE     "YY_TTYPE"
 #define SCLASS   "YYPRIVATE"
 #define D_SCLASS "YYPRIVATE"
-
 /*
  * This pairs/pnext compress a table horizontally (using char/next pairs) and then
  * print the compressed table. The compressed array looks like this:
@@ -421,11 +420,12 @@ PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
             }
         }
 
-        if(ntransitions) {
-            fprintf(fp, "%s %s %s%-2d[] = {", SCLASS, TYPE, name, i);
+        if(ntransitions) {  /*only deal with rows that have transitions.*/
+
+            fprintf(fp, "%s %s %s%-2d[ ] = { ", SCLASS, TYPE, name, i);
             ++num_cells;
             if(ntransitions > threshold){    /*array*/
-                fprintf(fp, "0,\n                   ");
+                fprintf(fp, " 0, /*uncompressed*/\n                               ");
             } else {                         /*pairs*/
                 fprintf(fp, "%2d, ", ntransitions);
                 if(threshold > 5){
@@ -436,7 +436,7 @@ PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
             nprinted = NCOLS;
             ncommas = ntransitions;
 
-            for(p = array+ (i * ncols), j = 0; j < ncols; j++,++p){
+            for(p = array + (i * ncols), j = 0; j < ncols; j++,++p){
                 if(ntransitions > threshold) { /*array*/
                     ++num_cells;
                     --nprinted;
@@ -444,33 +444,34 @@ PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
                     if(j < ncols - 1){
                         fprintf(fp, ", ");
                     }
-                }else if(*p != -1){  /*pairs*/
+                }else if(*p != -1){           /*pairs*/
                     num_cells += 2;
-
                     if(numbers){
-                        fprintf(fp, "%d,%d", j, *p);
+                        fprintf(fp, "%3d, %3d", j, *p);
                     }else{
-                        fprintf(fp, "'%s',%d", sys_bin_to_ascii(j, 0), *p);
-                        nprinted -= 2;
-                        if(--ncommas > 0) {
-                            fprintf(fp, ", ");
-                        }
+                        fprintf(fp, "'%s',%3d", sys_bin_to_ascii(j, 0), *p);
                     }
 
+                    nprinted -= 2;
+                    if(--ncommas > 0) fprintf(fp, ", ");
                 }
 
                 if(nprinted <= 0){
-                    fprintf(fp, "\n                 ");
+                    fprintf(fp, "\n                               ");
                     nprinted = NCOLS;
                 }
             }
 
-            fprintf(fp, "};\n");
+            if(ntransitions > threshold) {
+                fprintf(fp, "\n                              };\n\n");
+            } else {
+                fprintf(fp, " };\n\n");
+            }
         }
     }
 
     fprintf(fp, "\n%s %s *%s[ %d ] =\n{\n      ", SCLASS, TYPE, name, nrows);
-    nprinted = 10;
+    nprinted = NCOLS;
     for(--nrows, i = 0; i < nrows;i++){
         ntransitions = 0;
         for(p = array + (i * ncols), j = ncols; --j >= 0; ++p){
@@ -486,8 +487,8 @@ PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
         }
 
         if(--nprinted <= 0) {
-            fprintf(fp, "\n    ");
-            nprinted = 10;
+            fprintf(fp, "\n      ");
+            nprinted = NCOLS;
         }
     }
 
@@ -503,8 +504,6 @@ PUBLIC int sys_pairs(FILE *fp, ATYPE *array, int nrows, int ncols,
 PUBLIC int sys_pnext(FILE *fp, char *name)
 {
     static char *toptext[] = {
-        "unsigned int c;",
-        "int      cur_state;",
         "{",
         "    /* Given the current state and the current input character, return",
         "     * the next state.",
@@ -516,14 +515,11 @@ PUBLIC int sys_pnext(FILE *fp, char *name)
     static char *boptext[] = {
       "    int i;",
       "",
-      "    if(p)",
-      "    {",
-      "        if((i = *p++) == 0)",
-      "            return p[ c ];",
+      "    if(p) {",
+      "        if(!(i = *p++)) return p[c];",
       "",
       "        for(; --i >= 0; p += 2)",
-      "            if(c == p[0])",
-      "                return p[1];",
+      "            if(c == p[0]) return p[1];",
       "    }",
       "    return YYF;",
       "}",
@@ -531,7 +527,7 @@ PUBLIC int sys_pnext(FILE *fp, char *name)
     };
 
     fprintf(fp, "\n/*-------------------------------------------------------*/\n");
-    fprintf(fp, "%s %s yy_next( cur_state, c )\n", D_SCLASS, TYPE);
+    fprintf(fp, "%s %s yy_next( int cur_state, int c )\n", D_SCLASS, TYPE);
     sys_printv(fp, toptext);
     fprintf(fp, "    %s    *p = %s[ cur_state ] ;\n", TYPE, name);
     sys_printv(fp, boptext);
@@ -558,7 +554,7 @@ PUBLIC void sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols)
 
     for(int i = 0;i < nrows; ++i){
 
-        fprintf(fp, "/* %02d */ { ", i);
+        fprintf(fp, "/* %02d */ {", i);
 
         for(col = 0; col < ncols; ++col){
             fprintf(fp, "%3d", *array++);
@@ -567,15 +563,15 @@ PUBLIC void sys_print_array(FILE *fp, ATYPE *array, int nrows, int ncols)
             }
 
             if(((col % NCOLS) == (NCOLS - 1)) && (col != (ncols - 1))) {
-                fprintf(fp, "\n           ");
+                fprintf(fp, "\n          ");
             }
         }
 
         if(col > NCOLS) {
-            fprintf(fp, "\n          ");
+            fprintf(fp, "\n         ");
         }
 
-        fprintf(fp, "}%c\n", i < nrows - 1 ? ',' : ' ');
+        fprintf(fp, "}%c\n\n", i < nrows - 1 ? ',' : ' ');
     }
 
     fprintf(fp, "};\n");
@@ -588,7 +584,7 @@ PUBLIC void sys_printv(FILE *fp, char **argv)
 
 PUBLIC void sys_comment(FILE *fp, char **argv)
 {
-    fprintf(fp, "\n/*--------------------------------------------------------------\n");
+    fprintf(fp, "\n/*-----------------------------------------------------------------------\n");
     while(*argv) fprintf(fp, " * %s\n", *argv++);
     fprintf(fp, " */\n\n");
 }

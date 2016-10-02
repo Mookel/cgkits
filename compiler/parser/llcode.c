@@ -34,6 +34,8 @@
  *                 value of 1(0 is used for EOI).
  */
 
+#include <stdlib.h>
+#include <ctype.h>
 #include "parser.h"
 
 #define DTRAN "Yyd"  /*Name of DFA transition table*/
@@ -199,7 +201,7 @@ PRIVATE void make_yy_dtran()
 
         if(g_cmdopt.verbose) printf("%d bytes required for tables.\n", i * sizeof(YY_TTYPE));
     } else {
-        i = sys_pairs(g_output, _dtran, nnonterms, nterms, _dtran, g_cmdopt.threshold, 1);
+        i = sys_pairs(g_output, _dtran, nnonterms, nterms, DTRAN, g_cmdopt.threshold, 1);
         sys_pnext(g_output, DTRAN);
 
         if(g_cmdopt.verbose)
@@ -275,11 +277,11 @@ PRIVATE void make_yy_sact()
     } else {
         for(i = MINACT; i <= g_curract; ++i) {
             output("\"{%d}\"%c", i - MINACT, i < g_curract ? ',' : ' ');
-            if(i % 10 == 9) output("\n\t");
+            output("\n\t");
         }
     }
 
-    output("\n};\n");
+    output("};\n");
 }
 
 /*
@@ -303,23 +305,38 @@ PRIVATE void make_acts(SYMBOL_S *lhs)
         output("#line %d\"%s\"\n\t\t", lhs->lineno, g_input_file_name);
     }
 
+    output("        ");
     for(p = lhs->string; *p;) {
         if(*p == '\r') continue;
 
         if(*p != '$'){
             output("%c", *p++);
-        }else {
+        } else {
             /*skip the attribute reference. The if statement handles $$, the else
              *clause handles the two forms: $N and $-N, where N is a decimal number.
              * When you hit the do_dollar call, "num" holds the number assocaiated
              * with N, or DOLLAR_DOLLAR in the case of $$.
              */
 
-            //TODO: for occs;
+            if(*++p != '<') {
+                *fname = '\0';
+            } else {   /*TODO: deal with <field>*/
+
+            }
+
+            if(*p == '$') {  /* case of "$$" */
+                num  = DOLLAR_DOLLAR;
+                ++p;
+            } else {
+                num = atoi(p);
+                if(*p == '-') ++p;
+                while(isdigit(*p)) ++p;
+            }
+            output("%s", do_dollar(num, 0, 0, NULL, fname));
         }
     }
 
-    output("\n        break;\n");
+    output("\n            break;\n");
 }
 
 PRIVATE void make_yy_act()
@@ -333,8 +350,8 @@ PRIVATE void make_yy_act()
     static char *top[] = {
         "YYPRIVATE int yy_act(int actnum)",
         "{",
-        "   /*The actions. Returns 0 normally but a nonzero error code can be returned",
-        "    *if one of the acts causes the parser to terminate abnormally.",
+        "   /*The actions. Returns 0 normally but a nonzero error code can be ret-",
+        "    *-urned,if one of the acts causes the parser to terminate abnormally.",
         "    */",
         "",
         "    switch(actum) {",
@@ -342,9 +359,8 @@ PRIVATE void make_yy_act()
     };
 
     static char *bottom[] = {
-        "    default: printf(\"INTERNAL ERROR: Illegal action number (%s)\\n\",",
-        "                                                              actnum);",
-        "             break;",
+        "        default: printf(\"INTERNAL ERROR: Illegal action number (%d)\\n\", actnum);",
+        "            break;",
         "    }",
         "    return 0;",
         "}",

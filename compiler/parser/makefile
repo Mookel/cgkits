@@ -24,7 +24,7 @@ endif
 target: $(TARGET)
 
 COMMOBJ = main.o acts.o lexyy.o error.o first.o stok.o
-LLOBJ = lldriver.o llselect.o llfollow.o llcode.o
+LLOBJ = lldriver.o llselect.o llfollow.o llcode.o lldollar.o
 YYOBJ =
 
 LLPAR = llpar.o
@@ -63,6 +63,9 @@ llselect.o: llselect.c parser.h
 
 lldriver.o: lldriver.c parser.h
 	$(CC) -c $(CFLAGS) lldriver.c
+
+lldollar.o: lldollar.c parser.h
+	$(CC) -c $(CFLAGS) lldollar.c
 
 llpar.o: llpar.c parser.h
 	$(CC) -c $(CFLAGS) llpar.c
