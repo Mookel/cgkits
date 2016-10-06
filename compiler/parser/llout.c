@@ -539,7 +539,7 @@ char *Yy_sact[] =
 	"{26}",
 	"{27}",
 	"{28}" 
-	};
+};
 
  #endif
 
@@ -688,7 +688,7 @@ void yy_bss(char *fmt, ...)  /* Write to the bss-segment stream.  */
 #define  yy_pop()    	    ( ++Yy_vsp, yypop(Yy_stack) )
 #define  yy_next_token()	yylex()
 #define  yy_quit_debug()
-#define  yy_sym()
+#define  yy_sym(x)
 #define  yy_say_whats_happening(tos_item,prod)
 #define  yy_redraw_stack()
 #define  yy_pstack(refresh,print_it)
@@ -901,7 +901,7 @@ int yyparse(void)
 #line 119 "parser.lma"
 
 /* Support routines for the llama parser. The arguments must be declared void*
- * to get them to match the prototypes in l.h. They are really ponters to
+ * to get them to match the prototypes in l.h. They are really pointers to
  * yyvstypes, though.
  */
 

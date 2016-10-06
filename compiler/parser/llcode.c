@@ -277,7 +277,11 @@ PRIVATE void make_yy_sact()
     } else {
         for(i = MINACT; i <= g_curract; ++i) {
             output("\"{%d}\"%c", i - MINACT, i < g_curract ? ',' : ' ');
-            output("\n\t");
+            if(i == g_curract) {
+                output("\n");
+            } else {
+                output("\n\t");
+            }
         }
     }
 

@@ -194,7 +194,7 @@ PRIVATE void tail()
 
     output("%s", yytext);
 
-    if(g_cmdopt.no_lines)
+    if(!g_cmdopt.no_lines)
         output("\n#line %d \"%s\"\n", yylineno, g_input_file_name);
 
     ii_unterm();
