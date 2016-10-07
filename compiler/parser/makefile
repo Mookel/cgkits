@@ -34,6 +34,7 @@ LLPAR = llout.o
 llama : $(LLPAR) $(LLOBJ) $(COMMOBJ) 
 	$(CC) -o llama $(LLPAR) $(COMMOBJ) $(LLOBJ) $(CLIB) -lncurses
 	@echo "\033[31mOK, Building is successful.\033[0m"
+	cp llama $(BIN_DIR)/.
 	@rm -rf *.o
 
 #-----------------occs----------------------
