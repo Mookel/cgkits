@@ -68,8 +68,8 @@
 #define SYM_FILE          "yyout.sym"
 #define DOC_FILE          "yyout.doc"
 #define DEF_EXT           "ox"
-#define PAR_TEMPL         "occs.par"
-#define ACT_TEMPL         "occs-act.par"
+#define PAR_TEMPL         "occs.m"
+#define ACT_TEMPL         "occs-act.m"
 #define PROG_NAME         "occs"
 #endif
 
@@ -207,6 +207,7 @@ void      new_lev(int how);
 void      prec(char *name);
 void      union_def(char *action);
 void      prec_list(char *name);
+bool      fields_active(void);
 void      new_field(char *field_name);
 void      new_rhs();
 void      add_to_rhs(char *object, int is_an_action);

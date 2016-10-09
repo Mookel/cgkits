@@ -43,7 +43,7 @@ extern  int   yylineno;
 extern  char *yytext;
 extern  int   yylex();
 extern  void  ws();
-extern  int start_action();
+extern  int   start_action();
 
 /*local variables*/
 PRIVATE int _lookhead;
@@ -55,7 +55,6 @@ PRIVATE void definitions();
 PRIVATE void body();
 PRIVATE void right_sides();
 PRIVATE void rhs();
-PRIVATE void plex(int token);
 
 #define match(x) ((x) == _lookhead)
 

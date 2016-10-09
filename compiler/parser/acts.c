@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "parser.h"
 #include "llout.h"
@@ -23,8 +24,8 @@ PRIVATE char _field_name[NAME_MAX];
 PRIVATE bool _goal_symbol_is_next = false; /*If true, the next nonterminal is the goal symbol.*/
 
 #ifdef OCCS
-PRIVATE int  _associativity;
-PRIVATE int  _prec_lev = 0;
+PRIVATE int  _associativity;               /*current associativity direction*/
+PRIVATE int  _prec_lev = 0;                /*precedence level.Incremented after finding %left.*/
 PRIVATE bool _fields_active = false;       /*fields are used in the input.*/
 #endif
 
@@ -339,6 +340,93 @@ PUBLIC void new_field(char *field_name)
         lerror(NONFATAL, "<name> not supported by LLAMA.\n");
 }
 #else
+PUBLIC void add_synch(char *yytext)
+{
+    lerror(NONFATAL, "%%synch not supported by OCCS\n");
+}
+
+PUBLIC void new_lev(int how)
+{
+    if(_associativity = how) ++_prec_lev;
+}
+
+/*
+ * Add current name to the precision list.
+ * "_associativity" is set to 'l','r' or'n'.
+ * Also make a nonterminal if it doesn't exist already.
+ */
+PUBLIC void prec_list(char *name)
+{
+    SYMBOL_S *sym;
+    if(!(sym = (SYMBOL_S*) hash_find_sym(g_symtab, name)))
+        sym = make_term(name);
+
+    if(!ISTERM(sym)) {
+        lerror(NONFATAL, "%%left or %%right, %s must be a token\n", name);
+    } else {
+        g_precedence[sym->val].level = _prec_lev;
+        g_precedence[sym->val].assoc = _associativity;
+    }
+}
+
+/*
+ * Change the precedence level for the current right-hand side, using
+ * (1) an explicit number if one is specified.
+ * (2) an element from the precedence[] table otherwise.
+ */
+PUBLIC void prec(char *name)
+{
+    SYMBOL_S *sym;
+    if(isdigit(*name)) {
+        _sp->rhs->prec = atoi(name);
+    } else {
+        if(!(sym = (SYMBOL_S *)hash_find_sym(g_symtab, name))) {
+            lerror(NONFATAL, "%s (used in %%prec) undefined.\n");
+        } else if(!ISTERM(sym)){
+            lerror(NONFATAL, "%s (used in %%prec) must be terminal symbol\n");
+        } else {
+            _sp->rhs->prec = g_precedence[sym->val].level;
+        }
+    }
+}
+
+/*
+ * Create a YYSTYPE definition for the union, using the fields specified
+ * in the %union directive, and also appending a default integer-sized
+ * field for those situation where no field is attached to the current
+ * symbol.
+ */
+PUBLIC void union_def(char *action)
+{
+    while(*action && *action != '{') /*Get rid of everything up to the*/
+        ++action;                    /*open brace.*/
+    if(*action)                      /*and the brace itself.*/
+        ++action;
+
+    output("typedef union {\n");
+    output("\tint %s; /*Default field, used when no %%type found */", DEF_FIELD);
+    output("%s\n", action);
+    output("yystype; \n\n");
+    output("#define YYSTYPE yystype\n");
+    _fields_active = true;
+}
+
+PUBLIC bool fields_active(void)
+{
+    return _fields_active;
+}
+
+PUBLIC void new_field(char *field_name)
+{
+    char *p;
+
+    if(!*field_name){
+        *field_name = '\0';
+    } else {
+        if(p = strchr(++field_name, '>')) *p = '\0';
+        strncpy(_field_name, field_name, sizeof(_field_name));
+    }
+}
 
 #endif
 

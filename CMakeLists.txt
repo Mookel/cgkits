@@ -34,7 +34,7 @@ set(SOURCE_FILES
     compiler/parser/lldriver.c compiler/parser/llpar.c
     compiler/parser/first.c compiler/parser/llfollow.c
     compiler/parser/llselect.c compiler/parser/llcode.c
-    compiler/parser/stok.c compiler/parser/lldollar.c compiler/lib/yy_hook_a.c compiler/lib/yy_hook_b.c compiler/lib/yy_wrap.c compiler/lib/yy_pstk.c compiler/lib/yy_init_lex.c compiler/lib/yy_init_llama.c compiler/lib/yy_init_occs.c)
+    compiler/parser/stok.c compiler/parser/lldollar.c compiler/lib/yy_hook_a.c compiler/lib/yy_hook_b.c compiler/lib/yy_wrap.c compiler/lib/yy_pstk.c compiler/lib/yy_init_lex.c compiler/lib/yy_init_llama.c compiler/lib/yy_init_occs.c compiler/parser/yydriver.c)
 
 include_directories(.)
 include_directories(compiler)

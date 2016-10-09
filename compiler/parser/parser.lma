@@ -89,13 +89,16 @@ opt_names : NAME opt_names
 		  | /* empty */
 		  ;
 
-snames	: NAME { add_synch(yytext); } snames | /* empty */ ;
+snames	: NAME { add_synch(yytext); } snames
+        | /* empty */
+        ;
+
 rules	: rule rules
 		| /* empty */
 		;
 
-rule	: NAME  { new_nonterm(yytext,1); } COLON right_sides
-		| FIELD { new_nonterm(yytext,1); } COLON right_sides
+rule	: NAME  { new_nonterm(yytext,true); } COLON right_sides
+		| FIELD { new_nonterm(yytext,true); } COLON right_sides
 		;
 
 right_sides	: { new_rhs(); } rhs end_rhs

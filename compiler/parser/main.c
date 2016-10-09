@@ -211,7 +211,6 @@ PRIVATE void tail()
 }
 
 extern void nows(void); /*declared in parser.lex*/
-
 PRIVATE int do_file(void)
 {
     /*process the input file. return the number of errors.*/
