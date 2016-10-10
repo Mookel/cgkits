@@ -25,7 +25,8 @@ target: $(TARGET)
 
 COMMOBJ = main.o acts.o lexyy.o error.o first.o stok.o
 LLOBJ = lldriver.o llselect.o llfollow.o llcode.o lldollar.o
-YYOBJ = yydriver.o yypatch.o yycode.o yystate.o yydollar.o
+YYOBJ = yydriver.o yypatch.o yydollar.o
+#yycode.o yystate.o
 
 #LLPAR = llpar.o
 LLPAR = llout.o
@@ -39,7 +40,7 @@ llama : $(LLPAR) $(LLOBJ) $(COMMOBJ)
 
 #-----------------occs----------------------
 occs: llout.o $(YYOBJ) $(COMMOBJ)
-	$(CC) -o occs $(COMMOBJ) $(YYOBJ) $(CLIB) -lncurses
+	$(CC) -o occs llout.o $(COMMOBJ) $(YYOBJ) $(CLIB) -lncurses
 	@echo "\033[31mOK, Building is successful.\033[0m"
 	cp occs $(BIN_DIR)/.
 	@rm -rf *.o
@@ -75,6 +76,9 @@ yydriver.o: yydriver.c parser.h
 lldollar.o: lldollar.c parser.h
 	$(CC) -c $(CFLAGS) lldollar.c
 
+yydollar.o: yydollar.c parser.h
+	$(CC) -c $(CFLAGS) yydollar.c
+
 llpar.o: llpar.c parser.h
 	$(CC) -c $(CFLAGS) llpar.c
 
@@ -83,6 +87,9 @@ llcode.o:llcode.c parser.h
 
 llout.o: llout.c parser.h
 	$(CC) -c $(CFLAGS) llout.c
+
+yypatch.o : yypatch.c parser.h
+	$(CC) -c $(CFLAGS) yypatch.c
 
 lexyy.o: lexyy.c parser.h
 	$(CC) -c $(CFLAGS) lexyy.c

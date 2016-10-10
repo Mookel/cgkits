@@ -239,7 +239,7 @@ PRIVATE int do_file(void)
         ftime(&start_time);
         if(g_cmdopt.make_parser) {
             VERBOSE("making tables");
-            tables();
+            //tables();
         }
 
         ftime(&end_time);

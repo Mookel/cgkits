@@ -39,6 +39,7 @@ extern  int      sys_driver_2(FILE *output, int lines);
 extern  double   sys_mean(int reset, double sample, double *dev);
 extern  long     sys_stol (char **instr);
 extern  unsigned long sys_stoul(char **instr);
+extern  char*    sys_strdup(const char *string);
 extern  int*     sys_memiset(int *dst, int value, int count);
 
 /*For char/mext pairs, mainly used for compress a table.*/

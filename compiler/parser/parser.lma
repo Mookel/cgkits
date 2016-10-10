@@ -70,7 +70,7 @@ defs	: SYNCH snames defs
 		| /* empty */
 		;
 
-fnames	: NAME  { new_nonterm (yytext,0); } fnames
+fnames	: NAME  { new_nonterm (yytext,false); } fnames
 		| FIELD { new_field   (yytext);   } fnames
 		| /* empty */
 		;

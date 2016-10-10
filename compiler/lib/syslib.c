@@ -366,6 +366,16 @@ PUBLIC unsigned long sys_stoul(char **instr)
     return num;
 }
 
+PUBLIC char *sys_strdup(const char *string)
+{
+    if(!string) return string;
+
+    char *p = (char *)GC_MALLOC(strlen(string) + 1);
+    strcpy(p, string);
+
+    return p;
+}
+
 PUBLIC int *sys_memiset(int *dst, int value, int count)
 {
     int *targ;

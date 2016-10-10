@@ -48,7 +48,6 @@ PRIVATE void print_tok(FILE* stream, char *format, int arg);
 PRIVATE void pterm(SYMBOL_S *sym, FILE *stream);
 PRIVATE void pact(SYMBOL_S *sym, FILE *stream);
 PRIVATE void pnonterm(SYMBOL_S *sym, FILE *stream);
-PRIVATE char *production_str(PRODUCTION_S *prod);
 
 /*public interfaces*/
 PUBLIC void init_acts()
@@ -222,7 +221,7 @@ PUBLIC void add_to_rhs(char *object, int is_an_action)
             hash_add_sym(g_symtab, p);
             p->val = g_curract;
             p->lineno = (unsigned)is_an_action;
-            if (!(p->string = strdup(object)))
+            if (!(p->string = sys_strdup(object)))
                 lerror(FATAL, "Insufficient memory to save action\n");
         }
     }
@@ -421,7 +420,7 @@ PUBLIC void new_field(char *field_name)
     char *p;
 
     if(!*field_name){
-        *field_name = '\0';
+        *_field_name = '\0';
     } else {
         if(p = strchr(++field_name, '>')) *p = '\0';
         strncpy(_field_name, field_name, sizeof(_field_name));
@@ -429,6 +428,30 @@ PUBLIC void new_field(char *field_name)
 }
 
 #endif
+
+PUBLIC char *production_str(PRODUCTION_S *prod)
+{
+    int i, nchars, avail;
+    static char buf[256];
+    char *p;
+
+    nchars = sprintf(buf, "%s ->", prod->lhs->name);
+
+    p = buf + nchars;
+    avail = sizeof(buf) - nchars;
+
+    if(!prod->rhs_len){
+        sprintf(p, " (epsilon)");
+    } else {
+        for(i = 0;i < prod->rhs_len && avail > 0; ++i) {
+            nchars = snprintf(p, avail, " %s", prod->rhs[i]->name);
+            avail -= nchars;
+            p += nchars;
+        }
+    }
+
+    return buf;
+}
 
 PRIVATE bool c_identifier(char *name)
 {
@@ -483,30 +506,6 @@ PRIVATE void pact(SYMBOL_S *sym, FILE *stream)
     fprintf(stream, "\n");
 }
 
-PRIVATE char *production_str(PRODUCTION_S *prod)
-{
-    int i, nchars, avail;
-    static char buf[256];
-    char *p;
-
-    nchars = sprintf(buf, "%s ->", prod->lhs->name);
-
-    p = buf + nchars;
-    avail = sizeof(buf) - nchars;
-
-    if(!prod->rhs_len){
-        sprintf(p, " (epsilon)");
-    } else {
-        for(i = 0;i < prod->rhs_len && avail > 0; ++i) {
-            nchars = snprintf(p, avail, " %s", prod->rhs[i]->name);
-            avail -= nchars;
-            p += nchars;
-        }
-    }
-
-    return buf;
-}
-
 PRIVATE void pnonterm(SYMBOL_S *sym, FILE *stream)
 {
     PRODUCTION_S *p;
@@ -524,25 +523,31 @@ PRIVATE void pnonterm(SYMBOL_S *sym, FILE *stream)
 
     if(g_cmdopt.symbols > 1) {   /*more printed.*/
         fprintf(stream, "\tFIRST: ");
-        set_print(sym->first, (fp_set_prnt) print_tok, stream);
+        set_print(sym->first, (fp_set_prnt)print_tok, stream);
 
         LL(fprintf(stream, "\n\tFOLLOW: ");)
         LL(set_print(sym->follow, (fp_set_prnt)print_tok, stream); )
         fprintf(stream, "\n");
     }
 
+    /*
+     * Productions are put into the SYMBOL in reverse order because it's easier
+     * to track them on to the beginning of the linked list.
+     * It's better to print them in forward order by using a stack.
+     */
     for(p = sym->productions; p ; p = p->next) push(pstack, p);
-
     while(!stack_empty(pstack)) {
         p = pop(pstack);
         chars_printed = fprintf(stream, "\t%3d: %s", p->num, production_str(p));
 
-        LL(for(; chars_printed <= 50; ++chars_printed))
-        LL(putc('.', stream);)
+        LL(for(; chars_printed <= 50; ++chars_printed) putc('.',stream);)
         LL(fprintf(stream, ".SELECT: ");)
         LL(set_print(p->select, (fp_set_prnt)print_tok, stream);)
 
-        //TODO: output occs
+        OX(if(p->prec) {);
+        OX(    for(; chars_printed <= 60; ++chars_printed) putc('.', stream); )
+        OX(    fprintf(stream, "PREC %d", p->prec);)
+        OX(})
 
         putc('\n', stream);
     }

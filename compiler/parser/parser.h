@@ -216,6 +216,7 @@ SYMBOL_S *new_nonterm(char *name, bool is_lhs);
 void      start_opt(char *lex);
 void      end_opt(char *lex);
 void      print_symbols(FILE *stream);
+char     *production_str(PRODUCTION_S *prod);
 
 /*---------6.common: stok.c--------------*/
 void make_yy_stok();
@@ -234,5 +235,10 @@ void driver();
 
 /*---10.llama: lldollar.c + occs: yydollar.c----*/
 char *do_dollar(int num, int rhs_size, int lineno, PRODUCTION_S *prod, char *field);
+
+#ifdef OCCS
+/*---11. occs: yypatch.c */
+void patch(void);
+#endif
 
 #endif //CGKITS_PARSER_H_H
