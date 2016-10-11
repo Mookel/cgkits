@@ -1,3 +1,7 @@
+# Created by Mookel on 16/9/30.
+# Email : ltp0709@sina.com 
+# Copyright (c) 2016 jlu.edu. All rights reserved.
+
 INC_SYS_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 GC_INC_SYS_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/include
 GC_LIB_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/lib
@@ -25,8 +29,8 @@ target: $(TARGET)
 
 COMMOBJ = main.o acts.o lexyy.o error.o first.o stok.o
 LLOBJ = lldriver.o llselect.o llfollow.o llcode.o lldollar.o
-YYOBJ = yydriver.o yypatch.o yydollar.o
-#yycode.o yystate.o
+YYOBJ = yydriver.o yypatch.o yydollar.o yycode.o
+#yystate.o
 
 #LLPAR = llpar.o
 LLPAR = llout.o
@@ -84,6 +88,9 @@ llpar.o: llpar.c parser.h
 
 llcode.o:llcode.c parser.h
 	$(CC) -c $(CFLAGS) llcode.c
+
+yycode.o: yycode.c parser.h
+	$(CC) -c $(CFLAGS) yycode.c
 
 llout.o: llout.c parser.h
 	$(CC) -c $(CFLAGS) llout.c

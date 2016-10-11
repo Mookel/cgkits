@@ -81,7 +81,8 @@ PRIVATE void first_closure(SYMBOL_S *lhs)
         }
 
         for(y = prod->rhs, i = prod->rhs_len; --i >= 0; y++) {
-           if(ISACT(*y)) continue;
+
+            if(ISACT(*y)) continue;
 
             if(ISTERM(*y)){
                 SET_ADD(set, (*y)->val);

@@ -40,7 +40,6 @@ PUBLIC void follow()
      * easier to just add epsilon in the previous steps than try to filter it out
      * here. This last pass just removes epsilon from all the FOLLOW sets.
      */
-
     hash_print_tab(g_symtab, (fp_tab_print_t)remove_epsilon, NULL, 0);
     D(printf("Follow set computation done.\n"));
 }

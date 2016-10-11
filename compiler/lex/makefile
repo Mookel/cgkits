@@ -1,3 +1,7 @@
+# Created by Mookel on 16/9/30.
+# Email : ltp0709@sina.com 
+# Copyright (c) 2016 jlu.edu. All rights reserved.
+
 INC_SYS_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/include
 GC_INC_SYS_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/include
 GC_LIB_DIR  = /Users/mookel/Workspace/CompilerPro/private/cgkits/gc/lib

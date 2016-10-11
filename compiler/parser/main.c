@@ -197,13 +197,40 @@ PRIVATE void tail()
     if(!g_cmdopt.no_lines)
         output("\n#line %d \"%s\"\n", yylineno, g_input_file_name);
 
-    ii_unterm();
+    ii_unterm(); /*LeX will have terminated yytext.*/
     while((c = ii_advance()) != 0) {
         if(c == -1) {
-            ii_flush(i);
+            ii_flush(1);
             continue;
-        } else if(c == '$') {
-            //TODO: occs
+        } else if(c == '$') {   /*occs allow $N in third part of the input file, fuck!*/
+            ii_mark_start();
+
+            if((c = ii_advance()) != '<'){
+                *fname = '\0';
+            } else {  /*extract name in $<foo>1 */
+                p = fname;
+                for(i = sizeof(fname); --i > 0 && (c = ii_advance()) != '>';)
+                    *p++ = c;
+                *p++ = '\0';
+
+                if(c == '>') c = ii_advance();
+            }
+
+            if(c == '$') {
+                output(do_dollar(DOLLAR_DOLLAR, -1, 0, NULL, fname));
+            } else {
+                if(c != '-') {
+                    sign = 1;
+                } else {
+                    sign = -1;
+                    c = ii_advance();
+                }
+
+                for(i = 0; isdigit(c); c = ii_advance())
+                    i = (i * 10) + (c - '0');
+                ii_pushback(1);
+                output(do_dollar(i * sign, -1, ii_lineno(), NULL, fname));
+            }
         } else if(c != '\r') {
             outc(c);
         }
@@ -239,7 +266,7 @@ PRIVATE int do_file(void)
         ftime(&start_time);
         if(g_cmdopt.make_parser) {
             VERBOSE("making tables");
-            //tables();
+            tables();
         }
 
         ftime(&end_time);

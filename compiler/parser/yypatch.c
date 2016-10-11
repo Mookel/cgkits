@@ -88,9 +88,6 @@ PUBLIC  void patch()
  * the action string there, but this is both a needless waste of memory and an
  * unnecessary complication because the strings will be attached to a production
  * number and once we know that number, there is not point in keeping them around.
- *
- *
- *
  */
 PRIVATE void dopatch(SYMBOL_S *sym)
 {
@@ -126,7 +123,6 @@ PRIVATE void dopatch(SYMBOL_S *sym)
             if(g_currnonterm >= MAXNONTERM) {
                 error(FATAL, "Too many nonterminals & actions (%d max).\n", MAXNONTERM);
             } else  {
-
                 /*Transform the action into a nonterminal*/
                 g_terms[cur->val = ++g_currnonterm] = cur;
                 cur->productions = (PRODUCTION_S*)GC_MALLOC(sizeof(PRODUCTION_S));
@@ -144,7 +140,6 @@ PRIVATE void dopatch(SYMBOL_S *sym)
                 cur->first = set_new();
                 SET_ADD(cur->first, EPSILON);
             }
-
         }
     }
 }

@@ -26,11 +26,11 @@ PUBLIC char *do_dollar(int num, int rhs_size, int lineno, PRODUCTION_S *prod, ch
                 sprintf(buf+6, ".%s", DEF_FIELD);
             }
         }
-    } else {                   /*$N*/
+    } else {                   /*handle $N*/
         if(num < 0) ++num;
-        if(rhs_size < 0) {
+        if(rhs_size < 0) {     /*handle $N in tail.*/
             sprintf(buf, "Yy_vsp[ Yy_rhslen-%d ]", num);
-        } else {
+        } else {               /*handle $N in production.*/
             if((i = rhs_size - num) < 0) {
                 error(WARNING, "Line %d: Illegal $%d in production.\n", lineno, num);
             } else {

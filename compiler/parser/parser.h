@@ -237,8 +237,13 @@ void driver();
 char *do_dollar(int num, int rhs_size, int lineno, PRODUCTION_S *prod, char *field);
 
 #ifdef OCCS
-/*---11. occs: yypatch.c */
-void patch(void);
+/*---11.occs: yypatch.c */
+void patch();
+
+/*---12.occs: yystate.c */
+void lr_stats(FILE *fp);
+int  lr_conflicts(FILE *fp);
+void make_parse_tables();
 #endif
 
 #endif //CGKITS_PARSER_H_H
