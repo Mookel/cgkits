@@ -5,7 +5,7 @@ Three compiler-generation tools originally written by Allen I. Holub are refacto
 
 - LeX: a tool like flex/lex, used for lexical analysis.
 - LLAMA: a LL(1) parser generation tool.
-- OCCS: a LALR(1) parser generation tool just like bison, used for syntax analysis.
+- OCCS: a LALR(1) parser generation tool just like yacc/bison, used for syntax analysis.
 
 They were originally written in old C style by Allen in 1992 based on DOS and Unix platform.These tools are fantasty, but unfortunately the source code is very hard going and tools are not fit in modern platforms. To learn how this tools are built and make them available on modern platforms, I decided to refactor all of them.
 
