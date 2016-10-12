@@ -36,11 +36,13 @@ extern  int      sys_driver_2(FILE *output, int lines);
 /*Compute the mean of a bunch of samples. reset must be set true the first time and
  * after set reset to false. *dev is modified to hold the standard deviation.
  * */
+typedef int (*fp_cmp_func_t)(void *, void *);
 extern  double   sys_mean(int reset, double sample, double *dev);
 extern  long     sys_stol (char **instr);
 extern  unsigned long sys_stoul(char **instr);
 extern  char*    sys_strdup(const char *string);
 extern  int*     sys_memiset(int *dst, int value, int count);
+extern  void     sys_ssort(void **base, int nel, int elsize, fp_cmp_func_t cmp);
 
 /*For char/mext pairs, mainly used for compress a table.*/
 typedef int ATYPE;   /*type of input tables*/

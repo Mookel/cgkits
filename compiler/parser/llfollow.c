@@ -82,7 +82,7 @@ PRIVATE void init(SYMBOL_S *lhs)
                     if(ISACT(*y)) continue;
 
                     if(ISTERM(*y)){
-                        D(printf("\tAdding %s ", (*y)_>name);)
+                        D(printf("\tAdding %s ", (*y)->name);)
                         D(printf("to FOLLOW(%s)\n", (*x)->name);)
                         SET_ADD((*x)->follow, (*y)->val); break;
                     } else {

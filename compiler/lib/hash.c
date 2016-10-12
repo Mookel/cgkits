@@ -63,7 +63,7 @@ PUBLIC void hash_free_sym(void *sym)
     }
 }
 
-PUBLIC HASH_TAB_S *hash_make_tab(unsigned max_sym, fp_hash_t fp_hash, fp_cmp_t fp_cmp)
+PUBLIC HASH_TAB_S *hash_make_tab(unsigned max_sym, fp_hash_t fp_hash, fp_hash_cmp_t fp_cmp)
 {
     HASH_TAB_S *p = NULL;
 
@@ -121,7 +121,7 @@ PUBLIC void hash_del_sym(HASH_TAB_S *p_tab, void *p_sym)
 
 PUBLIC void *hash_find_sym(HASH_TAB_S *p_tab, void *p_sym)
 {
-    if(!p_tab || !p_sym) return NULL;
+    if(!p_tab) return NULL;
 
     BUCKET_S *p;
 
@@ -154,7 +154,7 @@ PUBLIC void hash_free_tab(HASH_TAB_S *p_tab)
     }
 }
 
-PRIVATE fp_cmp_t _user_cmp_func_;
+PRIVATE fp_hash_cmp_t _user_cmp_func_;
 PRIVATE int _bucket_cmp_func(BUCKET_S **p1, BUCKET_S **p2)
 {
     return (*_user_cmp_func_)((void *)(*p1 + 1), (void *)(*p2 + 1));

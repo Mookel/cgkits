@@ -160,11 +160,11 @@ PRIVATE void statistics(FILE *fp)
         fprintf(fp, "%4d/%-4d nonterminals\n", USED_NONTERMS, NUMNONTERMS);
         fprintf(fp, "%4d/%-4d productions\n",  g_num_productons, MAXPROD);
         LL(fprintf(fp, "%4d        actions\n", (g_curract - MINACT) + 1);)
-        //TODO: occs
+        OX(lr_stats(fp);)
     }
 
     LL(conflicts = 0;)
-    //TODO: occs
+    OX(conflicts = lr_conflicts(fp);)
 
     if(fp == stdout) fp = stderr;
 

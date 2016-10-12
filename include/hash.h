@@ -15,7 +15,7 @@ typedef struct BUCKET_
 }BUCKET_S;
 
 typedef unsigned (*fp_hash_t)(void *);
-typedef int(*fp_cmp_t)(void *, void *);
+typedef int(*fp_hash_cmp_t)(void *, void *);
 typedef void (*fp_tab_print_t) (void *, ...);
 
 typedef struct HASH_TAB_
@@ -23,13 +23,13 @@ typedef struct HASH_TAB_
     int max_size;                      /*max number of elements in table*/
     int curr_num;                      /*current number of elements in table*/
     fp_hash_t fp_hash;                 /*hash function*/
-    fp_cmp_t  fp_cmp;                  /*compare function, cmp(name, p_backet)*/
+    fp_hash_cmp_t  fp_cmp;                  /*compare function, cmp(name, p_backet)*/
     BUCKET_S *table[1];                /*first element of actual hash table*/
 
 }HASH_TAB_S;
 
 /*global interface*/
-extern HASH_TAB_S *hash_make_tab(unsigned max_sym, fp_hash_t fp_hash, fp_cmp_t fp_cmp);
+extern HASH_TAB_S *hash_make_tab(unsigned max_sym, fp_hash_t fp_hash, fp_hash_cmp_t fp_cmp);
 extern void        *hash_new_sym(int sym_size);
 extern void        hash_free_sym(void *sym);
 extern void        *hash_add_sym(HASH_TAB_S *hash_tab, void *sym);

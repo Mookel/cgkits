@@ -151,7 +151,7 @@ PRIVATE void print_one_case(int case_val, char *action, int rhs_size,
                             int lineno, PRODUCTION_S *prod)
 {
     int num, i;
-    char *fname[80], *fp;
+    char fname[80], *fp;
 
     if(!g_cmdopt.make_actions) return;
 

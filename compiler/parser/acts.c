@@ -56,7 +56,7 @@ PUBLIC void init_acts()
     strcpy(bogus_symbol.name, "End of Input");
     g_terms[0] = &bogus_symbol;
 
-    g_symtab = hash_make_tab(157, hash_pjw, strcmp);
+    g_symtab = hash_make_tab(157, (fp_hash_t)hash_pjw, (fp_hash_cmp_t)strcmp);
     LL(g_synch = set_new();)
 }
 

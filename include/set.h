@@ -9,6 +9,7 @@
 #define CGKITS_SET_H
 
 #include <debug.h>
+#include <string.h>
 
 typedef unsigned _SETTYPE;
 typedef int (*fp_set_prnt) (void *para, char *fmt, int val);

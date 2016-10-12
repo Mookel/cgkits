@@ -244,6 +244,7 @@ void patch();
 void lr_stats(FILE *fp);
 int  lr_conflicts(FILE *fp);
 void make_parse_tables();
+
 #endif
 
 #endif //CGKITS_PARSER_H_H

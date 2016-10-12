@@ -9,7 +9,7 @@ LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 BIN_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/bin
 LEX = $(BIN_DIR)/lex
 
-CFLAGS = $(PROG) -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR)
+CFLAGS = $(PROG) -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR) -DDEBUG
 CLIB = $(LIB_DIR)/complib.a $(GC_LIB_DIR)/libgc.a $(LIB_DIR)/llib.a
 CC = gcc
 
@@ -29,8 +29,7 @@ target: $(TARGET)
 
 COMMOBJ = main.o acts.o lexyy.o error.o first.o stok.o
 LLOBJ = lldriver.o llselect.o llfollow.o llcode.o lldollar.o
-YYOBJ = yydriver.o yypatch.o yydollar.o yycode.o
-#yystate.o
+YYOBJ = yydriver.o yypatch.o yydollar.o yycode.o yystate.o
 
 #LLPAR = llpar.o
 LLPAR = llout.o
@@ -97,6 +96,9 @@ llout.o: llout.c parser.h
 
 yypatch.o : yypatch.c parser.h
 	$(CC) -c $(CFLAGS) yypatch.c
+
+yystate.o : yystate.c parser.h
+	$(CC) -c $(CFLAGS) yystate.c
 
 lexyy.o: lexyy.c parser.h
 	$(CC) -c $(CFLAGS) lexyy.c
