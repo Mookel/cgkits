@@ -497,7 +497,7 @@ PRIVATE int item_cmp(ITEM_S **item1p, ITEM_S **item2p)
  * Move the epsilon items from the closure_items set to the kernel of the
  * current state. If epsilon items already exist in the current state,just
  * merge the lookaheads. Note that,because the closure items were sorted
- * ot partition them, the epsilon productions in the closure_items set
+ * to partition them, the epsilon productions in the closure_items set
  * will be in the same order as those already in the kernel. Return the
  * number of items that were moved.
  */
@@ -783,7 +783,7 @@ PRIVATE int lr(STATE_S *cur_state)
      * (1) closure -> adds normal closure items to closure_items array.
      * (2) kclosure -> adds to that set all items in the kernel that have
      *     outgoing transitions(ie. whose dots aren't at the far right.)
-     * (3) sort    -> sorts the closure items by the symbol to the right
+     * (3) sort -> sorts the closure items by the symbol to the right
      *     of the dot. Epsilon transitions will sort to the head of the
      *     list, followed by transitions on nonterminals, followed by
      *     transitions on terminals.
