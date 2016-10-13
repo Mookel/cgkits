@@ -497,7 +497,7 @@ PRIVATE int item_cmp(ITEM_S **item1p, ITEM_S **item2p)
  * Move the epsilon items from the closure_items set to the kernel of the
  * current state. If epsilon items already exist in the current state,just
  * merge the lookaheads. Note that,because the closure items were sorted
- * ot partition them, the epsilon productions in the closure_items set
+ * to partition them, the epsilon productions in the closure_items set
  * will be in the same order as those already in the kernel. Return the
  * number of items that were moved.
  */
