@@ -8,7 +8,7 @@ CC      = gcc
 COM_OBJS = com.o
 COMPLIB_OBJS    = hash.o set.o syslib.o
 LLIB_OBJS       = input.o yy_hook_a.o yy_hook_b.o yy_pstk.o yy_wrap.o yy_init_lex.o yy_init_llama.o yy_init_occs.o yydebug.o
-COMPILING_FLAGS = -I$(SYS_INC_DIR) -I$(GC_INC_DIR)
+CFLAGS = -I$(SYS_INC_DIR) -I$(GC_INC_DIR) -Wall
 AR = ar
 COMPLIB = complib.a
 LLIB    = llib.a
@@ -26,43 +26,43 @@ $(LLIB): $(LLIB_OBJS) $(COM_OBJS)
 	rm -rf $(LLIB_OBJS) $(COM_OBJS)
 
 hash.o: hash.c $(SYS_INC_DIR)/hash.h $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) hash.c
+	$(CC) -c $(CFLAGS) hash.c
 
 set.o: set.c $(SYS_INC_DIR)/set.h $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) set.c
+	$(CC) -c $(CFLAGS) set.c
 
 syslib.o: syslib.c $(SYS_INC_DIR)/syslib.h
-	$(CC) -c $(COMPILING_FLAGS) syslib.c
+	$(CC) -c $(CFLAGS) syslib.c
 
 input.o: input.c $(SYS_INC_DIR)/input.h
-	$(CC) -c $(COMPILING_FLAGS) input.c
+	$(CC) -c $(CFLAGS) input.c
 
 yy_hook_a.o: yy_hook_a.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_hook_a.c
+	$(CC) -c $(CFLAGS) yy_hook_a.c
 
 yy_hook_b.o: yy_hook_b.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_hook_b.c
+	$(CC) -c $(CFLAGS) yy_hook_b.c
 
 yy_wrap.o: yy_wrap.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_wrap.c
+	$(CC) -c $(CFLAGS) yy_wrap.c
 
 yy_pstk.o: yy_pstk.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_pstk.c
+	$(CC) -c $(CFLAGS) yy_pstk.c
 
 yy_init_lex.o: yy_init_lex.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_init_lex.c
+	$(CC) -c $(CFLAGS) yy_init_lex.c
 
 yy_init_llama.o: yy_init_llama.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_init_llama.c
+	$(CC) -c $(CFLAGS) yy_init_llama.c
 
 yy_init_occs.o: yy_init_occs.c $(SYS_INC_DIR)/debug.h
-	$(CC) -c $(COMPILING_FLAGS) yy_init_occs.c	
+	$(CC) -c $(CFLAGS) yy_init_occs.c	
 
 yydebug.o: yydebug.c $(SYS_INC_DIR)/yydebug.h
-	$(CC) -c $(COMPILING_FLAGS) yydebug.c
+	$(CC) -c $(CFLAGS) yydebug.c
 
 com.o: com.c $(SYS_INC_DIR)/com.h
-	$(CC) -c $(COMPILING_FLAGS) com.c
+	$(CC) -c $(CFLAGS) com.c
 
 clean:
 	rm -rf $(COMPLIB_OBJS)

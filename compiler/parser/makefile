@@ -9,7 +9,7 @@ LIB_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/libary
 BIN_DIR = /Users/mookel/Workspace/CompilerPro/private/cgkits/bin
 LEX = $(BIN_DIR)/lex
 
-CFLAGS = $(PROG) -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR) -DDEBUG
+CFLAGS = $(PROG) -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR) -Wall
 CLIB = $(LIB_DIR)/complib.a $(GC_LIB_DIR)/libgc.a $(LIB_DIR)/llib.a
 CC = gcc
 

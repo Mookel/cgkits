@@ -110,7 +110,7 @@ PRIVATE int    state_cmp(STATE_S *new, STATE_S *tab_node);
 PRIVATE ACT_S  *newact();
 PRIVATE ITEM_S *newitem(PRODUCTION_S *prod);
 PRIVATE void   freeitem(ITEM_S *item);
-PRIVATE void   free_recycled_item(void);
+PRIVATE void   free_recycled_items(void);
 PRIVATE int    newstate(ITEM_S **items, int nitems, STATE_S **statep);
 
 /*closure-relative functions*/
@@ -128,7 +128,7 @@ PRIVATE int    move_eps(STATE_S *cur_state, ITEM_S **closure_items, int nclose);
 PRIVATE void   movedot(ITEM_S *item);
 PRIVATE void   add_action(int state, int input_sym, int do_this);
 PRIVATE void   add_goto(int state, int nonterminal, int go_here);
-PRIVATE int    merge_lookaheads(ITEM_S **dst_items, ITEM_S **src_items, int nitems);
+PRIVATE bool   merge_lookaheads(ITEM_S **dst_items, ITEM_S **src_items, int nitems);
 PRIVATE int    lr(STATE_S *cur_state);
 
 /*reduction-relative functions*/
@@ -343,7 +343,7 @@ PRIVATE void freeitem(ITEM_S *item)
 /*
  * Free all items in free-list.
  */
-PRIVATE void free_recycled_item(void)
+PRIVATE void free_recycled_items(void)
 {
     ITEM_S *p;
 
@@ -674,16 +674,101 @@ PRIVATE int kclosure(STATE_S *kernel, ITEM_S **closure_items, int maxitems, int 
 }
 
 /*
+ * Moves the dot one position to the right and updates the right_of_dot
+ * symbol.
+ */
+PRIVATE void movedot(ITEM_S *item)
+{
+    D(if(item->right_of_dot == NULL))
+    D(    error(FATAL, "Illegal movedot() call on epsilon production.");)
+
+    item->right_of_dot = (item->prod->rhs)[++item->dot_posn];
+}
+
+/*
+ * Add an element to the action part of the parse table. The cell is indexed
+ * by state number and input symbol, and holds do_this.
+ */
+PRIVATE void add_action(int state, int input_sym, int do_this)
+{
+    ACT_S *p;
+    if(g_cmdopt.verbose > 1)
+        printf("Adding shift or reduce action from state %d: %d on %s.\n",
+        state, do_this, g_terms[input_sym]->name);
+
+    p = newact();
+    p->sym = input_sym;
+    p->do_this = do_this;
+    p->next = _actions[state];
+    _actions[state] = p;
+}
+
+/*
+ * Add an element to the goto part of the parse table, the cell is indexed
+ * by current state number and nonterminal value ,and holds go_there, Note
+ * that the input nonterminal value is the one that appears in the symbol
+ * table. It is adjusted downwards(so that the smallest nonterminal will
+ * have the value 0) befor being inserted into the table.
+ */
+PRIVATE void add_goto(int state, int nonterminal, int go_here)
+{
+    GOTO *p;
+    int unadjusted;
+
+    unadjusted = nonterminal;
+    nonterminal = ADJ_VAL(nonterminal);
+
+    if(g_cmdopt.verbose > 1)
+        printf("Adding goto from state %d to %d on %s.\n",
+        state, go_here, g_terms[unadjusted]->name);
+    p = newact();
+    p->sym = nonterminal;
+    p->do_this = go_here;
+    p->next = _gotos[state];
+    _gotos[state] = p;
+}
+
+/*
+ * The routine is called if newstate has determined that a state having the
+ * specified items already exists. If this is the case, the item list in the
+ * STATE and the current item list will be identical in all respects expcept
+ * lookaheads. This routine merges the lookahead of the input items(src_itesm)
+ * to the items already in the state(dst_items). false is returned if nothing
+ * was done, true otherwise.
+ */
+PRIVATE bool merge_lookaheads(ITEM_S **dst_items, ITEM_S **src_items, int nitems)
+{
+    bool did_something = false;
+
+    while(--nitems >= 0) {
+        if(((*dst_items)->prod != (*src_items)->prod)
+                || (*dst_items)->dot_posn != (*src_items)->dot_posn){
+            error(FATAL, "INTERNAL ERROR: [merge_lookaheads], item mismatched\n");
+        }
+
+        if(!set_subset((*dst_items)->lookaheads, (*src_items)->lookaheads)) {
+            did_something = true;
+            SET_UNION((*dst_items)->lookaheads, (*src_items)->lookaheads);
+        }
+
+        ++dst_items;
+        ++src_items;
+    }
+
+    return did_something;
+}
+
+/*
  * Make LALR(1) state machine.The shifts and gotos are done here, the
  * reductions are done elsewhere.Return the number fo states.
  */
-int lr(STATE_S *cur_state)
+PRIVATE int lr(STATE_S *cur_state)
 {
     ITEM_S **p;
     ITEM_S **first_item;
     ITEM_S *closure_items[MAXCLOSE];
     STATE_S *next;     /*next state.*/
-    bool is_next_new;  /*next state is a new state*/
+    int  isnew;        /*next state is a new state*/
     int  nclose;       /*number of items in closure_items*/
     int  nitems;       /*number of items with same symbol to right of dot*/
     int val;           /*value of symbol to right of dot.*/
@@ -724,10 +809,62 @@ int lr(STATE_S *cur_state)
             if(g_cmdopt.verbose > 1) ;//pclosure(cur_state, p, nclose);
         }
 
-        //To be continued.
+        while(nclose > 0) {
+            first_item = p;
+            sym = (*first_item)->right_of_dot;
+            val = sym->val;
 
+            /*
+             * Collect all items with the same symbol to the right of the dot.
+             * On exiting the loop, nitems will hold the number of those items
+             * and p will point at the first nonmatching item.Finally nclose is
+             * decremented by nitems, items = 0;
+             */
+            nitems = 0;
+            do{
+                movedot(*p++);
+                ++nitems;
+            } while(--nclose > 0 && RIGH_OF_DOT(*p) == val);
+
+            /*
+             * Following will do the work:
+             * (1) newstate() gets the next state. It returns NEW if the state
+             * didn't exist previously, CLOSED if LR(0) closure has been performed
+             * on the state, UNCLOSED otherwise.
+             * (2) Add a transition from the current state to the next state.
+             * (3) If it's a brand-new state, add it to the unfinished list.
+             * (4) Otherwise merge the lookaheads created by the current closure
+             * operation with the ones already in the state.
+             * (5) If The merge operation added lookaheads to the existing set,
+             * add it to the unfinished list.
+             */
+            isnew = newstate(first_item, nitems, &next);
+            if(!cur_state->closed) {
+                if(ISTERM(sym)) {
+                    add_action(cur_state->num, val, next->num);
+                } else {
+                    add_goto(cur_state->num, val, next->num);
+                }
+            }
+
+            if(isnew == NEW) {
+                add_unfinished(next);
+            } else {
+                if(merge_lookaheads(next->kernel_items, first_item, nitems)) {
+                    add_unfinished(next);
+                    ++nlr;
+                }
+                while(--nitems >= 0) freeitem(*first_item++);
+            }
+            fprintf(stderr, "\rLR:%-3d LALR:%-3d\n", _nstates + nlr, _nstates);
+        }
+        cur_state->closed = 1;
     }
 
-    return 1;
+    free_recycled_items();
+    if(g_cmdopt.verbose)
+        fprintf(stderr, "states, %d items, %d shift and goto transitions.\n", _nitems, _ntab_entries);
+
+    return _nstates;
 }
 

@@ -12,37 +12,37 @@ CC      = gcc
 OBJ     = lex.o input.o nfa.o terp.o dfa.o mindfa.o print.o
 COMM_HEADER = tydef.h globals.h
 LIBCONFIG = $(LIB_DIR)/complib.a $(GC_LIB_DIR)/libgc.a 
-COMPILING_CFLAGS = -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR)
+CFLAGS = -I$(INC_SYS_DIR) -I$(GC_INC_SYS_DIR) -Wall
 
 all:$(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) -o $@ $(COMPILING_CFLAGS) $(OBJ) $(LIBCONFIG)
+	$(CC) -o $@ $(OBJ) $(LIBCONFIG)
 	@rm -rf $(BIN_DIR)/$(TARGET)
 	@cp $(TARGET) $(BIN_DIR)
 	@rm -rf $(TARGET)
 	@rm -rf $(OBJ)
 
 lex.o: lex.c $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) lex.c
+	$(CC) -c $(CFLAGS) lex.c
 
 input.o: input.c $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) input.c
+	$(CC) -c $(CFLAGS) input.c
 
 nfa.o: nfa.c nfa.h $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) nfa.c
+	$(CC) -c $(CFLAGS) nfa.c
 
 terp.o: terp.c terp.h $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) terp.c
+	$(CC) -c $(CFLAGS) terp.c
 
 dfa.o: dfa.c dfa.h $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) dfa.c
+	$(CC) -c $(CFLAGS) dfa.c
 
 mindfa.o: mindfa.c mindfa.h $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) mindfa.c
+	$(CC) -c $(CFLAGS) mindfa.c
 
 print.o: print.c print.h $(COMM_HEADER)
-	$(CC) -c $(COMPILING_CFLAGS) print.c
+	$(CC) -c $(CFLAGS) print.c
 
 clean:
 	rm -rf $(OBJ)
