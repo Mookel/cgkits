@@ -80,7 +80,7 @@ PRIVATE void parse_args(int argc, char **argv)
     "-t         print all (T)ables (and the parser) to standard output",
     "-T         move large tables form yyout.c to yyoutab.c",
     "-v         print (V)erbose diagnostics (including symbol table)",
-    "-V         more verbos than -v. Implies -t, & yyout.doc goes to stderr",
+    "-V         more verbos than -v. Implies -t & yyout.doc goes to stderr",
     "-w         suppress all warning messages",
     "-W         warnings (as well as errors) generate nonzero exit status",
     "\n",
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
     OX(    e_init();)
 
     /*2. setting output file name and output stream*/
-    if(g_cmdopt.use_stdout) {   /*-t*/
+    if(g_cmdopt.use_stdout) {    /*-t*/
         _output_file_name = "/dev/tty";
         g_output = stdout;
     } else {

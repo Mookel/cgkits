@@ -12,7 +12,7 @@
 /*-----------------various macro definitions--------------*/
 
 #define MAXSTATE        1024 /*max number of LALR(1) states.*/
-#define MAXOBUF         512  /*buffer size for various output routines.*/
+#define MAXOBUF         256  /*buffer size for various output routines.*/
 
 #define MAXKERNEL       64   /*maximum number of kernel items in a state. */
 #define MAXCLOSE        256  /*maximum number of closure items in a state.*/
@@ -126,7 +126,9 @@ PRIVATE STATE_S *get_unfinished(void);
 PRIVATE int    item_cmp(ITEM_S **item1p, ITEM_S **item2p);
 PRIVATE int    move_eps(STATE_S *cur_state, ITEM_S **closure_items, int nclose);
 PRIVATE void   movedot(ITEM_S *item);
+PRIVATE ACT_S *p_action(int state, int input_sym);
 PRIVATE void   add_action(int state, int input_sym, int do_this);
+PRIVATE GOTO  *p_goto(int state, int nonterminal);
 PRIVATE void   add_goto(int state, int nonterminal, int go_here);
 PRIVATE bool   merge_lookaheads(ITEM_S **dst_items, ITEM_S **src_items, int nitems);
 PRIVATE int    lr(STATE_S *cur_state);
@@ -141,19 +143,17 @@ PRIVATE void   make_yy_lhs(PRODUCTION_S **prodtab);
 PRIVATE void   make_yy_reduce(PRODUCTION_S **prodtab);
 PRIVATE void   make_yy_slhs(PRODUCTION_S **prodtab);
 PRIVATE void   make_yy_srhs(PRODUCTION_S **prodtab);
-
-/*printing-relative functions*/
-PRIVATE char  *strprod(PRODUCTION_S *prod);
-PRIVATE ACT_S *p_action(int state, int input_sym);
-PRIVATE void   pclosure(STATE_S *kernel, ITEM_S **closure_items, int nitems);
-PRIVATE GOTO  *p_goto(int state, int nonterminal);
-PRIVATE void   mkprod(SYMBOL_S *sym, PRODUCTION_S **prodtab);
+PRIVATE void   mkprodtab(SYMBOL_S *sym, PRODUCTION_S **prodtab);
 PRIVATE void   print_reductions(void);
 PRIVATE void   print_tab(ACT_S **table, char *row_name, char *col_name, bool private);
-PRIVATE void   pstate(STATE_S *state);
-PRIVATE void   pstate_stdout(STATE_S *state);
+
+/*printing-relative functions*/
 PRIVATE void   sprint_tok(char **bp, char *format, int arg);
-PRIVATE char  *stritem(ITEM_S *item, int lookaheads);
+PRIVATE char  *stritem(ITEM_S *item, bool lookaheads);
+PRIVATE char  *strprod(PRODUCTION_S *prod);
+PRIVATE void   pstate(STATE_S *state);
+PRIVATE void   pclosure_stdout(STATE_S *kernel, ITEM_S **closure_items, int nitems);
+PRIVATE void   pstate_stdout(STATE_S *state);
 
 /*-----------------public interfaces implementation--------------*/
 
@@ -205,17 +205,17 @@ PUBLIC void make_parse_tables()
 
     if(lr(state)){
         if(g_cmdopt.verbose) printf("Adding reductions:\n");
-        //reductions();
+        reductions();
         if(g_cmdopt.verbose) printf("Creating tables:\n");
 
         if(!g_cmdopt.make_yyoutab) { /*tables go in yyout.c*/
-            //print_tab(_actions, "Yya", "Yy_action", true);
-            //print_tab(_gotos, "Yyg", "Yy_goto", true);
+            print_tab(_actions, "Yya", "Yy_action", true);
+            print_tab(_gotos, "Yyg", "Yy_goto", true);
         } else {
             if(!(fp = fopen(TAB_FILE, "w"))) {
                 error(NONFATAL, "Can't open %s, ignoring -T\n", TAB_FILE);
-                //print_tab(_actions, "Yya", "Yy_action", true);
-                //print_tab(_gotos, "Yyg", "Yy_goto", true);
+                print_tab(_actions, "Yya", "Yy_action", true);
+                print_tab(_gotos, "Yyg", "Yy_goto", true);
             } else {
                 output("extern YY_TTYPE *Yy_action[]; /*in yyoutab.c*/\n");
                 output("extern YY_TTYPE *Yy_goto[];   /*in yyoutab.c*/\n");
@@ -224,13 +224,13 @@ PUBLIC void make_parse_tables()
                 fprintf(fp, "#include <stdio.h>\n");
                 fprintf(fp, "typedef short YY_TTYPE;\n");
                 fprintf(fp, "#define YYPRIVATE %s\n", g_cmdopt.public ? "/*empty*/" : "static");
-                //print_tab(_actions, "Yya", "Yy_action", false);
-                //print_tab(_gotos, "Yyg", "Yy_goto", false);
+                print_tab(_actions, "Yya", "Yy_action", false);
+                print_tab(_gotos, "Yyg", "Yy_goto", false);
                 fclose(fp);
                 g_output = old_output;
             }
         }
-        //print_reductions();
+        print_reductions();
     }
 }
 
@@ -271,7 +271,7 @@ PRIVATE int state_cmp(STATE_S *new, STATE_S *tab_node)
         return (new->num - tab_node->num);
 
     /*state with largest number of items is larger.*/
-    if(cmp = _state_cmp_info.state_nitems - tab_node->nkitems)
+    if((cmp = _state_cmp_info.state_nitems - tab_node->nkitems))
         return cmp;
 
     nitems = _state_cmp_info.state_nitems;
@@ -279,10 +279,10 @@ PRIVATE int state_cmp(STATE_S *new, STATE_S *tab_node)
     tab_item = tab_node->kernel_items;
 
     for(; --nitems >= 0; ++tab_item, ++item){
-        if(cmp = (*item)->prod_num - (*tab_item)->prod_num)
+        if((cmp = (*item)->prod_num - (*tab_item)->prod_num))
             return cmp;
 
-        if(cmp = (*item)->dot_posn - (*tab_item)->dot_posn)
+        if((cmp = (*item)->dot_posn - (*tab_item)->dot_posn))
             return cmp;
     }
 
@@ -347,7 +347,7 @@ PRIVATE void free_recycled_items(void)
 {
     ITEM_S *p;
 
-    while(p = _recycled_items) {
+    while((p = _recycled_items)) {
         _recycled_items = (ITEM_S *)_recycled_items->prod;
         GC_FREE(p);
     }
@@ -367,12 +367,12 @@ PRIVATE int newstate(ITEM_S **items, int nitems, STATE_S **statep)
     _state_cmp_info.state_items = items;
     _state_cmp_info.state_nitems = nitems;
 
-    if(existing = (STATE_S *) hash_find_sym(_states_hashtab, NULL)){
+    if((existing = (STATE_S *) hash_find_sym(_states_hashtab, NULL))){
         *statep = existing;
         if(g_cmdopt.verbose > 1) {
             printf("Using existing state (%sclosed);",
             existing->closed ? "" : "un");
-            //pstate_stdout(existing);
+            pstate_stdout(existing);
         }
         return existing->closed ? CLOSED : UNCLOSED;
     } else {
@@ -393,7 +393,7 @@ PRIVATE int newstate(ITEM_S **items, int nitems, STATE_S **statep)
 
         if(g_cmdopt.verbose > 1){
             printf("Forming new state: ");
-            //pstate_stdout(state);
+            pstate_stdout(state);
         }
 
         return NEW;
@@ -460,7 +460,7 @@ PRIVATE STATE_S *get_unfinished(void)
     if(!_unfinised) return NULL;
 
     parent = &_unfinised;
-    if(root = _unfinised) {
+    if((root = _unfinised)) {
         while(root->left) {
             parent = &root->left;
             root = root->left;
@@ -686,6 +686,24 @@ PRIVATE void movedot(ITEM_S *item)
 }
 
 /*
+ * Return a pointer to the existing ACT structure repersenting the indicated
+ * state and input symbol (or NULL if no such symbol exists).
+ */
+PRIVATE ACT_S *p_action(int state, int input_sym)
+{
+    ACT_S *p;
+
+    D(if(state > MAXSTATE))
+    D(  error(FATAL, "bad state argument to p_action (%d)\n", state);)
+
+    for(p = _actions[state]; p ; p = p->next){
+        if(p->sym == input_sym) return p;
+    }
+
+    return NULL;
+}
+
+/*
  * Add an element to the action part of the parse table. The cell is indexed
  * by state number and input symbol, and holds do_this.
  */
@@ -704,6 +722,24 @@ PRIVATE void add_action(int state, int input_sym, int do_this)
 }
 
 /*
+ * Return a pointer to the existing GOTO structure representing the indicated
+ * state and nonterminal(or NULL if no such symbol.)
+ */
+PRIVATE GOTO *p_goto(int state, int nonterminal)
+{
+    GOTO *p;
+
+    nonterminal = ADJ_VAL(nonterminal);
+    D(if(nonterminal > NUMNONTERMS))
+    D(  error(FATAL, "bad argument to p_goto.\n");)
+    for(p = _gotos[state]; p; p = p->next) {
+        if(p->sym == nonterminal) return p;
+    }
+
+    return NULL;
+}
+
+/*
  * Add an element to the goto part of the parse table, the cell is indexed
  * by current state number and nonterminal value ,and holds go_there, Note
  * that the input nonterminal value is the one that appears in the symbol
@@ -717,6 +753,20 @@ PRIVATE void add_goto(int state, int nonterminal, int go_here)
 
     unadjusted = nonterminal;
     nonterminal = ADJ_VAL(nonterminal);
+
+#ifdef DEBUG
+    if(nonterminal > NUMNONTERMS)
+        error(FATAL, "bad argument to add_goto.\n");
+    if(p = p_goto(state, unadjusted)) {
+        error(FATAL, "Tried to add duplicate goto on nonterminal %s\n"
+                "    (1)goto %3d from %3d <- existing\n"
+                "    (2)goto %3d from %3d <- new\n",
+              g_terms[unadjusted]->name,
+              p->do_this, state,/*bug fix: it's written with go_there in original code.*/
+              go_here, state
+        );
+    }
+#endif
 
     if(g_cmdopt.verbose > 1)
         printf("Adding goto from state %d to %d on %s.\n",
@@ -790,7 +840,7 @@ PRIVATE int lr(STATE_S *cur_state)
      * (4) move_eps -> moves the epsilon transitions into the closure
      *     kernel set. It returns the number of items that it moved.
      */
-    while(cur_state = get_unfinished()) {
+    while((cur_state = get_unfinished())) {
 
         if(g_cmdopt.verbose > 1)
             printf("Next pass... working on state %d\n", cur_state->num);
@@ -806,7 +856,7 @@ PRIVATE int lr(STATE_S *cur_state)
             nitems = move_eps(cur_state, closure_items, nclose);
             p = closure_items + nitems;
             nclose -= nitems;
-            if(g_cmdopt.verbose > 1) ;//pclosure(cur_state, p, nclose);
+            if(g_cmdopt.verbose > 1) pclosure_stdout(cur_state, p, nclose);
         }
 
         while(nclose > 0) {
@@ -868,3 +918,491 @@ PRIVATE int lr(STATE_S *cur_state)
     return _nstates;
 }
 
+PRIVATE void reduce_one_item(STATE_S *state, ITEM_S *item)
+{
+    int token;
+    int pprec;    /*precedence of production.*/
+    int tprec;    /*precedence of token*/
+    int assoc;    /*associativity of token*/
+    bool resovled;/*true if conflict can be resolved.*/
+    int reduce_by;
+    ACT_S *ap;
+
+    if(item->right_of_dot) return; /*no reduction required.*/
+
+    pprec = item->prod->prec; /*precedence of entire production.*/
+    D(printf("ITEM: %s\n", stritem(item, true)) ;)
+
+    for(set_next_member(NULL); (token = set_next_member(item->lookaheads)) >= 0;) {
+
+        tprec = g_precedence[token].level;
+        assoc = g_precedence[token].assoc;
+
+        D(printf("TOKEN: %s (prec = %d, assoc = %c)\n", g_terms[token]->name,
+        tprec, assoc);)
+
+        /* Find action from action table, if exists, there are conflicts.*/
+        if(!(ap = p_action(state->num, token))) {  /* 1. no conflicts.*/
+            add_action(state->num, token, -(item->prod_num));
+            D(printf("Action[%d][%s]=%d\n", state->num, g_terms[token]->name, -(item->prod_num));)
+
+        } else if( ap->do_this <= 0) {             /* 2. reduce-reduce conflict.*/
+            /* If there are redeuce-reduce conflict, resovle it in favor of the production with
+             * with the smaller number and print a waring.*/
+            ++_nreduce_reduce;
+            reduce_by = min(-(ap->do_this), item->prod_num);
+            error(WARNING, "State %2d: reduce/reduce conflict ", state->num);
+            error(NOHDR, "%d/%d on %s (choose %d).\n",
+                  -(ap->do_this),
+                  item->prod_num,
+                  token ? g_terms[token]->name : "<_EOI_>",
+                  reduce_by);
+            ap->do_this = -reduce_by; /*bug fix: should be here rather above in original code.*/
+
+        } else {                                   /* 3. shift-reduce conflict.*/
+            if((resovled = (pprec && tprec))) {
+                if(tprec < pprec || (pprec == tprec && assoc != 'r')) {
+                    ap->do_this = -(item->prod_num);
+                }
+            }
+            if(g_cmdopt.verbose > 1 || !resovled) {
+                ++_nshift_reduce;
+                error(WARNING, "State %2d: shift/reduce conflict", state->num);
+                error(NOHDR, " %s/%d (choose %s) %s.\n",
+                      g_terms[token]->name,
+                      item->prod_num,
+                      ap->do_this < 0 ? "reduce" : "shift",
+                      resovled ? "(resolved)" : "");
+            }
+        }
+    }
+}
+
+/*
+ * This routine is called for each state. It adds the reductions using the
+ * disambiguating rules described in the text, and then prints the state to
+ * yyout.doc if verbose is true.
+ */
+PRIVATE void add_reductions(STATE_S *state, void *junk)
+{
+    int i;
+    ITEM_S **itemp;
+
+    D(printf("-----------------------------------\n");)
+    D(pstate_stdout(state);)
+    D(printf("-----------------------------------\n");)
+
+    for(i = state->nkitems, itemp = state->kernel_items; --i >= 0; ++itemp) {
+        reduce_one_item(state, *itemp);
+    }
+
+    for(i = state->neitems, itemp = state->epsilon_items; --i >= 0; ++itemp) {
+        reduce_one_item(state, *itemp);
+    }
+
+    if(g_cmdopt.verbose) {
+        pstate(state);
+        if(state->num % 10 == 0)fprintf(stderr, "%d\n", state->num);
+    }
+}
+
+/*Do the reductions. If there are memory, sort the table by state number
+ *first, so that yyout.doc look nice.
+ */
+PRIVATE void reductions(void)
+{
+    _state_cmp_info.sort_by_number = true;
+    if(!hash_print_tab(_states_hashtab, (fp_tab_print_t)add_reductions, NULL, 1))
+        hash_print_tab(_states_hashtab, (fp_tab_print_t)add_reductions, NULL, 0);
+}
+
+/*
+ * Print one terminal symbol to a buffer maintained by the calling routine and
+ * update the calling routinue's pointer.
+ */
+PRIVATE void sprint_tok(char **bp, char *format, int arg)
+{
+    if(arg == -1) *bp +=sprintf(*bp, "null ");
+    else if(arg == -2) *bp += sprintf(*bp, "empty ");
+    else if(arg == _EOI_) *bp += sprintf(*bp, "$ ");
+    else if(arg == EPSILON) *bp += sprintf(*bp, "");
+    else *bp += sprintf(*bp, "%s ", g_terms[arg]->name);
+
+    if(++_tokens_printed >= MAXTOKPERLINE) {
+        *bp += sprintf(*bp, "\n\t\t");
+        _tokens_printed = 0;
+    }
+}
+
+/*
+ * Return a pointer to a string that holds a representation of an item.
+ * The lookaheads are printed too if lookaheads is true or verbose is
+ * bigger than 1 (-V is specified on command line).
+ */
+PRIVATE char *stritem(ITEM_S *item, bool lookaheads)
+{
+    static char buf[MAXOBUF*4];
+    char *bp;
+    int i;
+
+    bp = buf;
+    bp += sprintf(bp, "%s->", item->prod->lhs->name);
+
+    if(item->prod->rhs_len <= 0) {
+        bp += sprintf(bp, "<epsilon>");
+    } else {
+        for(i = 0; i < item->prod->rhs_len; ++i) {
+            if(i == item->dot_posn) *bp++ = '.';
+            bp += sprintf(bp, "%s", item->prod->rhs[i]->name);
+        }
+        if(i == item->dot_posn) *bp++ = '.';
+    }
+
+    if(lookaheads || (g_cmdopt.verbose > 1)){
+        bp += sprintf(bp, " (production %d, precedence %d)\n\t\t[",
+                      item->prod->num, item->prod->prec);
+        _tokens_printed = 0;
+        set_print(item->lookaheads, (fp_set_prnt)sprint_tok, &bp);
+        *bp++ = ']';
+    }
+
+    if(bp >= &buf[sizeof(buf)])
+        error(FATAL, "INTERNAL ERROR: [stritem], buffer overflow.\n");
+
+    *bp = '\0';
+    return buf;
+
+}
+
+/*
+ * Return a pointer to a string that holds a representation of a production.
+ */
+PRIVATE char *strprod(PRODUCTION_S *prod)
+{
+    static char buf[MAXOBUF * 2];
+    char *bp = buf;
+    int i;
+
+    bp += sprintf(bp, "%s->", prod->lhs->name);
+
+    if(prod->rhs_len <= 0){
+        bp += sprintf(bp, "<epsilon>");
+    } else {
+        for(i = 0; i < prod->rhs_len; ++i)
+            bp += sprintf(bp, "%s ", prod->rhs[i]->name);
+    }
+
+    if(bp >= &buf[sizeof(buf)])
+        error(FATAL, "INTERNAL ERROR: [strprod], buffer overflow.\n");
+
+    *bp = '\0';
+    return buf;
+}
+
+PRIVATE void pclosure_stdout(STATE_S *kernel, ITEM_S **closure_items, int nitems)
+{
+    printf("\n%d items in Clousure of ", nitems);
+    pstate_stdout(kernel);
+
+    if(nitems > 0) {
+        printf("    --------closure items:------\n");
+        while(--nitems >= 0) printf("    %s\n", stritem(*closure_items++, 0));
+    }
+}
+
+/*
+ * Print one row of  the parse table in human-readable form yyout.doc
+ * (stderr if -V is specified).
+ */
+PRIVATE void pstate(STATE_S *state)
+{
+    int i;
+    ITEM_S **item;
+    ACT_S *p;
+
+    doc("State %d:\n", state->num);
+
+    /*print the kernel and epsilon items for the current state.*/
+    for(i = state->nkitems, item = state->kernel_items; --i >= 0; ++item)
+        doc("    %s\n", stritem(*item, (*item)->right_of_dot == NULL));
+    for(i = state->neitems, item = state->epsilon_items; --i >= 0; ++item)
+        doc("    %s\n", stritem(*item, true));
+    doc("\n");
+
+    /*print out the next-state transitions, first the actions then the gotos.*/
+    for(i = 0;i < (MINTERM + USED_TERMS); ++i) {
+        if((p = p_action(state->num, i))) {
+            if(p->do_this == 0) {        /*accept*/
+                if(p->sym == _EOI_) {
+                    doc("    Accept on end of input\n");
+                } else {
+                    error(FATAL, "INTERNAL: state %d, Illegal accept", state->num);
+                }
+            } else if(p->do_this < 0) {  /*reduce*/
+                doc("    Reduced by %d on %s\n", -(p->do_this), g_terms[p->sym]->name);
+            } else {                     /*shift*/
+                doc("    Shift to %d on %s\n", p->do_this, g_terms[p->sym]->name);
+            }
+        }
+    }
+
+    for(i = MINNONTERM; i < MINNONTERM + USED_NONTERMS; ++i){
+        if((p = p_goto(state->num, i))) {
+            doc("    Goto %d on %s\n", p->do_this, g_terms[p->sym]->name);
+        }
+    }
+
+    doc("\n");
+}
+
+PRIVATE void pstate_stdout(STATE_S *state)
+{
+    doc_to(stdout);
+    pstate(state);
+    doc_to(stdout);
+}
+
+PRIVATE void make_yy_lhs(PRODUCTION_S **prodtab)
+{
+    static char *text[] = {
+      "The Yy_lhs array is used for reductions. It is indexed by production number",
+      "and holds the associated left-hand side adjusted so that the number can be",
+      "used as an index into Yy_goto.",
+      NULL
+    };
+    PRODUCTION_S *prod;
+    int i;
+
+    sys_comment(g_output, text);
+    output("YYPRIVATE int Yy_lhs[%d] = \n{\n", g_num_productons);
+    for(i = 0; i < g_num_productons; ++i) {
+        prod = *prodtab++;
+        output("\t/* %3d */\t%d", prod->num, ADJ_VAL(prod->lhs->val));
+        if( i != g_num_productons) output(",");
+        if(i % 3 == 2 || i == g_num_productons - 1) output("\n");
+    }
+    output("};\n");
+}
+
+PRIVATE void make_yy_reduce(PRODUCTION_S **prodtab)
+{
+    static char *text[] ={
+      "The Yy_reduce array is indexed by production number and holds the number",
+      "the number of symbols on the right-hand side of the production",
+      NULL
+    };
+    PRODUCTION_S *prod;
+    int i;
+
+    sys_comment(g_output, text);
+    output("YYPRIVATE int Yy_reduce[%d] = \n{\n", g_num_productons);
+    for(i = 0;i < g_num_productons; ++i) {
+        prod = *prodtab++;
+        output("\t/* %3d */\t%d", prod->num, prod->rhs_len);
+        if(i != g_num_productons - 1) output(",");
+
+        if(i % 3 == 2 || i == g_num_productons - 1) output("\n");
+    }
+
+    output("};\n");
+}
+
+PRIVATE void make_yy_slhs(PRODUCTION_S **prodtab)
+{
+    static char *text[]={
+      "Yy_slhs[] is a debugging version of Yy_lhs[].It is indexed by production number",
+      "and evalutates to a string representing the left-hand side of the production.",
+      NULL
+    };
+
+    PRODUCTION_S *prod;
+    int i;
+
+    sys_comment(g_output, text);
+    output("YYPRIVATE char *Yy_slhs[%d] = \n{\n", g_num_productons);
+    for(i = g_num_productons; --i >= 0;){
+        prod = *prodtab++;
+        output("\t/* %3d */\t\"%s\"", prod->num, prod->lhs->name);
+        output(i != 0 ? ",\n" : "\n");
+    }
+    output("};\n");
+}
+
+PRIVATE void make_yy_srhs(PRODUCTION_S **prodtab)
+{
+    static char *text[]={
+        "Yy_srhs[] is also used for debugging. It is indexed by production number and ",
+        "evaluates to a string representing the right-hand side of the production.",
+        NULL
+    };
+    PRODUCTION_S *prod;
+    int i,j;
+
+    sys_comment(g_output, text);
+    output("YYPRIVATE char *Yy_srhs[%d] = \n{\n", g_num_productons);
+    for(i = g_num_productons; --i >= 0;) {
+        prod = *prodtab++;
+        output("\t/* %3d */\t\"", prod->num);
+        for(j = 0; j < prod->rhs_len; ++j) {
+            output("%s", prod->rhs[j]->name);
+            if(j != prod->rhs_len - 1) outc(' ');
+        }
+        output(i != 0 ? "\",\n" : "\"\n");
+    }
+    output("};\n");
+}
+
+PRIVATE void mkprodtab(SYMBOL_S *sym, PRODUCTION_S **prodtab)
+{
+    PRODUCTION_S *p;
+    if(ISNONTERM(sym)) {
+        for(p = sym->productions; p; p = p->next){
+#ifdef DEBUG
+            if(p->num >= g_num_productons)
+                error(FATAL, "INTERNAL ERROR: [mkprod], bad prod num.\n");
+#endif
+            prodtab[p->num] = p;
+        }
+    }
+}
+
+/*
+ * Output the various tables needed to do reductions.
+ */
+PRIVATE void print_reductions(void)
+{
+    PRODUCTION_S **prodtab;
+
+    if(!(prodtab = (PRODUCTION_S **)GC_MALLOC(sizeof(PRODUCTION_S*) * g_num_productons))){
+        error(FATAL, "INTERNAL ERROR: Not enough memory to output LALR(1) reduction tables\n.");
+    } else {
+        hash_print_tab(g_symtab, (fp_tab_print_t) mkprodtab, prodtab, 0);
+    }
+
+    make_yy_lhs(prodtab);
+    make_yy_reduce(prodtab);
+
+    output("#ifdef YYDEBUG\n");
+    make_yy_slhs(prodtab);
+    make_yy_srhs(prodtab);
+    output("#endif\n");
+}
+
+/*
+ * Output the action or goto table.
+ */
+PRIVATE void print_tab(ACT_S **table, char *row_name, char *col_name, bool private)
+{
+    int i,j;
+    ACT_S *ele, **elep;
+    ACT_S *e, **p;
+    int count;
+    int column = 0;
+    SET_S *redundant = set_new();
+
+    static char *act_text[] = {
+        "The Yy_action table is action part of the LALR(1) transition matrix. It's",
+        "compressed and can be accessed using the yy_next() function, as below.",
+        "",
+        "                Yya000[]={ 3  ,   5,3   ,  2,2  ,  1,1  };",
+        "  state number------+      |      | |",
+        "  number of pairs in list--+      | |",
+        "  input symbol (terminal)---------+ |",
+        "  action----------------------------+",
+        "",
+        "  action = yy_next(Yy_action, cur_state, lookahead_symbol);",
+        "",
+        "  action <  0   --Reduce by production n, n == -action.",
+        "  action == 0   --Accept. (ie,Reduce by production 0).",
+        "  action >  0   --Shift to state n, n == action.",
+        "  action == YYF --Error.",
+        NULL
+    };
+
+    static char *goto_text[] = {
+        "The Yy_goto table is goto part of the LALR(1) transition matrix.",
+        "",
+        "  nonterminal = Yy_lhs[ production number by which we just reduced ]",
+        "",
+        "                Yyg000[]={ 3  ,   5,3   ,  2,2  ,  1,1  };",
+        "  uncovered state---+      |      | |",
+        "  number of pairs in list--+      | |",
+        "  nonterminal---------------------+ |",
+        "  goto this state-------------------|",
+        "",
+        "It is compressed and can be accessed using the yy_next() subroutine as ",
+        "below like this:",
+        "",
+        "  goto_state = yy_next(Yy_goto, cur_state, nonterminal);",
+        NULL
+    };
+
+    sys_comment(g_output, table == _actions ? act_text : goto_text);
+
+    /*
+     * Modify the matrix so that, if a duplicate row exists, only one copy of it
+     * is kept around. The extra rows are marked as such by setting a bit in the
+     * "redundant" set. (The memory used for the chains is just discarded.) The
+     * redundant table element is made to point at the row that it duplicates.
+     */
+    for(elep = table, i = 0; i < _nstates; ++elep, ++i) {
+
+        if(SET_MEMBER(redundant, i)) continue;
+
+        for(p = elep + 1, j = i; ++j < _nstates; ++p) {
+            if(SET_MEMBER(redundant, j)) continue;
+            ele = *elep;
+            e   = *p;
+
+            if(!e || !ele) continue;
+
+            for(; ele && e; ele=ele->next, e = e->next) {
+                if((ele->do_this != e->do_this) || (ele->sym != e->sym))
+                    break;
+            }
+
+            if(!e && !ele) { /*the chains are the same*/
+                SET_ADD(redundant, j);
+                table[j] = (ACT_S*)elep;
+            }
+        }
+    }
+
+    /*Output the row arrays.*/
+    for(elep = table, i = 0;i < _nstates; ++elep, ++i) {
+        if(!*elep || SET_MEMBER(redundant, i)) continue;
+
+        count = 0;
+        for(ele = *elep; ele; ele = ele->next) ++count;
+
+        output("YYPRIVATE YY_TTYPE %s%-3d = { %2d,", row_name, (int)(elep-table), count);
+        column = 0;
+        for(ele = *elep; ele; ele = ele->next) {
+            ++_npairs;
+            output("%3d, %-4d", ele->sym, ele->do_this);
+            if(++column != count) outc(',');
+            if(column % 5 == 0) output("\n\t\t\t         ");
+        }
+        output("};\n");
+    }
+
+    /*Output the index array*/
+    if(private) {
+        output("\nYYPRIVATE YY_TTYPE *s[%d] = {\n", col_name, _nstates);
+    } else {
+        output("\nYY_TTYPE *s[%d] = {\n", col_name, _nstates);
+    }
+
+    for(elep = table, i = 0; i < _nstates; ++i, ++elep) {
+        if(SET_MEMBER(redundant, i)){
+            output("%s%-3d", row_name, (int)((ACT_S**)(*elep) - table));
+        } else {
+            output(*elep ? "%s%-3d" : "NULL", row_name, i);
+        }
+
+        if(i != _nstates - 1) output(", ");
+        if(i == 0 || (i % 8) == 0) output("\n/* %3d */ ", i+1);
+    }
+
+    output("\n};\n");
+}
