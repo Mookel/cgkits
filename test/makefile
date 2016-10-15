@@ -21,7 +21,7 @@ yyout.o : yyout.c
 	$(CC) -c $(CFLAGS) yyout.c
 
 yyout.c : expr.y
-	$(OCCS) -vl expr.y
+	$(OCCS) -vDl expr.y
 
 lexyy.o : lexyy.c
 	$(CC) -c $(CFLAGS) lexyy.c

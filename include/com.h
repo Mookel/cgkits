@@ -19,6 +19,5 @@ extern  int      com_ferr(char *format, ...);
 /*common print function*/
 typedef int      (*fp_print_t)(int, ...);
 extern  void     com_prnt(fp_print_t fp_prnt, void *fun_arg, char *format, va_list args);
-extern  void     com_stop_prnt(void);
 
 #endif //CGKITS_COMM_H

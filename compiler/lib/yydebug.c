@@ -583,7 +583,7 @@ PRIVATE FILE *enable_log_cmd(char *buf)
     if(!yy_prompt("Log comment-window output ? ESC cancel (y/n, CR = y): ", buf, 0)){
         return NULL;
     } else {
-        _no_comment_pix =(*buf == 'n');
+        _no_comment_pix = (*buf == 'n');
     }
 
     if(!yy_prompt("Print stack in log file ? ESC cancel (y/n, CR = y): ", buf, 0)){
@@ -749,24 +749,22 @@ extern void  yy_output(int where, char *fmt, va_list args)
 {
     extern FILE *yycodeout, *yydataout, *yybssout;
 
-     const char *wherestr[] = {
-        "CODE->",
-        "DATA->",
-        "BSS-->",
-    };
+    va_list copyargs;
+    va_copy(copyargs, args);
 
     if(_log){
-        fprintf(_log, wherestr[where]);
-        com_prnt((fp_print_t) fputc, _log, fmt, args);
+        fprintf(_log, where == 0 ? "CODE-->" :
+                      where == 1 ? "DATA-->" : "BSS-->");
+        com_prnt((fp_print_t)fputc, _log, fmt, args);
         fputc('\n', _log);
     }
 
     _NEWLINE(_code_window);
 
-    win_putc_func(wherestr[where][0], _code_window);
+    win_putc_func(where == 0 ? 'C' : where == 1 ? 'D' : 'B', _code_window);
     win_putc_func(WIN_VERT, _code_window);
 
-    com_prnt((fp_print_t) win_putc_func, _code_window, fmt, args);
+    com_prnt((fp_print_t) win_putc_func, _code_window, fmt, copyargs);
     refresh_win(_code_window);
 
     if(where == 0 && yycodeout != stdout) {
@@ -793,8 +791,10 @@ extern void  yy_comment(char *fmt, ...)
     if(_log && !_no_comment_pix) {
         com_prnt((fp_print_t) fputc, _log, fmt, args);
     }
+    va_end(args);
 
     _NEWLINE(_comment_window);
+    va_start(args, fmt);
     com_prnt((fp_print_t) win_putc_func, _comment_window, fmt, args);
     refresh_win(_comment_window);
 }
@@ -812,9 +812,11 @@ extern void  yy_error(char *fmt, ...)
 
     if(_log){
         com_prnt((fp_print_t) fputc, _log, fmt, args);
+        va_end(args);
     }
 
     _NEWLINE(_comment_window);
+    va_start(args, fmt);
     com_prnt((fp_print_t) win_putc_func, _comment_window, fmt, args);
     refresh_win(_comment_window);
 
@@ -882,7 +884,7 @@ extern void  yy_pstack(int do_refresh, int print_it)
 {
     int numele;
     int  *toss;   /*top of state stack*/
-    char **tods;  /*top fo debug stack*/
+    char **tods;  /*top of debug stack*/
     char *tovs;   /*top of value stack*/
     int  *state;  /*current state-stack pointer*/
     char **debug; /*current debug-stack pointer*/
@@ -997,7 +999,6 @@ extern void  yy_pstack(int do_refresh, int print_it)
             }
             wrefresh(_stack_window);
         }
-
     }
 
     delay();
@@ -1045,7 +1046,7 @@ extern int  yy_next_token(void)
         yy_comment("Advance past %s\n", Yy_stok[tok]);
     }
 
-    lexeme = ((tok = (_abort ? 0 : yylex()) == 0) ? "" : yytext);
+    lexeme = ((tok = _abort ? 0 : yylex()) == 0) ? "" : yytext;
 
     if(_interactive || _log) {
         yy_comment("Read %s <%s>\n", str = Yy_stok[tok], lexeme);

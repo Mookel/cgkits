@@ -1,5 +1,6 @@
 #include "yyout.h"
 
+#define YYDEBUG
 #define YYACTION
 #define YYPARSER
 /*@A (C) 2016 refactored by Mookel */
@@ -375,6 +376,7 @@ void yy_code(char *fmt, ...)
     va_list   	 args;
     va_start( args,  fmt );
     yy_output( 0, fmt, args );
+    va_end(args);
 }
 
 void yy_data(char *fmt, ...)
@@ -382,6 +384,8 @@ void yy_data(char *fmt, ...)
     va_list   	 args;
     va_start( args,  fmt );
     yy_output( 1, fmt, args );
+    va_end(args);
+
 }
 
 void yy_bss(char *fmt, ...)
@@ -389,6 +393,7 @@ void yy_bss(char *fmt, ...)
     va_list   	 args;
     va_start( args,  fmt );
     yy_output( 2, fmt, args );
+    va_end(args);
 }
 
 /* yy_comment() and yy_error() are defined in yydebug.c */
@@ -502,7 +507,7 @@ YYPRIVATE void yy_init_stack()			/* Initialize the stacks  */
     yystk_clear  ( Yy_dstack );
     yypush_	 ( Yy_dstack, "$" );
     yy_comment	 ( "Shift start state\n" );
-    yy_pstack	 (0, 1);			/* refresh stack window */
+    yy_pstack	 (0, 1);			    /* refresh stack window */
 #   endif
 }
 /*----------------------------------------------------------------------*/
@@ -590,7 +595,7 @@ int	yyparse()
     if( !yy_init_debug( Yy_stack,  &yystk_p(Yy_stack ),
 			Yy_dstack, &yystk_p(Yy_dstack),
 			Yy_vstack, sizeof(YYSTYPE), YYMAXDEPTH) )
-	YYABORT;
+	    YYABORT;
     #endif
 
     yy_init_stack();			    /* Initialize parse stack	*/

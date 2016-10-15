@@ -47,11 +47,6 @@ PUBLIC void com_prnt(fp_print_t fp_prnt, void *fun_arg, char *format, va_list ar
         (*fp_prnt)(*p,  fun_arg);
 }
 
-PUBLIC void com_stop_prnt(void)
-{
-
-}
-
 PUBLIC int com_ferr(char *format, ...)
 {
     D(void (**ret_addr_p)(); )
