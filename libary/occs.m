@@ -155,7 +155,7 @@ YYPRIVATE int	   yy_act		(int yy_production_number, YYSTYPE *yyvsp);
 YYPRIVATE void	   yy_reduce	(int prod_num, int amount);
 
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @           Action subroutine and the Tables go here.			          @
+  @           Action subroutine and the Tables go here.                   @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   @ The rest of the file is the actual parser. It is                      @
   @ emitted after the tables but above any user-supplied code in the      @
