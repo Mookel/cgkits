@@ -1,0 +1,25 @@
+
+-----------------------Symbol table-----------------
+
+NONTERMINAL SYMBOLS:
+
+e    (257)         <>
+	  1: e -> e PLUS e..........................................PREC 1
+	  2: e -> e STAR e..........................................PREC 2
+	  3: e -> LP e RP...........................................PREC 3
+	  4: e -> NUM
+	  5: e -> ID
+
+s    (256)    (goal symbol)     <>
+	  0: s -> e
+
+
+TERMINAL SYMBOLS:
+
+name                value    prec    assoc    field
+ID                    1     0    -    <>
+LP                    5     3    l    <>
+NUM                   2     0    -    <>
+PLUS                  3     1    l    <>
+RP                    6     3    l    <>
+STAR                  4     2    l    <>

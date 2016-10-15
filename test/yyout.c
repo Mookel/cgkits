@@ -1,9 +1,9 @@
+#include "yyout.h"
+
+#define YYACTION
+#define YYPARSER
 /*@A (C) 2016 refactored by Mookel */
 
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @ This section goes at the top of the file, before any user-supplied	@
-  @ code is emitted. It is output regardless of the presence of -a or -p @
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -39,12 +39,21 @@ extern int  ii_plineno() ;
 #endif
 
 /*----------------------------------------------------------------------*/
-
-  @
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @ User-supplied code from the header part of the input file goes here.  @
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @
+
+#include <stdio.h>
+#include <ctype.h>
+
+extern char *yytext;
+extern int yyparse();
+
+char *new_name();
+void free_name();
+
+typedef char *stype;
+#define YYSTYPE stype
+
+#define YYMAXDEPTH 64
+#define YYMAXERR   10
 
 #undef YYD			        /* Redefine YYD in case YYDEBUG was defined  */
 #ifdef YYDEBUG			    /* explicitly in the header rather than with */
@@ -154,14 +163,193 @@ YYPRIVATE void 	   yy_shift	(int new_state, int lookahead);
 YYPRIVATE int	   yy_act		(int yy_production_number, YYSTYPE *yyvsp);
 YYPRIVATE void	   yy_reduce	(int prod_num, int amount);
 
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @           Action subroutine and the Tables go here.			          @
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @ The rest of the file is the actual parser. It's			              @
-  @ emitted after the tables but above any user-supplied code in the	  @
-  @ third part of the input file.     					                  @
-  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
+
+/* This function holds all the actions in the original input specification.
+ * It normally return 0,but if any of your actions return a non-zero value,
+ * then the parser halts immediately, returning that non-zero number to the
+ * calling function.
+ */
+int yy_act(int yypnum, YYSTYPE *yyvsp)
+{
+    switch(yypnum) {
+
+        case 5:  /* e -> ID */
+		{yy_code("%s = _%s\n", Yy_val = new_name(), yytext);}
+            break;
+
+        case 4:  /* e -> NUM */
+		{yy_code("%s = %s\n", Yy_val = new_name(), yytext);}
+            break;
+
+        case 3:  /* e -> LP e RP */
+		{Yy_val = yyvsp[1];}
+            break;
+
+        case 2:  /* e -> e STAR e */
+		{yy_code("%s *= %s\n", yyvsp[2], yyvsp[0]); free_name(yyvsp[0]);}
+            break;
+
+        case 1:  /* e -> e PLUS e */
+		{yy_code("%s += %s\n", yyvsp[2], yyvsp[0]); free_name(yyvsp[0]);}
+            break;
+
+#ifdef YYDEBUG
+        default: yy_comment("Production %d: no action.\n", yypnum);
+            break;
+#endif
+   }
+
+    return 0;
+}
+
+/*-----------------------------------------------------------------------
+ * Yy_stok[] is used for debugging and error messages.It is indexed by
+ * the internal value used for a token(as used for a column index in the
+ * transition matrix) and evaluates to a string naming that token.
+ */
+
+char *Yy_stok[] = 
+{
+	/*   0 */    "_EOI_",
+	/*   1 */    "ID        ",	/*   2 */    "NUM       ",
+	/*   3 */    "PLUS      ",	/*   4 */    "STAR      ",
+	/*   5 */    "LP        ",	/*   6 */    "RP        "
+};
+
+
+/*-----------------------------------------------------------------------
+ * The Yy_action table is action part of the LALR(1) transition matrix. It's
+ * compressed and can be accessed using the yy_next() function, as below.
+ * 
+ *                 Yya000[]={ 3  ,   5,3   ,  2,2  ,  1,1  };
+ *   state number------+      |      | |
+ *   number of pairs in list--+      | |
+ *   input symbol (terminal)---------+ |
+ *   action----------------------------+
+ * 
+ *   action = yy_next(Yy_action, cur_state, lookahead_symbol);
+ * 
+ *   action <  0   --Reduce by production n, n == -action.
+ *   action == 0   --Accept. (ie,Reduce by production 0).
+ *   action >  0   --Shift to state n, n == action.
+ *   action == YYF --Error.
+ */
+
+YYPRIVATE YY_TTYPE Yya0  [] = {  3,  5, 3   ,  2, 2   ,  1, 1   };
+YYPRIVATE YY_TTYPE Yya1  [] = {  4,  6, -5  ,  4, -5  ,  3, -5  ,  0, -5  };
+YYPRIVATE YY_TTYPE Yya2  [] = {  4,  6, -4  ,  4, -4  ,  3, -4  ,  0, -4  };
+YYPRIVATE YY_TTYPE Yya4  [] = {  3,  0, 0   ,  4, 7   ,  3, 6   };
+YYPRIVATE YY_TTYPE Yya5  [] = {  3,  6, 8   ,  4, 7   ,  3, 6   };
+YYPRIVATE YY_TTYPE Yya8  [] = {  4,  6, -3  ,  4, -3  ,  3, -3  ,  0, -3  };
+YYPRIVATE YY_TTYPE Yya9  [] = {  4,  6, -1  ,  0, -1  ,  4, 7   ,  3, -1  };
+YYPRIVATE YY_TTYPE Yya10 [] = {  4,  6, -2  ,  0, -2  ,  4, -2  ,  3, -2  };
+
+YYPRIVATE YY_TTYPE *Yy_action[11] = {
+
+/*   0 */ Yya0  , 
+/*   1 */ Yya1  , 
+/*   2 */ Yya2  , 
+/*   3 */ Yya0  , 
+/*   4 */ Yya4  , 
+/*   5 */ Yya5  , 
+/*   6 */ Yya0  , 
+/*   7 */ Yya0  , 
+/*   8 */ Yya8  , 
+/*   9 */ Yya9  , 
+/*  10 */ Yya10 
+};
+
+/*-----------------------------------------------------------------------
+ * The Yy_goto table is goto part of the LALR(1) transition matrix.
+ * 
+ *   nonterminal = Yy_lhs[ production number by which we just reduced ]
+ * 
+ *                 Yyg000[]={ 3  ,   5,3   ,  2,2  ,  1,1  };
+ *   uncovered state---+      |      | |
+ *   number of pairs in list--+      | |
+ *   nonterminal---------------------+ |
+ *   goto this state-------------------|
+ * 
+ * It is compressed and can be accessed using the yy_next() subroutine as 
+ * below like this:
+ * 
+ *   goto_state = yy_next(Yy_goto, cur_state, nonterminal);
+ */
+
+YYPRIVATE YY_TTYPE Yyg0  [] = {  1,  1, 4   };
+YYPRIVATE YY_TTYPE Yyg3  [] = {  1,  1, 5   };
+YYPRIVATE YY_TTYPE Yyg6  [] = {  1,  1, 9   };
+YYPRIVATE YY_TTYPE Yyg7  [] = {  1,  1, 10  };
+
+YYPRIVATE YY_TTYPE *Yy_goto[11] = {
+
+/*   0 */ Yyg0  , 
+/*   1 */ NULL, 
+/*   2 */ NULL, 
+/*   3 */ Yyg3  , 
+/*   4 */ NULL, 
+/*   5 */ NULL, 
+/*   6 */ Yyg6  , 
+/*   7 */ Yyg7  , 
+/*   8 */ NULL, 
+/*   9 */ NULL, 
+/*  10 */ NULL
+};
+
+/*-----------------------------------------------------------------------
+ * The Yy_lhs array is used for reductions. It is indexed by production number
+ * and holds the associated left-hand side adjusted so that the number can be
+ * used as an index into Yy_goto.
+ */
+
+YYPRIVATE int Yy_lhs[6] = 
+{
+	/*   0 */	0,	/*   1 */	1,	/*   2 */	1,
+	/*   3 */	1,	/*   4 */	1,	/*   5 */	1,
+};
+
+/*-----------------------------------------------------------------------
+ * The Yy_reduce array is indexed by production number and holds the number
+ * the number of symbols on the right-hand side of the production
+ */
+
+YYPRIVATE int Yy_reduce[6] = 
+{
+	/*   0 */	1,	/*   1 */	3,	/*   2 */	3,
+	/*   3 */	3,	/*   4 */	1,	/*   5 */	1
+};
+#ifdef YYDEBUG
+
+/*-----------------------------------------------------------------------
+ * Yy_slhs[] is a debugging version of Yy_lhs[].It is indexed by production number
+ * and evalutates to a string representing the left-hand side of the production.
+ */
+
+YYPRIVATE char *Yy_slhs[6] = 
+{
+	/*   0 */	"s",
+	/*   1 */	"e",
+	/*   2 */	"e",
+	/*   3 */	"e",
+	/*   4 */	"e",
+	/*   5 */	"e"
+};
+
+/*-----------------------------------------------------------------------
+ * Yy_srhs[] is also used for debugging. It is indexed by production number and 
+ * evaluates to a string representing the right-hand side of the production.
+ */
+
+YYPRIVATE char *Yy_srhs[6] = 
+{
+	/*   0 */	"e",
+	/*   1 */	"e PLUS e",
+	/*   2 */	"e STAR e",
+	/*   3 */	"LP e RP",
+	/*   4 */	"NUM",
+	/*   5 */	"ID"
+};
+#endif
 YYPRIVATE YY_TTYPE  yy_next(YY_TTYPE **table, YY_TTYPE cur_state, int inp )
 {
     /* Next-state routine for the compressed tables. Given current state and
@@ -483,4 +671,51 @@ int	yyparse()
     YYD(  yy_quit_debug();		)
 
     YYACCEPT;
+}
+
+char *yypstk(void *val, char *symbol)
+{
+    return *(char **)val ? *(char **)val : "<empty>";
+}
+
+char *Names[] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"};
+char **Namep = Names;
+
+char *new_name()
+{
+    if(Namep >= &Names[sizeof(Names)/sizeof(*Names)]) {
+        yy_error("Expression too complex.\n");
+        exit(1);
+    }
+
+    return (*Namep++);
+}
+
+void free_name(char *s)
+{
+    *--Namep = s;
+}
+
+void yy_init_occs(void *tos)
+{
+    yy_code("public word t0, t1, t2, t3;\n");
+    yy_code("public word t4, t5, t6, t7;\n");
+}
+
+int main(int argc, char **argv)
+{
+#ifdef YYDEBUG
+    yy_get_args(argc, argv);
+#else
+    if(argc < 2) {
+        fprintf(stderr, "Need file name\n");
+        exit(1);
+    } else if(ii_newfile(argv[1]) < 0){
+        fprintf(stderr, "Can't open %s\n", argv[1]);
+        exit(2);
+    }
+#endif
+
+    yyparse();
+    return 0;
 }

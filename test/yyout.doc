@@ -1,0 +1,112 @@
+State 0:
+    s->.e
+
+    Shift to 1 on ID
+    Shift to 2 on NUM
+    Shift to 3 on LP
+    Goto 4 on ID
+
+State 1:
+    e->ID. (production 5, precedence 0)
+		[$ PLUS STAR RP ]
+
+    Reduced by 5 on End of Input
+    Reduced by 5 on PLUS
+    Reduced by 5 on STAR
+    Reduced by 5 on RP
+
+State 2:
+    e->NUM. (production 4, precedence 0)
+		[$ PLUS STAR RP ]
+
+    Reduced by 4 on End of Input
+    Reduced by 4 on PLUS
+    Reduced by 4 on STAR
+    Reduced by 4 on RP
+
+State 3:
+    e->LP.eRP
+
+    Shift to 1 on ID
+    Shift to 2 on NUM
+    Shift to 3 on LP
+    Goto 5 on ID
+
+State 4:
+    s->e. (production 0, precedence 0)
+		[$ ]
+    e->e.PLUSe
+    e->e.STARe
+
+    Accept on end of input
+    Shift to 6 on PLUS
+    Shift to 7 on STAR
+
+State 5:
+    e->e.PLUSe
+    e->e.STARe
+    e->LPe.RP
+
+    Shift to 6 on PLUS
+    Shift to 7 on STAR
+    Shift to 8 on RP
+
+State 6:
+    e->ePLUS.e
+
+    Shift to 1 on ID
+    Shift to 2 on NUM
+    Shift to 3 on LP
+    Goto 9 on ID
+
+State 7:
+    e->eSTAR.e
+
+    Shift to 1 on ID
+    Shift to 2 on NUM
+    Shift to 3 on LP
+    Goto 10 on ID
+
+State 8:
+    e->LPeRP. (production 3, precedence 3)
+		[$ PLUS STAR RP ]
+
+    Reduced by 3 on End of Input
+    Reduced by 3 on PLUS
+    Reduced by 3 on STAR
+    Reduced by 3 on RP
+
+State 9:
+    e->e.PLUSe
+    e->ePLUSe. (production 1, precedence 1)
+		[$ PLUS STAR RP ]
+    e->e.STARe
+
+    Reduced by 1 on End of Input
+    Reduced by 1 on PLUS
+    Shift to 7 on STAR
+    Reduced by 1 on RP
+
+State 10:
+    e->e.PLUSe
+    e->e.STARe
+    e->eSTARe. (production 2, precedence 2)
+		[$ PLUS STAR RP ]
+
+    Reduced by 2 on End of Input
+    Reduced by 2 on PLUS
+    Reduced by 2 on STAR
+    Reduced by 2 on RP
+
+
+   6/256  terminals
+   2/256  nonterminals
+   6/512  productions
+  11    LALR(1) states
+  19    items
+  42    nonerror transitions in tables
+   5/257  unfinished items
+ 253    bytes required for LALR(1) transition matrix
+
+   0    shift/reduce conflicts
+   0    reduce/reduce conflicts

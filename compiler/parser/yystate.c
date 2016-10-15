@@ -434,9 +434,9 @@ PRIVATE void add_unfinished(STATE_S *state)
             *parent = _available;
             _available = _available->left;  /*using left as the next pointer of free list*/
         } else {
-            if(_next_alloc_tnode >= &_heap[MAXUNFINISHED - 1])
+            if(_next_alloc_tnode >= &_heap[MAXUNFINISHED])
                 error(FATAL, "INTERNAL ERROR: Insufficient memory for unfinished state.\n");
-            *parent = _next_alloc_tnode;
+            *parent = _next_alloc_tnode++;
         }
 
         (*parent)->state = state;
@@ -513,7 +513,6 @@ PRIVATE int move_eps(STATE_S *cur_state, ITEM_S **closure_items, int nclose)
     for(p = closure_items; (*p)->prod->rhs_len == 0 && --nclose >= 0;) {
         if(++moved > MAXEPSILON)
             error(FATAL, "Too many epsilon production in state %d\n", cur_state->num);
-
         if(nitems) {
             SET_UNION((*eps_items++)->lookaheads, (*p++)->lookaheads);
         } else  {
@@ -526,6 +525,7 @@ PRIVATE int move_eps(STATE_S *cur_state, ITEM_S **closure_items, int nclose)
     if(moved) cur_state->neitems = moved;
 
     return moved;
+    return 0;
 }
 
 /*
@@ -1375,7 +1375,7 @@ PRIVATE void print_tab(ACT_S **table, char *row_name, char *col_name, bool priva
         count = 0;
         for(ele = *elep; ele; ele = ele->next) ++count;
 
-        output("YYPRIVATE YY_TTYPE %s%-3d = { %2d,", row_name, (int)(elep-table), count);
+        output("YYPRIVATE YY_TTYPE %s%-3d[] = { %2d,", row_name, (int)(elep-table), count);
         column = 0;
         for(ele = *elep; ele; ele = ele->next) {
             ++_npairs;
@@ -1388,12 +1388,13 @@ PRIVATE void print_tab(ACT_S **table, char *row_name, char *col_name, bool priva
 
     /*Output the index array*/
     if(private) {
-        output("\nYYPRIVATE YY_TTYPE *s[%d] = {\n", col_name, _nstates);
+        output("\nYYPRIVATE YY_TTYPE *%s[%d] = {\n", col_name, _nstates);
     } else {
         output("\nYY_TTYPE *s[%d] = {\n", col_name, _nstates);
     }
 
     for(elep = table, i = 0; i < _nstates; ++i, ++elep) {
+        output("\n/* %3d */ ", i);
         if(SET_MEMBER(redundant, i)){
             output("%s%-3d", row_name, (int)((ACT_S**)(*elep) - table));
         } else {
@@ -1401,7 +1402,6 @@ PRIVATE void print_tab(ACT_S **table, char *row_name, char *col_name, bool priva
         }
 
         if(i != _nstates - 1) output(", ");
-        if(i == 0 || (i % 8) == 0) output("\n/* %3d */ ", i+1);
     }
 
     output("\n};\n");

@@ -52,9 +52,9 @@ PUBLIC  void patch()
       "",
       "/* This function holds all the actions in the original input specification.",
       " * It normally return 0,but if any of your actions return a non-zero value,",
-      " * then the parser halts immediately, returning that non-zero number to the,",
-      " * calling function."
-      " */"
+      " * then the parser halts immediately, returning that non-zero number to the",
+      " * calling function.",
+      " */",
       "int yy_act(int yypnum, YYSTYPE *yyvsp)",
       "{",
       "    switch(yypnum) {",

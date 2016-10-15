@@ -25,7 +25,7 @@ PUBLIC void make_yy_stok()
 
     sys_comment(g_output, text);
 
-    output("YYPRIVATE char *Yy_stok[] = \n{\n");
+    output("char *Yy_stok[] = \n{\n");
     output("\t/*   0 */    \"_EOI_\",\n");
 
     for(i = MINTERM; i <= g_currterm; i++) {
