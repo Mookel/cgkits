@@ -157,9 +157,9 @@ YYPRIVATE void	   yy_reduce	(int prod_num, int amount);
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   @           Action subroutine and the Tables go here.			          @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @ The rest of the file is the actual parser. It's			              @
-  @ emitted after the tables but above any user-supplied code in the	  @
-  @ third part of the input file.     					                  @
+  @ The rest of the file is the actual parser. It is                      @
+  @ emitted after the tables but above any user-supplied code in the      @
+  @ third part of the input file.                                         @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 YYPRIVATE YY_TTYPE  yy_next(YY_TTYPE **table, YY_TTYPE cur_state, int inp )
