@@ -1,4 +1,4 @@
-/*@A (C) 1992 Allen I. Holub                                                */
+/*@A (C) 2016 refactored by Mookel */
 
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   @ This section goes at the top of the file, before any user-supplied	@
@@ -7,98 +7,81 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <tools/yystack.h>					/* #pp */
+#include <stdlib.h>
+#include <l.h>
 
+FILE  *yycodeout;		/* Output stream (code). */
+FILE  *yybssout;		/* Output stream (bss ). */
+FILE  *yydataout;		/* Output stream (data). */
+int    yylookahead;     /* Lookahead token.      */
 
-#include <stdlib.h>	  /* Needed only for prototype for exit(). Can be  */
-			  /* discarded in most non-ANSI systems.	   */
-
-#include <tools/debug.h>  /* These includes are needed to get prototypes   */
-#include <tools/l.h>	  /* for the ii_ and yy_ functions in l.lib        */
-			  /* You can remove them if your compiler doesn't  */
-			  /* require the prototypes. The UNIX and ANSI     */
-			  /* macros in debug.h are also used here.	   */
-			  /* The UNIX, ANSI, BCC, and P, macros in debug.h */
-			  /* are also used here.			   */
-			  /* Note that there's a nested include for 	   */
-			  /* stdarg.h in  <tools/l.h>.			   */
-
-FILE  *yycodeout = stdout ;		/* Output stream (code). */
-FILE  *yybssout  = stdout ;		/* Output stream (bss ). */
-FILE  *yydataout = stdout ;		/* Output stream (data). */
-int   yylookahead ;			/* Lookahead token.      */
-
-extern char *yytext;			/* Declared by lex in lexyy.c */
+extern char *yytext;    /* Declared by lex in lexyy.c */
 extern int  yylineno;
 extern int  yyleng;
 
-void	yycode	    P(( char *fmt, ...	));	/* Supplied below and */
-void	yydata	    P(( char *fmt, ...	));	/* in yydebug.c       */
-void	yybss 	    P(( char *fmt, ...	));
-void 	yyerror     P(( char *fmt, ...  ));
-void 	yycomment   P(( char *fmt, ...  ));
-int	yy_nextoken P(( void		));
-
+void yy_code( char *fmt, ...);	/* Supplied below and */
+void yy_data( char *fmt, ...);	/* in yydebug.c       */
+void yy_bss( char *fmt, ...	);
+void yy_error( char *fmt, ...);
+void yy_comment( char *fmt, ...);
+int	 yy_next_token();
 
 extern unsigned char *ii_ptext();	/* Lookback function used by lex  */
-extern int  ii_plength() ;		/* in /src/compiler/lib/input.c.  */
+extern int  ii_plength() ;		    /* in /compiler/lib/input.c.      */
 extern int  ii_plineno() ;
 
 #ifdef YYDEBUG			/* Define YYD here so that it can be used */
 #   define YYD(x) x		/* in the user-supplied header.		  */
 #else
-#   define YYD(x) /* empty */
+#   define YYD(x)       /* empty */
 #endif
 
 /*----------------------------------------------------------------------*/
 
-
   @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   @ User-supplied code from the header part of the input file goes here.  @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   @
 
-
-#undef YYD			/* Redefine YYD in case YYDEBUG was defined  */
-#ifdef YYDEBUG			/* explicitly in the header rather than with */
-#   define YYD(x) x		/* a -D on the occs command line.	     */
+#undef YYD			        /* Redefine YYD in case YYDEBUG was defined  */
+#ifdef YYDEBUG			    /* explicitly in the header rather than with */
+#   define YYD(x) x		    /* a -D on the occs command line.	     */
 #   define printf  yycode	/* Make printf() calls go to output window   */
 #else
-#   define YYD(x) /* empty */
+#   define YYD(x)           /* empty */
 #endif
 
 #ifndef YYACCEPT
-#    define YYACCEPT return(0)	/* Action taken when input is accepted.	     */
+#    define YYACCEPT return(0)	/* Action taken when input is accepted.*/
 #endif
 
 #ifndef YYABORT
-#    define YYABORT return(1)	/* Action taken when input is rejected.	     */
+#    define YYABORT return(1)	/* Action taken when input is rejected.*/
 #endif
 
 #ifndef YYPRIVATE
-#    define YYPRIVATE static	/* define to a null string to make public    */
+#    define YYPRIVATE static	/* define to a null string to make public.*/
 #endif
 
 #ifndef YYMAXERR
-#    define YYMAXERR 25      	/* Abort after this many errors 	     */
+#    define YYMAXERR 25      	/* Abort after this many errors.*/
 #endif
 
-#ifndef YYMAXDEPTH           	/* State and value stack depth  	     */
+#ifndef YYMAXDEPTH           	/* State and value stack depth.*/
 #    define YYMAXDEPTH 128
 #endif
 
-#ifndef YYCASCADE           	/* Suppress error msgs. for this many cycles */
+#ifndef YYCASCADE           	/* Suppress error msgs. for this many cycles.*/
 #    define YYCASCADE 5
 #endif
 
-#ifndef YYSTYPE		     	/* Default value stack type 		     */
+#ifndef YYSTYPE		     	    /* Default value stack type.*/
 #    define YYSTYPE int
 #endif
-				/* Default shift action: inherit $$  	*/
-#ifndef YYSHIFTACT
-#    define YYSHIFTACT(tos)  ( (tos)[0] = yylval )
 
+#ifndef YYSHIFTACT              /* Default shift action: inherit $$*/
+#    define YYSHIFTACT(tos)     ( (tos)[0] = yylval )
 #endif
 
 #ifdef YYVERBOSE
@@ -107,8 +90,8 @@ extern int  ii_plineno() ;
 #    define YYV(x)
 #endif
 
-#undef  yystk_cls			/* redefine stack macros for local */
-#define yystk_cls YYPRIVATE		/* use.				   */
+#undef  yystk_cls			    /* redefine stack macros for local */
+#define yystk_cls YYPRIVATE		/* use.				               */
 
 /* ----------------------------------------------------------------------
  * #defines used in the tables. Note that the parsing algorithm assumes that
@@ -123,10 +106,10 @@ extern int  ii_plineno() ;
  * longer use the -T command-line switch.
  */
 
-#define	YY_IS_ACCEPT	0	   	/* Accepting action (reduce by 0) */
+#define	YY_IS_ACCEPT	0	   	    /* Accepting action (reduce by 0) */
 #define	YY_IS_SHIFT(s)  ((s) > 0)  	/* s is a shift action		  */
 
-typedef short 	YY_TTYPE;
+typedef short YY_TTYPE;
 
 #define YYF	((YY_TTYPE)( (unsigned short )~0 >>1 ))
 
@@ -141,49 +124,43 @@ typedef short 	YY_TTYPE;
  */
 
 #if !defined(YYACTION) || !defined(YYPARSER)
-#    define YYP /* nothing  */
+#    define YYP   /* nothing  */
 #else
 #    define YYP   YYPRIVATE
 #endif
 
 YYPRIVATE int	  yynerrs = 0;			 /* Number of errors.         */
 
-yystk_dcl( Yy_stack, int, YYMAXDEPTH ); 	 /* State stack.              */
+yystk_dcl( Yy_stack, int, YYMAXDEPTH );  /* State stack.              */
 
-    YYSTYPE yylval;			 	 /* Attribute for last token. */
-YYP YYSTYPE Yy_val;				 /* Used to hold $$.          */
+YYSTYPE     yylval;			 	         /* Attribute for last token. */
+YYP YYSTYPE Yy_val;				         /* Used to hold $$.          */
 
-YYP YYSTYPE Yy_vstack[ YYMAXDEPTH ]; 	 	 /* Value stack. Can't use    */
-YYP YYSTYPE *Yy_vsp;				 /* yystack.h macros because  */
-						 /* YYSTYPE could be a struct.*/
+YYP YYSTYPE Yy_vstack[ YYMAXDEPTH ]; 	 /* Value stack. Can't use    */
+YYP YYSTYPE *Yy_vsp;				     /* yystack.h macros because  */
+						                 /* YYSTYPE could be a struct.*/
 
-YYP int     Yy_rhslen;			 	 /* Number of nonterminals on */
-						 /* right-hand side of the    */
-						 /* production being reduced. */
+YYP int     Yy_rhslen;			 	     /* Number of nonterminals on */
+						                 /* right-hand side of the    */
+						                 /* production being reduced. */
 
 /* Prototypes for internal functions (local statics) */
-
-YY_TTYPE yy_next	P(( YY_TTYPE **table, YY_TTYPE cur_state, int inp ));
-void	 yy_init_stack	P(( void					  ));
-int  	 yy_recover	P(( int tok, int suppress			  ));
-void 	 yy_shift	P(( int new_state, int lookahead		  ));
-int	 yy_act		P(( int yy_production_number, YYSTYPE *yyvsp	  ));
-void	 yy_reduce	P(( int prod_num, int amount			  ));
-
-
+YY_TTYPE yy_next	(YY_TTYPE **table, YY_TTYPE cur_state, int inp);
+void	 yy_init_stack(void);
+int  	 yy_recover	(int tok, int suppress);
+void 	 yy_shift	(int new_state, int lookahead);
+int	     yy_act		(int yy_production_number, YYSTYPE *yyvsp);
+void	 yy_reduce	(int prod_num, int amount);
 
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @           Action subroutine and the Tables go here.			@
+  @           Action subroutine and the Tables go here.			          @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  @ The rest of the file is the actual parser. It's			@
-  @ emitted after the tables but above any user-supplied code in the	@
-  @ third part of the input file.     					@
+  @ The rest of the file is the actual parser. It's			              @
+  @ emitted after the tables but above any user-supplied code in the	  @
+  @ third part of the input file.     					                  @
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-YYPRIVATE YY_TTYPE  yy_next( table, cur_state, inp )
-YY_TTYPE  **table;
-YY_TTYPE  cur_state;
-int       inp;
+YYPRIVATE YY_TTYPE  yy_next(YY_TTYPE **table, YY_TTYPE cur_state, int inp )
 {
     /* Next-state routine for the compressed tables. Given current state and
      * input symbol (inp), return next state.
@@ -200,43 +177,35 @@ int       inp;
     return  YYF;
 }
 
-/*----------------------------------------------------------------------*/
 #ifdef YYDEBUG
+yystk_dcl( Yy_dstack, char*, YYMAXDEPTH ); /* Symbol stack       */
 
-yystk_dcl( Yy_dstack, char*, YYMAXDEPTH );	     /* Symbol stack       */
-
-ANSI( void 	yycode( char *fmt, ... ))
-KnR ( void 	yycode( fmt )		)
-KnR ( char	*fmt;			)
+void yy_code(char *fmt, ...)
 {
     va_list   	 args;
     va_start( args,  fmt );
     yy_output( 0, fmt, args );
 }
 
-ANSI( void 	yydata( char *fmt, ... ))
-KnR ( void 	yydata( fmt )		)
-KnR ( char	*fmt;			)
+void yy_data(char *fmt, ...)
 {
     va_list   	 args;
     va_start( args,  fmt );
     yy_output( 1, fmt, args );
 }
 
-ANSI( void 	yybss( char *fmt, ... ) )
-KnR ( void 	yybss( fmt )		)
-KnR ( char	*fmt;			)
+void yy_bss(char *fmt, ...)
 {
     va_list   	 args;
     va_start( args,  fmt );
     yy_output( 2, fmt, args );
 }
 
-/* yycomment() and yyerror() are defined in yydebug.c */
+/* yy_comment() and yy_error() are defined in yydebug.c */
 
-#else  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - */
+#else
 
-#    define yy_nextoken()	yylex()	    /* when YYDEBUG isn't defined.   */
+#    define yy_next_token()	     yylex()  /* when YYDEBUG isn't defined.   */
 #    define yy_quit_debug()
 #    define yy_init_debug()
 #    define yy_pstack(x,y)
@@ -248,45 +217,35 @@ KnR ( char	*fmt;			)
  * to stdout. It's up to you to close the streams after the parser terminates.
  */
 
-ANSI( void 	yycode( char *fmt, ... ))
-KnR ( void 	yycode( fmt )		)
-KnR ( char	*fmt;			)
+void yy_code(char *fmt, ...)
 {
     va_list	args;
     va_start( args,      fmt );
     vfprintf( yycodeout, fmt, args );
 }
 
-ANSI( void 	yydata( char *fmt, ... ))
-KnR ( void 	yydata( fmt )		)
-KnR ( char	*fmt;			)
+void yy_data(char *fmt, ...)
 {
     va_list	args;
     va_start( args,  fmt );
     vfprintf( yydataout, fmt, args );
 }
 
-ANSI( void 	yybss( char *fmt, ... )	)
-KnR ( void 	yybss( fmt )		)
-KnR ( char	*fmt;			)
+void yy_bss(char *fmt, ...)
 {
     va_list args;
     va_start( args,  fmt );
     vfprintf( yybssout, fmt, args );
 }
 
-ANSI( void 	yycomment( char *fmt, ... )	)
-KnR ( void 	yycomment( fmt )		)
-KnR ( char	*fmt;				)
+void yy_comment(char *fmt, ...)
 {
     va_list	 args;
     va_start( args,   fmt );
     vfprintf( stdout, fmt, args );
 }
 
-ANSI( void 	yyerror( char *fmt, ... )	)
-KnR ( void 	yyerror( fmt )			)
-KnR ( char	*fmt;				)
+void yy_error(char *fmt, ...)
 {
     extern char *yytext;
     extern int  yylineno;
@@ -299,136 +258,127 @@ KnR ( char	*fmt;				)
 }
 #endif
 
-
-
-YYPRIVATE  void yy_shift( new_state, lookahead ) /* shift 	      */
-int	    new_state;				 /* push this state   */
-int	    lookahead;				 /* Current lookahead */
+YYPRIVATE  void yy_shift(int new_state, int lookahead ) /* shift: push new_state   */
 {
     yypush( Yy_stack, new_state );
-    --Yy_vsp;			 	 /* Push garbage onto value stack */
-    YYSHIFTACT( Yy_vsp );   		 /* Then do default action 	  */
+    --Yy_vsp;			 	      /* Push garbage onto value stack */
+    YYSHIFTACT( Yy_vsp );         /* Then do default action 	   */
 
 #ifdef YYDEBUG
-    yycomment( "Shift %0.16s (%d)\n", Yy_stok[ lookahead ], new_state);
+    yy_comment( "Shift %0.16s (%d)\n", Yy_stok[ lookahead ], new_state);
     yypush_( Yy_dstack, Yy_stok[lookahead] );
     yy_pstack(0, 1);
 #endif
 }
 /*----------------------------------------------------------------------*/
-YYPRIVATE void yy_reduce( prod_num, amount )
-int	prod_num;		/* Reduce by this production 		    */
-int	amount;			/* # symbols on right-hand side of prod_num */
+YYPRIVATE void yy_reduce(int prod_num, int amount)
 {
     int	next_state;
 
     yypopn( Yy_stack,  amount );	/* Pop n items off the state stack */
-    Yy_vsp += amount;			/* and the value stack.		   */
-    *--Yy_vsp = Yy_val;		  	/* Push $$ onto value stack	   */
+    Yy_vsp += amount;			    /* and the value stack.		       */
+    *--Yy_vsp = Yy_val;		  	    /* Push $$ onto value stack	       */
 
     next_state = yy_next( Yy_goto, yystk_item(Yy_stack,0), Yy_lhs[prod_num] );
 
 #ifndef YYDEBUG
-
     yypush_ ( Yy_stack, next_state );
-
 #else
-
     yy_break( prod_num );	    	/* activate production breakpoint */
 
     yypopn_ ( Yy_dstack, amount );
 
-    YYV( yycomment("    pop %d item%s\n", amount, amount==1 ? "" : "s"); )
+    YYV( yy_comment("    pop %d item%s\n", amount, amount==1 ? "" : "s"); )
     yy_pstack( 0, 0 );
 
     yypush_ ( Yy_stack,	next_state 	    );
     yypush_ ( Yy_dstack,  Yy_slhs[ prod_num ] );
 
-    YYV( yycomment("    push %0.16s (%d)", Yy_slhs[prod_num], next_state ); )
+    YYV( yy_comment("    push %0.16s (%d)", Yy_slhs[prod_num], next_state ); )
 
     yy_pstack ( 0, 1 );
 #endif
 }
 
 /*----------------------------------------------------------------------*/
-
 YYPRIVATE void yy_init_stack()			/* Initialize the stacks  */
 {
     yystk_clear( Yy_stack );
     yypush_    ( Yy_stack,  0 );		/* State stack = 0    	 */
 
-    Yy_vsp = Yy_vstack + (YYMAXDEPTH-1);	/* Value stack = garbage */
+    Yy_vsp = Yy_vstack + (YYMAXDEPTH-1);/* Value stack = garbage */
 
 #   ifdef YYDEBUG
     yystk_clear  ( Yy_dstack );
     yypush_	 ( Yy_dstack, "$" );
-    yycomment	 ( "Shift start state\n" );
+    yy_comment	 ( "Shift start state\n" );
     yy_pstack	 (0, 1);			/* refresh stack window */
 #   endif
 }
 /*----------------------------------------------------------------------*/
-YYPRIVATE int yy_recover( tok, suppress )
-int	tok;		/* token that caused the error		*/
-int	suppress;	/* No error message is printed if true  */
+YYPRIVATE int yy_recover( int tok, bool suppress ) /*tok: token caused error. suppress:
+                                                     no error message is printed if true*/
 {
-    int	        *old_sp  = yystk_p(Yy_stack);	     /* State-stack pointer */
+    int	        *old_sp  = yystk_p(Yy_stack);	   /* State-stack pointer */
     YYD( char  **old_dsp = yystk_p(Yy_dstack); )
     YYD( char   *tos;  				 )
 
-    if( !suppress )
-    {
-	yyerror( "Unexpected %s\n", Yy_stok[tok] );
-	if( ++yynerrs > YYMAXERR )
-	{
-	    yyerror("Too many errors, aborting\n");
+    if( !suppress ) {
+	    yy_error( "Unexpected %s\n", Yy_stok[tok] );
+	    if( ++yynerrs > YYMAXERR ) {
+	    yy_error("Too many errors, aborting\n");
 	    return 0;
-	}
+	    }
     }
 
     do {
+        while( !yystk_empty(Yy_stack)
+		    && yy_next( Yy_action, yystk_item(Yy_stack,0), tok) == YYF ) {
 
-	while( !yystk_empty(Yy_stack)
-		    && yy_next( Yy_action, yystk_item(Yy_stack,0), tok) == YYF )
-	{
-	    yypop_( Yy_stack );
+	        yypop_( Yy_stack );
 
-	    YYD( tos = yypop_(Yy_dstack); )
-	    YYD( yycomment("Popping %s from state stack\n", tos); )
-	    YYD( yy_pstack(0, 1);				   )
-	}
+	        YYD( tos = yypop_(Yy_dstack); )
+	        YYD( yy_comment("Popping %s from state stack\n", tos); )
+	        YYD( yy_pstack(0, 1);				   )
+	    }
 
-	if( !yystk_empty(Yy_stack) )		/* Recovered successfully */
-	{
-	    /* Align the value (and debug) stack to agree with the current
-	     * state-stack pointer.
-	     */
+	    if( !yystk_empty(Yy_stack) ) { /* Recovered successfully */
 
-	    Yy_vsp = Yy_vstack + (YYMAXDEPTH - yystk_ele(Yy_stack)) ;
+	        /* Align the value (and debug) stack to agree with the current
+	         * state-stack pointer.
+	         */
 
-#	    ifdef YYDEBUG
+	        Yy_vsp = Yy_vstack + (YYMAXDEPTH - yystk_ele(Yy_stack)) ;
+
+#ifdef YYDEBUG
 	    	yystk_p(Yy_dstack) = Yy_dstack +
 					(YYMAXDEPTH - yystk_ele(Yy_stack) );
-	   	yycomment("Error recovery successful\n");
+	   	    yy_comment("Error recovery successful\n");
 	    	yy_pstack(0, 1);
-#	    endif
+@endif
+	        return tok;
+	    }
 
-	    return tok;
-	}
+	    yystk_p( Yy_stack ) = old_sp ;
 
-	yystk_p( Yy_stack ) = old_sp ;
+	    YYD( yystk_p( Yy_dstack ) = old_dsp ;			)
+	    YYD( yy_comment("Restoring state stack."); 		)
+	    YYD( yy_pstack(1, 1); 			 		)
+	    YYD( yy_comment("discarding %s\n", Yy_stok[tok]);   )
 
-	YYD( yystk_p( Yy_dstack ) = old_dsp ;			)
-	YYD( yycomment("Restoring state stack."); 		)
-	YYD( yy_pstack(1, 1); 			 		)
-	YYD( yycomment("discarding %s\n", Yy_stok[tok]);   )
+    } while( ii_mark_prev(), tok = yy_next_token() );
 
-    } while( ii_mark_prev(), tok = yy_nextoken() );
-
-    YYD( yycomment("Error recovery failed\n");	)
+    YYD( yy_comment("Error recovery failed\n");	)
     return 0;
 }
 
 /*----------------------------------------------------------------------*/
+void yy_init_stream()
+{
+    yycodeout = stdout;
+    yybssout  = stdout;
+    yydataout = stdout;
+}
 
 int	yyparse()
 {
@@ -438,105 +388,97 @@ int	yyparse()
      */
 
     int	act_num ;	 /* Contents of current parse table entry	*/
-    int	errcode ;	 /* Error code returned from yy_act()        	*/
-    int tchar   ;	 /* Used to \0-terminate the lexeme         	*/
+    int	errcode ;	 /* Error code returned from yy_act()       */
+    int tchar   ;	 /* Used to \0-terminate the lexeme         */
     int suppress_err ; 	 /* Set to YYCASCADE after an error is found    */
-			 /* and decremented on each parse cycle. Error	*/
-			 /* messages aren't printed if it's true.	*/
+			             /* and decremented on each parse cycle. Error	*/
+			             /* messages aren't printed if it's true.	    */
 
-#ifdef YYDEBUG
+    yy_init_stream();
+
+    #ifdef YYDEBUG
     if( !yy_init_debug( Yy_stack,  &yystk_p(Yy_stack ),
 			Yy_dstack, &yystk_p(Yy_dstack),
 			Yy_vstack, sizeof(YYSTYPE), YYMAXDEPTH) )
 	YYABORT;
-#endif
+    #endif
 
-    yy_init_stack ();			/* Initialize parse stack	*/
+    yy_init_stack();			    /* Initialize parse stack	*/
     yy_init_occs  ( Yy_vsp );
 
-    yylookahead  = yy_nextoken();	/* Get first input symbol	*/
+    yylookahead  = yy_next_token();	/* Get first input symbol	*/
     suppress_err = 0;
 
-    while( 1 )
-    {
-	act_num = yy_next( Yy_action, yystk_item(Yy_stack,0), yylookahead );
+    while( 1 ) {
 
-	if( suppress_err )
-	    --suppress_err;
+	    act_num = yy_next( Yy_action, yystk_item(Yy_stack,0), yylookahead );
 
-	if( act_num == YYF  )
-	{
-	    if( !(yylookahead = yy_recover( yylookahead, suppress_err )) )
-		YYABORT;
+	    if( suppress_err ) --suppress_err;
 
-	    suppress_err = YYCASCADE;
-	}
-	else if( YY_IS_SHIFT(act_num) )		     /* Simple shift action */
-	{
-	    /* Note that yytext and yyleng are undefined at this point because
-	     * they were modified in the else clause, below. You must use
-	     * ii_text(), etc., to put them into a reasonable condition if
-	     * you expect to access them in a YY_SHIFT action.
-	     */
+	    if( act_num == YYF  ) {
+	        if( !(yylookahead = yy_recover( yylookahead, suppress_err )) )
+	            YYABORT;
+	        suppress_err = YYCASCADE;
+	    } else if( YY_IS_SHIFT(act_num) ) {		     /* Simple shift action */
 
-	    yy_shift( act_num, yylookahead );
+	        /* Note that yytext and yyleng are undefined at this point because
+	         * they were modified in the else clause, below. You must use
+	         * ii_text(), etc., to put them into a reasonable condition if
+	         * you expect to access them in a YY_SHIFT action.
+	         */
+	        yy_shift( act_num, yylookahead );
 
-	    ii_mark_prev();
-	    yylookahead = yy_nextoken();
-	}
-	else
-	{
-	    /* Do a reduction by -act_num. The activity at 1, below, gives YACC
-	     * compatibility. It's just making the current lexeme available in
-	     * yytext and '\0' terminating the lexeme. The '\0' is removed at 2.
-	     * The problem is that you have to read the next lookahead symbol
-	     * before you can reduce by the production that had the previous
-	     * symbol at its far right. Note that, since Production 0 has the
-	     * goal symbol on its left-hand side, a reduce by 0 is an accept
-	     * action. Also note that ii_ptext()[ii_plength()] is used at (2)
-	     * rather than yytext[yyleng] because the user might have modified
-	     * yytext or yyleng in an action.
-	     *
-	     * Rather than pushing junk as the $$=$1 action on an epsilon
-	     * production, the old tos item is duplicated in this situation.
-	     */
+	        ii_mark_prev();
+	        yylookahead = yy_next_token();
 
-	    act_num   = -act_num ;
-	    Yy_rhslen = Yy_reduce[ act_num  ];
-	    Yy_val    = Yy_vsp[ Yy_rhslen ? Yy_rhslen-1 : 0 ]; 	 /* $$ = $1 */
+	    } else {
 
-	    if( yytext = (char *) ii_ptext() )			/* (1)     */
-	    {
-		yylineno       = ii_plineno() ;
-		tchar          = yytext[ yyleng = ii_plength() ];
-		yytext[yyleng] = '\0' ;
-	    }
-	    else				/* no previous token */
-	    {
-		yytext = "";
-		yyleng = yylineno = 0;
-	    }
+	        /* Do a reduction by -act_num. The activity at 1, below, gives YACC
+	         * compatibility. It's just making the current lexeme available in
+	         * yytext and '\0' terminating the lexeme. The '\0' is removed at 2.
+	         * The problem is that you have to read the next lookahead symbol
+	         * before you can reduce by the production that had the previous
+	         * symbol at its far right. Note that, since Production 0 has the
+	         * goal symbol on its left-hand side, a reduce by 0 is an accept
+	         * action. Also note that ii_ptext()[ii_plength()] is used at (2)
+	         * rather than yytext[yyleng] because the user might have modified
+	         * yytext or yyleng in an action.
+	         *
+	         * Rather than pushing junk as the $$=$1 action on an epsilon
+	         * production, the old tos item is duplicated in this situation.
+	         */
+	        act_num   = -act_num ;
+	        Yy_rhslen = Yy_reduce[ act_num  ];
+	        Yy_val    = Yy_vsp[ Yy_rhslen ? Yy_rhslen-1 : 0 ]; 	 /* $$ = $1 */
 
-#	    ifdef YYDEBUG
-	        yycomment("Reduce by (%d) %s->%s\n", act_num,
+	        if( yytext = (char *) ii_ptext() ) {  /* (1) */
+		        yylineno       = ii_plineno() ;
+		        tchar          = yytext[ yyleng = ii_plength() ];
+		        yytext[yyleng] = '\0' ;
+	        } else {			                  /* no previous token */
+		        yytext = "";
+		        yyleng = yylineno = 0;
+	        }
+
+            #ifdef YYDEBUG
+	        yy_comment("Reduce by (%d) %s->%s\n", act_num,
 					Yy_slhs[act_num], Yy_srhs[act_num]);
-#	    endif
+            #endif
 
-	    if( errcode = yy_act( act_num, Yy_vsp ) )
-		return errcode;
+	        if( errcode = yy_act( act_num, Yy_vsp ) ) return errcode;
 
-	    if( yylineno )
-		ii_ptext()[ ii_plength() ] = tchar;		 /* (2)     */
+	        if( yylineno ) ii_ptext()[ ii_plength() ] = tchar;	/* (2)  */
 
-	    if( act_num == YY_IS_ACCEPT )
-		break ;
-	    else
-		yy_reduce( act_num, Yy_rhslen );
-	}
+	        if( act_num == YY_IS_ACCEPT ) {
+	            break ;
+	        } else {
+		        yy_reduce( act_num, Yy_rhslen );
+		    }
+	   }
     }
-    YYD(  yycomment( "Accept\n" );	)
+
+    YYD(  yy_comment( "Accept\n" );	)
     YYD(  yy_quit_debug();		)
 
     YYACCEPT;
 }
-
